@@ -29,6 +29,9 @@ class _ReaderScreenState extends State<ReaderScreen> {
   VerseRef _chapter = const VerseRef(1, 1, 1);
   late Future<_ChapterData> _data = _init();
 
+  /// Translations the reader has switched off. Empty = show everything.
+  final Set<String> _hidden = {};
+
   Future<_ChapterData> _init() async {
     await _loadOrder();
     return _load();
@@ -130,24 +133,48 @@ class _ReaderScreenState extends State<ReaderScreen> {
           if (data == null) {
             return const Center(child: CircularProgressIndicator());
           }
-          return LayoutBuilder(
-            builder: (context, constraints) {
-              final columns = data.translations
-                  .map(
-                    (t) => Expanded(
-                      child: _TranslationColumn(
-                        translation: t,
-                        verses: data.verses[t.id] ?? const [],
-                        onTap: (verseId) => _showReadings(context, verseId),
-                      ),
-                    ),
-                  )
-                  .toList();
-              if (constraints.maxWidth >= 720) {
-                return Row(children: columns);
-              }
-              return Column(children: columns);
-            },
+          // Translations with nothing in this chapter drop out on their own;
+          // the chip stays, disabled, so the reader knows why.
+          final present = data.translations
+              .where((t) => (data.verses[t.id] ?? const []).isNotEmpty)
+              .toList();
+          final shown = present.where((t) => !_hidden.contains(t.id)).toList();
+          return Column(
+            children: [
+              _TranslationChips(
+                translations: data.translations,
+                present: {for (final t in present) t.id},
+                hidden: _hidden,
+                onToggle: (id) => setState(() {
+                  if (!_hidden.remove(id)) _hidden.add(id);
+                }),
+              ),
+              Expanded(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    if (constraints.maxWidth >= 720) {
+                      return Row(
+                        children: [
+                          for (final t in shown)
+                            Expanded(
+                              child: _TranslationColumn(
+                                translation: t,
+                                verses: data.verses[t.id] ?? const [],
+                                onTap: (id) => _showReadings(context, id),
+                              ),
+                            ),
+                        ],
+                      );
+                    }
+                    return _InterleavedView(
+                      translations: shown,
+                      verses: data.verses,
+                      onTap: (id) => _showReadings(context, id),
+                    );
+                  },
+                ),
+              ),
+            ],
           );
         },
       ),
@@ -290,6 +317,130 @@ class _BookPickerState extends State<_BookPicker> {
       trailing: Text('${b.chapters}'),
       selected: b.id == widget.current.book,
       onTap: () => setState(() => _book = b),
+    );
+  }
+}
+
+class _TranslationChips extends StatelessWidget {
+  const _TranslationChips({
+    required this.translations,
+    required this.present,
+    required this.hidden,
+    required this.onToggle,
+  });
+
+  final List<Translation> translations;
+  final Set<String> present;
+  final Set<String> hidden;
+  final ValueChanged<String> onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+      child: Row(
+        children: [
+          for (final t in translations) ...[
+            FilterChip(
+              label: Text(t.abbreviation),
+              selected: present.contains(t.id) && !hidden.contains(t.id),
+              onSelected: present.contains(t.id) ? (_) => onToggle(t.id) : null,
+            ),
+            const SizedBox(width: 6),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Phone layout: one scroll, verse by verse, each translation's text under
+/// the verse number. Hebrew rows switch direction individually.
+class _InterleavedView extends StatelessWidget {
+  const _InterleavedView({
+    required this.translations,
+    required this.verses,
+    required this.onTap,
+  });
+
+  final List<Translation> translations;
+  final Map<String, List<ChapterVersesResult>> verses;
+  final ValueChanged<int> onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final byVerse = <int, Map<String, ChapterVersesResult>>{};
+    for (final t in translations) {
+      for (final v in verses[t.id] ?? const <ChapterVersesResult>[]) {
+        byVerse.putIfAbsent(v.verseId, () => {})[t.id] = v;
+      }
+    }
+    final ids = byVerse.keys.toList()..sort();
+    return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
+      itemCount: ids.length,
+      itemBuilder: (context, i) {
+        final id = ids[i];
+        final ref = VerseRef.fromId(id);
+        final rows = byVerse[id]!;
+        return InkWell(
+          onTap: () => onTap(id),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  ref.verse == 0 ? 'Title' : '${ref.verse}',
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+                for (final t in translations)
+                  if (rows[t.id] != null)
+                    _VerseText(translation: t, verse: rows[t.id]!),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _VerseText extends StatelessWidget {
+  const _VerseText({required this.translation, required this.verse});
+
+  final Translation translation;
+  final ChapterVersesResult verse;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final rtl = translation.direction == 'rtl';
+    final native = verse.nativeRef;
+    final label = native == null
+        ? translation.abbreviation
+        : '${translation.abbreviation} $native';
+    return Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Directionality(
+        textDirection: rtl ? TextDirection.rtl : TextDirection.ltr,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: theme.textTheme.labelSmall),
+            Text(
+              verse.body,
+              style: rtl
+                  ? theme.textTheme.titleMedium?.copyWith(height: 1.6)
+                  : theme.textTheme.bodyLarge,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -72,7 +72,7 @@ def _conn() -> sqlite3.Connection:
 
     conn = sqlite3.connect(":memory:")
     conn.executescript(db.SCHEMA_PATH.read_text(encoding="utf-8"))
-    conn.execute("INSERT INTO translations VALUES ('web','WEB','WEB','en','ltr','PD','x','v')")
+    conn.execute("INSERT INTO translations VALUES ('web','WEB','WEB','en','ltr','PD','x','v',0)")
     return conn
 
 

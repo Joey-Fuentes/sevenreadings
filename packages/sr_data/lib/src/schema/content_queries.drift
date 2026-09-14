@@ -1,6 +1,6 @@
 import 'content.drift';
 
-allTranslations: SELECT * FROM translations ORDER BY id;
+allTranslations: SELECT * FROM translations ORDER BY sort_order, id;
 
 allPerspectives: SELECT * FROM perspectives ORDER BY sort_order;
 
