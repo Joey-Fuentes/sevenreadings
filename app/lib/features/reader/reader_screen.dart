@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:sr_core/sr_core.dart';
 import 'package:sr_data/sr_data.dart';
 
+import 'markdown_text.dart';
+
 /// One chapter, every translation side by side (stacked on narrow screens),
 /// tap a verse for its readings. Navigation follows the selected tradition's
 /// book order from the `book_orders` table.
@@ -505,6 +507,55 @@ class _TranslationColumn extends StatelessWidget {
   }
 }
 
+/// One commentary entry: attribution, heading, and a body that opens
+/// collapsed to its first paragraph. Henry's sections run to thousands of
+/// words; showing all of them at once buries the other readings.
+class _ReadingEntry extends StatefulWidget {
+  const _ReadingEntry({required this.reading});
+
+  final ReadingsForVerseResult reading;
+
+  @override
+  State<_ReadingEntry> createState() => _ReadingEntryState();
+}
+
+class _ReadingEntryState extends State<_ReadingEntry> {
+  var _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final r = widget.reading;
+    final preview = firstParagraph(r.body);
+    final truncated = preview.length < r.body.length;
+    final shown = _expanded || !truncated ? r.body : preview;
+    return Padding(
+      padding: const EdgeInsets.only(top: 6, bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            [r.author, if (r.citation != null) r.citation!].join(' \u00b7 '),
+            style: theme.textTheme.labelMedium,
+          ),
+          if (r.heading != null)
+            Text(r.heading!, style: theme.textTheme.labelLarge),
+          Text.rich(
+            TextSpan(
+              children: markdownSpans(shown, theme.textTheme.bodyMedium),
+            ),
+          ),
+          if (truncated)
+            TextButton(
+              onPressed: () => setState(() => _expanded = !_expanded),
+              child: Text(_expanded ? 'Show less' : 'Show more'),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ReadingsSheet extends StatelessWidget {
   const _ReadingsSheet({
     required this.db,
@@ -544,22 +595,7 @@ class _ReadingsSheet extends StatelessWidget {
             for (final p in perspectives) ...[
               Text(p.name, style: theme.textTheme.titleMedium),
               for (final r in readings.where((r) => r.perspectiveId == p.id))
-                Padding(
-                  padding: const EdgeInsets.only(top: 6, bottom: 12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        [r.author, if (r.citation != null) r.citation!]
-                            .join(' \u00b7 '),
-                        style: theme.textTheme.labelMedium,
-                      ),
-                      if (r.heading != null)
-                        Text(r.heading!, style: theme.textTheme.labelLarge),
-                      Text(r.body),
-                    ],
-                  ),
-                ),
+                _ReadingEntry(reading: r),
               if (!readings.any((r) => r.perspectiveId == p.id))
                 Padding(
                   padding: const EdgeInsets.only(top: 4, bottom: 12),
