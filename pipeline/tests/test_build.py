@@ -34,8 +34,8 @@ def test_sample_build(tmp_path):
 
     # Range anchoring: Gen 1:2 sees the chapter note and the 1:1-2 note, not 1:3.
     rows = conn.execute(
-        "SELECT body FROM commentary_entries WHERE start_verse_id <= ? AND end_verse_id >= ?"
-        " ORDER BY start_verse_id DESC",
+        "SELECT body FROM commentary_entries WHERE source_id='sample'"
+        " AND start_verse_id <= ? AND end_verse_id >= ? ORDER BY start_verse_id DESC",
         (1_001_002, 1_001_002),
     ).fetchall()
     assert len(rows) == 2 and "1:3" not in rows[0][0] + rows[1][0]

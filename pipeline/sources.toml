@@ -133,14 +133,29 @@ license = "Public domain (Schaff, 1888-1890); verify database license"
 license_status = "review"
 
 [matthew_henry]
-kind = "hcf_database"
+kind = "ccel_mhc"
 perspective = "protestant"
 author = "Matthew Henry"
 title = "Commentary on the Whole Bible (1706-1721)"
-repo = "https://github.com/HistoricalChristianFaith/Commentaries-Database"
-commit = "TODO"
-license = "Public domain; verify database license"
-license_status = "review"
+# CCEL's older HTML edition: "Public domain text. No rights reserved. May be distributed freely."
+urls = [
+  "http://www.ccel.org/h/henry/mhc2/MHC-V1.ZIP",
+  "http://www.ccel.org/h/henry/mhc2/MHC-V2.ZIP",
+  "http://www.ccel.org/h/henry/mhc2/MHC-V3.ZIP",
+  "http://www.ccel.org/h/henry/mhc2/MHC-V4.ZIP",
+  "http://www.ccel.org/h/henry/mhc2/MHC-V5.ZIP",
+  "http://www.ccel.org/h/henry/mhc2/MHC-V6.ZIP",
+]
+sha256 = [
+  "244195eb5be93bfa70512c1d49b4b9ce19cb9a75c1885b8e4a8832b74c65d09f",
+  "f3866e98f304bfb727ef58f267c75e76264cf24c928d9a1206bf18c6b9f32f81",
+  "b618d178987e5f4e81b8b8477f4df929afa5dc9aa6eec1969a5b3aad3621758d",
+  "0e0f1873be64dda63fe4ce42c00a40450e167b5450767775482c4a5b7331b6a9",
+  "bec70eacdde4f5532fb65618734c12198890148c82c797b19c675d2a0e2d772b",
+  "fcc11507e8a0f74b6f39954b4f288c8de817380ceff01cbf9822cc53205ca902",
+]
+license = "Public domain (text 1706-1721; CCEL edition: no rights reserved)"
+license_status = "clear"
 
 [ibn_kathir]
 kind = "tafsir_api"

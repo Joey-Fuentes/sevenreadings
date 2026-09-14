@@ -7,6 +7,7 @@ from pathlib import Path
 
 from .sources.archive_bible import ArchiveBibleSource
 from .sources.base import Source
+from .sources.ccel_mhc import CcelMhcSource
 from .sources.jsonl_commentary import JsonlCommentarySource
 from .sources.stubs import (
     HaydockSource,
@@ -24,6 +25,7 @@ KINDS: dict[str, type[Source]] = {
     "usfm_zip": UsfmBibleSource,
     "archive": ArchiveBibleSource,
     "lxx_tokens": SweteLxxSource,
+    "ccel_mhc": CcelMhcSource,
     "jsonl": JsonlCommentarySource,
     "sefaria_export": SefariaExportSource,
     "haydock": HaydockSource,
@@ -97,6 +99,15 @@ SAMPLE_SOURCES: dict[str, dict] = {
         "license_status": "clear",
         "url": "fixture",
         "glob": "*.txt",
+    },
+    "matthew_henry": {
+        "kind": "ccel_mhc",
+        "perspective": "protestant",
+        "author": "Matthew Henry",
+        "title": "Commentary on the Whole Bible (1706-1721)",
+        "license": "Public domain",
+        "license_status": "clear",
+        "url": "fixture",
     },
     "sample": {
         "kind": "jsonl",

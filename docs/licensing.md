@@ -17,7 +17,7 @@ must be verified against the actual upstream files before shipping.
 | 2 | Ibn Ezra (Sefaria-Export) | Jewish rationalist | Hebrew: public domain | Per text; English coverage is partial | review |
 | 3 | Haydock (1859) | Catholic | Public domain | Public domain; check the transcription project's own license | review |
 | 4 | Chrysostom, NPNF (Schaff, 1888-90) | Orthodox | Greek: public domain | Public domain; check database/markup license | review |
-| 5 | Matthew Henry (1706-21) | Protestant | n/a | Public domain; check database license | review |
+| 5 | Matthew Henry (1706-21), CCEL HTML edition | Protestant | n/a | Public domain; CCEL edition states no rights reserved | clear |
 | 6 | Tafsir Ibn Kathir | Islamic | Arabic: public domain | No public-domain English known; the common abridgment is copyrighted | blocked |
 | 7 | ICC (pre-1929 volumes) | Academic | n/a | Public domain in the US for volumes published before 1929; later volumes excluded | review |
 

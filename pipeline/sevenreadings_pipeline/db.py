@@ -95,7 +95,7 @@ def add_source(conn: sqlite3.Connection, sid: str, cfg: dict, version: str) -> N
             cfg["title"],
             cfg["license"],
             cfg["license_status"],
-            cfg.get("url") or cfg.get("repo", ""),
+            cfg.get("url") or (cfg.get("urls") or [""])[0] or cfg.get("repo", ""),
             version,
         ),
     )

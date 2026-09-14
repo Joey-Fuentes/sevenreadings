@@ -16,13 +16,15 @@ def cmd_sources(_: argparse.Namespace) -> int:
 
 def cmd_lock(args: argparse.Namespace) -> int:
     cfg = registry.load_config()[args.source]
-    if "url" not in cfg:
+    urls = cfg.get("urls") or ([cfg["url"]] if "url" in cfg else [])
+    if not urls:
         print(f"{args.source} is pinned by git commit, not a URL; set `commit` by hand.")
         return 1
-    try:
-        fetch.fetch(cfg["url"], None)
-    except SystemExit as e:  # fetch prints the hash when unpinned
-        print(e)
+    for url in urls:
+        try:
+            fetch.fetch(url, None)
+        except SystemExit as e:  # fetch prints the hash when unpinned
+            print(e)
     return 0
 
 
