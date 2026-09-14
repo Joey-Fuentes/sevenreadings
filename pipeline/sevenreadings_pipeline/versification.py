@@ -134,9 +134,7 @@ def apply_mt(
             mt_counts[v.chapter] = max(mt_counts.get(v.chapter, 0), v.verse)
             if v.verse == 1:
                 mt_first[v.chapter] = v.text
-    offsets = (
-        psalm_title_offsets(conn, reference, mt_counts, mt_first, notes) if mt_counts else {}
-    )
+    offsets = psalm_title_offsets(conn, reference, mt_counts, mt_first, notes) if mt_counts else {}
 
     merged: dict[int, list[Verse]] = {}
     for v in verses:
@@ -146,9 +144,7 @@ def apply_mt(
         else:
             ch, n = _shift(v.book, v.chapter, v.verse)
         native = None if (ch, n) == (v.chapter, v.verse) else f"{v.chapter}:{v.verse}"
-        merged.setdefault(verse_id(v.book, ch, n), []).append(
-            Verse(v.book, ch, n, v.text, native)
-        )
+        merged.setdefault(verse_id(v.book, ch, n), []).append(Verse(v.book, ch, n, v.text, native))
     for parts in merged.values():
         first = parts[0]
         if len(parts) == 1:

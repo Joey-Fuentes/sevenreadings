@@ -26,9 +26,7 @@ from .base import Source
 _REF_LINE = re.compile(r"^\s*([1-3]?[A-Za-z]+)\s+(\d+):(\d+)\s*\t?\s+(.*\S)\s*$")
 
 
-def parse_ref_tab_text(
-    text: str, name: str, skipped: list[str] | None = None
-) -> Iterator[Verse]:
+def parse_ref_tab_text(text: str, name: str, skipped: list[str] | None = None) -> Iterator[Verse]:
     """Yield verses; lines that are not `Book c:v<TAB>text` (book titles,
     section headings) are appended to `skipped` when given."""
     for line in text.splitlines():

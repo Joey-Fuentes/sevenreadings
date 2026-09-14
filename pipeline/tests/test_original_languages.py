@@ -84,9 +84,7 @@ def test_psalm_13_title_inferred_when_counts_agree():
         "INSERT INTO verses (translation_id, verse_id, body) VALUES ('web', ?, 'x')",
         [(verse_id(ps, 13, v),) for v in range(0, 7)],
     )
-    mt = [Verse(ps, 13, 1, "לַמְנַצֵּחַ מִזְמוֹר לְדָוִד")] + [
-        Verse(ps, 13, v, f"v{v}") for v in range(2, 7)
-    ]
+    mt = [Verse(ps, 13, 1, "לַמְנַצֵּחַ מִזְמוֹר לְדָוִד")] + [Verse(ps, 13, v, f"v{v}") for v in range(2, 7)]
     notes: list[str] = []
     out = list(versification.apply_mt(mt, conn, "web", notes))
     assert [v.verse for v in out] == [0, 1, 2, 3, 4, 5]
