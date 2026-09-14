@@ -4,7 +4,7 @@ Defined once in `packages/sr_data/lib/src/schema/content.drift` (plain SQL).
 
 | Table | Purpose |
 |-------|---------|
-| `meta` | `content_version`, `schema_version`, `built_at`, `sources` |
+| `meta` (`name`, `value`) | `content_version`, `schema_version`, `built_at`, `sources` |
 | `books` | 66-book canon, ids 1..66 |
 | `translations` / `verses` | One row per verse per translation; `verse_id` is canonical (ADR 0003) |
 | `perspectives` | The seven readings, in display order |

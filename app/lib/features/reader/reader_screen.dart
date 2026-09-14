@@ -154,7 +154,7 @@ class _TranslationColumn extends StatelessWidget {
                       text: '${VerseRef.fromId(v.verseId).verse} ',
                       style: theme.textTheme.labelSmall,
                     ),
-                    TextSpan(text: v.text),
+                    TextSpan(text: v.body),
                   ],
                 ),
                 style: theme.textTheme.bodyLarge,

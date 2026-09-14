@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sr_core/sr_core.dart';
@@ -33,7 +32,7 @@ void main() {
         );
         for (var v = 1; v <= 3; v++) {
           raw.execute(
-            'INSERT INTO verses (translation_id, verse_id, text) '
+            'INSERT INTO verses (translation_id, verse_id, body) '
             "VALUES ('web', ${VerseRef(1, 1, v).id}, 'Verse $v')",
           );
         }
@@ -57,7 +56,7 @@ void main() {
     final verses = await db
         .chapterVerses('web', ref.chapterStart.id, ref.chapterEnd.id)
         .get();
-    expect(verses.map((v) => v.text), ['Verse 1', 'Verse 2', 'Verse 3']);
+    expect(verses.map((v) => v.body), ['Verse 1', 'Verse 2', 'Verse 3']);
   });
 
   test('range-anchored readings resolve per verse', () async {

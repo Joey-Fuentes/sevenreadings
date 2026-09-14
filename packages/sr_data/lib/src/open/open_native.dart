@@ -40,5 +40,9 @@ Future<QueryExecutor> openContentExecutor({
     }
   }
 
-  return NativeDatabase.createInBackground(target, readOnly: true);
+  return NativeDatabase.createInBackground(
+    target,
+    // The content file is never written by the app.
+    setup: (raw) => raw.execute('PRAGMA query_only = 1'),
+  );
 }

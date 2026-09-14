@@ -8,7 +8,7 @@ CREATE VIRTUAL TABLE commentary_fts USING fts5(
 INSERT INTO commentary_fts(commentary_fts) VALUES ('rebuild');
 
 CREATE VIRTUAL TABLE verses_fts USING fts5(
-  text, translation_id UNINDEXED,
+  body, translation_id UNINDEXED,
   content='verses', content_rowid='id',
   tokenize='unicode61 remove_diacritics 2'
 );

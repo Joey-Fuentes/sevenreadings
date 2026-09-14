@@ -15,6 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # analyze treats the missing content assets as (fatal) warnings.
+      - uses: ./.github/actions/content
+        with:
+          mode: sample
+          token: ${{ github.token }}
       - uses: ./.github/actions/setup-flutter
       - name: Format
         run: dart format --output=none --set-exit-if-changed $(git ls-files '*.dart')
@@ -25,6 +30,9 @@ jobs:
         run: dart test
       - name: Test sr_data
         working-directory: packages/sr_data
+        run: flutter test
+      - name: Test app
+        working-directory: app
         run: flutter test
 
   pipeline:

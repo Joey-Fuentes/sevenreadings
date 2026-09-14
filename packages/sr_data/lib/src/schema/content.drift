@@ -8,7 +8,7 @@
 -- Verse ids: book*1000000 + chapter*1000 + verse (see sr_core VerseRef).
 
 CREATE TABLE meta (
-  key TEXT NOT NULL PRIMARY KEY,
+  name TEXT NOT NULL PRIMARY KEY,
   value TEXT NOT NULL
 );
 
@@ -34,7 +34,7 @@ CREATE TABLE verses (
   id INTEGER NOT NULL PRIMARY KEY,
   translation_id TEXT NOT NULL REFERENCES translations (id),
   verse_id INTEGER NOT NULL,
-  text TEXT NOT NULL,
+  body TEXT NOT NULL,
   UNIQUE (translation_id, verse_id)
 );
 

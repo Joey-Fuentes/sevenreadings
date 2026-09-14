@@ -64,7 +64,7 @@ def add_translation(conn: sqlite3.Connection, tid: str, cfg: dict, version: str)
 def add_verses(conn: sqlite3.Connection, tid: str, verses: Iterable[Verse]) -> int:
     rows = [(tid, v.id, v.text) for v in verses]
     conn.executemany(
-        "INSERT INTO verses (translation_id, verse_id, text) VALUES (?, ?, ?)", rows
+        "INSERT INTO verses (translation_id, verse_id, body) VALUES (?, ?, ?)", rows
     )
     return len(rows)
 
@@ -111,7 +111,7 @@ def finalize(conn: sqlite3.Connection, path: Path, version: str, sources: list[s
     built_at = datetime.now(UTC).isoformat(timespec="seconds")
     conn.executescript(FTS_PATH.read_text(encoding="utf-8"))
     conn.executemany(
-        "INSERT INTO meta (key, value) VALUES (?, ?)",
+        "INSERT INTO meta (name, value) VALUES (?, ?)",
         [
             ("content_version", version),
             ("schema_version", str(SCHEMA_VERSION)),

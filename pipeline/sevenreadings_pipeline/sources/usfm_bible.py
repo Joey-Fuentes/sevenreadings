@@ -11,7 +11,7 @@ class UsfmBibleSource(Source):
     def build(self, ctx: BuildContext) -> None:
         db.add_translation(ctx.conn, self.id, self.cfg, self._version())
         total = 0
-        for name, handle in self._files(ctx):
+        for _name, handle in self._files(ctx):
             n = db.add_verses(ctx.conn, self.id, usfm.parse(handle))
             total += n
         ctx.conn.commit()

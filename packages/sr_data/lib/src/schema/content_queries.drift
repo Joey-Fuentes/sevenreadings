@@ -6,10 +6,10 @@ allPerspectives: SELECT * FROM perspectives ORDER BY sort_order;
 
 allSources: SELECT * FROM sources ORDER BY perspective_id, id;
 
-metaValue: SELECT value FROM meta WHERE key = :key;
+metaValue: SELECT value FROM meta WHERE name = :name;
 
 chapterVerses:
-  SELECT verse_id, text FROM verses
+  SELECT verse_id, body FROM verses
   WHERE translation_id = :translation
     AND verse_id BETWEEN :startId AND :endId
   ORDER BY verse_id;

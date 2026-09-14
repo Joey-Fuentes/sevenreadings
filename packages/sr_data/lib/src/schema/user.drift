@@ -25,7 +25,7 @@ CREATE TABLE reading_positions (
 );
 
 CREATE TABLE settings (
-  key TEXT NOT NULL PRIMARY KEY,
+  name TEXT NOT NULL PRIMARY KEY,
   value TEXT NOT NULL
 );
 
