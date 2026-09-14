@@ -50,6 +50,16 @@ SAMPLE_SOURCES: dict[str, dict] = {
         "license_status": "clear",
         "url": "fixture",
     },
+    "webc": {
+        "kind": "usfm_zip",
+        "name": "World English Bible Catholic Edition",
+        "abbreviation": "WEBC",
+        "language": "en",
+        "license": "Public domain",
+        "license_status": "clear",
+        "url": "fixture",
+        "remap": "catholic",
+    },
     "sample": {
         "kind": "jsonl",
         "perspective": "protestant",

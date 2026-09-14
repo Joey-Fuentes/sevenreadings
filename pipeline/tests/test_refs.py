@@ -12,9 +12,9 @@ FIXTURES = [
 
 
 def test_canon_shape():
-    assert len(refs.CANON) == 66
-    assert sum(b.chapters for b in refs.CANON) == 1189
-    assert [b.id for b in refs.CANON] == list(range(1, 67))
+    assert len(refs.CANON) == refs.MAX_BOOK_ID == 75
+    assert sum(b.chapters for b in refs.CANON[:66]) == 1189
+    assert [b.id for b in refs.CANON] == list(range(1, 76))
 
 
 def test_encoding_round_trip():

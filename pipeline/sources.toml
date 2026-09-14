@@ -30,6 +30,17 @@ sha256 = "75dcc1a987cc7bade801b138ed23f9c4a6223abd0aa8664d337705940ba9571e"
 license = "Public domain"
 license_status = "clear"
 
+[webc]
+kind = "usfm_zip"
+name = "World English Bible Catholic Edition"
+abbreviation = "WEBC"
+language = "en"
+url = "https://ebible.org/Scriptures/eng-web-c_usfm.zip"
+sha256 = "37f5086f0b65b9843118bfdb9a4c5c6cdaac8cb03df5121b32b14965cafd1e1d"
+remap = "catholic"   # Greek Daniel/Esther and Letter of Jeremiah handling, see deuterocanon.py
+license = "Public domain"
+license_status = "clear"
+
 # ------------------------------------------------------------ Commentaries
 
 [rashi]

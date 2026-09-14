@@ -9,7 +9,7 @@ after '|' in \\w is discarded.
 from __future__ import annotations
 
 import re
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass
 
 from .refs import BY_USFM, verse_id
@@ -21,10 +21,16 @@ class Verse:
     chapter: int
     verse: int
     text: str
+    native_ref: str | None = None  # set when stored under a different number
 
     @property
     def id(self) -> int:
         return verse_id(self.book, self.chapter, self.verse)
+
+
+def canon_book(code: str) -> int | None:
+    b = BY_USFM.get(code)
+    return b.id if b else None
 
 
 _MARKER_LINE = re.compile(r"^\\(\+?[a-z]+[0-9]*)\*?(?:\s+|$)(.*)$", re.S)
@@ -71,7 +77,12 @@ def clean(text: str) -> str:
     return _WS.sub(" ", text).strip()
 
 
-def parse(lines: Iterable[str], name: str = "<usfm>") -> Iterator[Verse]:
+def parse(
+    lines: Iterable[str],
+    name: str = "<usfm>",
+    resolve: Callable[[str], int | None] = canon_book,
+) -> Iterator[Verse]:
+    """Yield verses. `resolve` maps a USFM book code to a book id (None = skip)."""
     book: int | None = None
     chapter = 0
     current: tuple[int, list[str]] | None = None  # (verse number, text parts)
@@ -104,8 +115,7 @@ def parse(lines: Iterable[str], name: str = "<usfm>") -> Iterator[Verse]:
             if marker == "id":
                 yield from flush()
                 code = rest.split()[0].upper() if rest.split() else ""
-                b = BY_USFM.get(code)
-                book = b.id if b else None
+                book = resolve(code)
                 chapter = 0
                 seen.clear()
             elif book is None:

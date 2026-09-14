@@ -14,7 +14,7 @@ import 'canon.dart';
 /// against the same fixtures. Change one, change both.
 class VerseRef implements Comparable<VerseRef> {
   const VerseRef(this.book, this.chapter, this.verse)
-      : assert(book >= 1 && book <= 66),
+      : assert(book >= 1 && book <= maxBookId),
         assert(chapter >= 1 && chapter <= 999),
         assert(verse >= 0 && verse <= 999);
 

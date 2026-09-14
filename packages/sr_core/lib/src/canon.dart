@@ -1,7 +1,10 @@
-/// The 66-book Protestant canon in canonical order.
+/// Every book the content database can hold, with stable ids.
 ///
-/// Book ids are 1-based and stable forever: they are baked into every verse id
-/// in the content database (see [VerseRef]). Never reorder or renumber.
+/// Ids 1-66 are the Protestant canon in its traditional order; 67+ are
+/// deuterocanonical books, appended as they were added. Ids are baked into
+/// every verse id in the content database (see [VerseRef]): never reorder or
+/// renumber. Display order per tradition comes from the `book_orders` table,
+/// not from this list.
 class CanonBook {
   const CanonBook(this.id, this.usfm, this.osis, this.name, this.chapters);
 
@@ -21,8 +24,12 @@ class CanonBook {
   final int chapters;
 
   bool get isOldTestament => id <= 39;
-  bool get isNewTestament => id > 39;
+  bool get isNewTestament => id > 39 && id <= 66;
+  bool get isDeuterocanonical => id > 66;
 }
+
+/// Highest book id in [canon]. Bump when appending books.
+const int maxBookId = 75;
 
 const List<CanonBook> canon = [
   CanonBook(1, 'GEN', 'Gen', 'Genesis', 50),
@@ -91,6 +98,18 @@ const List<CanonBook> canon = [
   CanonBook(64, '3JN', '3John', '3 John', 1),
   CanonBook(65, 'JUD', 'Jude', 'Jude', 1),
   CanonBook(66, 'REV', 'Rev', 'Revelation', 22),
+  // Deuterocanon. Greek Esther is a distinct text form and keeps its own
+  // numbering. DanGr holds only the Greek additions (3:24-90, 13, 14); the
+  // rest of Greek Daniel is stored under Daniel via the pipeline remap.
+  CanonBook(67, 'TOB', 'Tob', 'Tobit', 14),
+  CanonBook(68, 'JDT', 'Jdt', 'Judith', 16),
+  CanonBook(69, 'ESG', 'EsthGr', 'Esther (Greek)', 16),
+  CanonBook(70, 'WIS', 'Wis', 'Wisdom of Solomon', 19),
+  CanonBook(71, 'SIR', 'Sir', 'Sirach', 51),
+  CanonBook(72, 'BAR', 'Bar', 'Baruch', 6),
+  CanonBook(73, '1MA', '1Macc', '1 Maccabees', 16),
+  CanonBook(74, '2MA', '2Macc', '2 Maccabees', 15),
+  CanonBook(75, 'DAG', 'DanGr', 'Daniel (Greek additions)', 14),
 ];
 
 final Map<String, CanonBook> _byUsfm = {for (final b in canon) b.usfm: b};

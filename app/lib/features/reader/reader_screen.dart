@@ -33,13 +33,13 @@ class _ReaderScreenState extends State<ReaderScreen> {
     var book = _chapter.book;
     var chapter = _chapter.chapter + chapterDelta;
     if (bookDelta != 0) {
-      book = (book + bookDelta).clamp(1, 66);
+      book = (book + bookDelta).clamp(1, maxBookId);
       chapter = 1;
     } else if (chapter < 1) {
-      book = (book - 1).clamp(1, 66);
+      book = (book - 1).clamp(1, maxBookId);
       chapter = bookById(book).chapters;
     } else if (chapter > bookById(book).chapters) {
-      book = (book + 1).clamp(1, 66);
+      book = (book + 1).clamp(1, maxBookId);
       chapter = 1;
     }
     setState(() {
@@ -134,6 +134,13 @@ class _TranslationColumn extends StatelessWidget {
   final List<ChapterVersesResult> verses;
   final ValueChanged<int> onTap;
 
+  /// Verse number, plus the translation's own number when it differs.
+  static String _label(ChapterVersesResult v) {
+    final n = VerseRef.fromId(v.verseId).verse;
+    final native = v.nativeRef;
+    return native == null ? '$n ' : '$n ($native) ';
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -151,7 +158,7 @@ class _TranslationColumn extends StatelessWidget {
                 TextSpan(
                   children: [
                     TextSpan(
-                      text: '${VerseRef.fromId(v.verseId).verse} ',
+                      text: _label(v),
                       style: theme.textTheme.labelSmall,
                     ),
                     TextSpan(text: v.body),

@@ -30,13 +30,25 @@ CREATE TABLE translations (
   source_version TEXT NOT NULL
 );
 
+-- native_ref: the translation's own numbering when it differs from the
+-- canonical id, e.g. '3:91' for Greek Daniel stored at Daniel 3:24.
 CREATE TABLE verses (
   id INTEGER NOT NULL PRIMARY KEY,
   translation_id TEXT NOT NULL REFERENCES translations (id),
   verse_id INTEGER NOT NULL,
   body TEXT NOT NULL,
+  native_ref TEXT,
   UNIQUE (translation_id, verse_id)
 );
+
+-- Display order of books per tradition ('protestant', 'catholic', ...).
+-- Book ids never change; this is the only place order lives.
+CREATE TABLE book_orders (
+  tradition TEXT NOT NULL,
+  position INTEGER NOT NULL,
+  book_id INTEGER NOT NULL REFERENCES books (id),
+  PRIMARY KEY (tradition, position)
+) WITHOUT ROWID;
 
 CREATE TABLE perspectives (
   id TEXT NOT NULL PRIMARY KEY,

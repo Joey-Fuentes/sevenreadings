@@ -9,15 +9,18 @@ const fixtures = <(int, int, int, int)>[
   (39, 4, 6, 39004006),
   (40, 1, 1, 40001001),
   (66, 22, 21, 66022021),
+  (75, 13, 1, 75013001),
 ];
 
 void main() {
-  test('canon has 66 books and 1189 chapters', () {
-    expect(canon.length, 66);
-    expect(canon.fold<int>(0, (n, b) => n + b.chapters), 1189);
+  test('canon: 66 protestant books, then deuterocanon', () {
+    expect(canon.length, maxBookId);
+    expect(canon.take(66).fold<int>(0, (n, b) => n + b.chapters), 1189);
     for (var i = 0; i < canon.length; i++) {
       expect(canon[i].id, i + 1);
     }
+    expect(canon[66].isDeuterocanonical, isTrue);
+    expect(canon[65].isNewTestament, isTrue);
   });
 
   test('book lookups', () {

@@ -9,7 +9,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from .model import Entry, Parallel
-from .refs import CANON
+from .refs import BOOK_ORDERS, CANON
 from .usfm import Verse
 
 PIPELINE_DIR = Path(__file__).resolve().parent
@@ -18,7 +18,7 @@ SCHEMA_PATH = REPO_ROOT / "packages" / "sr_data" / "lib" / "src" / "schema" / "c
 FTS_PATH = PIPELINE_DIR / "sql" / "fts.sql"
 
 # Must match ContentDb.contentSchemaVersion in packages/sr_data.
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 PERSPECTIVES = [
     ("jewish_literal", 1, "Jewish: Literal (Peshat)", "Judaism"),
@@ -48,6 +48,10 @@ def create(path: Path) -> sqlite3.Connection:
         "INSERT INTO perspectives (id, sort_order, name, tradition) VALUES (?, ?, ?, ?)",
         PERSPECTIVES,
     )
+    conn.executemany(
+        "INSERT INTO book_orders (tradition, position, book_id) VALUES (?, ?, ?)",
+        [(t, i, b) for t, order in BOOK_ORDERS.items() for i, b in enumerate(order, 1)],
+    )
     conn.commit()
     return conn
 
@@ -69,8 +73,10 @@ def add_translation(conn: sqlite3.Connection, tid: str, cfg: dict, version: str)
 
 
 def add_verses(conn: sqlite3.Connection, tid: str, verses: Iterable[Verse]) -> int:
-    rows = [(tid, v.id, v.text) for v in verses]
-    conn.executemany("INSERT INTO verses (translation_id, verse_id, body) VALUES (?, ?, ?)", rows)
+    rows = [(tid, v.id, v.text, v.native_ref) for v in verses]
+    conn.executemany(
+        "INSERT INTO verses (translation_id, verse_id, body, native_ref) VALUES (?, ?, ?, ?)", rows
+    )
     return len(rows)
 
 

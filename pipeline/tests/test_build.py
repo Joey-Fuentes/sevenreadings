@@ -27,7 +27,7 @@ def test_sample_build(tmp_path):
 
     conn = sqlite3.connect(out)
     assert conn.execute("PRAGMA user_version").fetchone()[0] == db.SCHEMA_VERSION
-    assert conn.execute("SELECT COUNT(*) FROM books").fetchone()[0] == 66
+    assert conn.execute("SELECT COUNT(*) FROM books").fetchone()[0] == 75
     assert conn.execute("SELECT COUNT(*) FROM perspectives").fetchone()[0] == 7
     web = conn.execute("SELECT COUNT(*) FROM verses WHERE translation_id='web'").fetchone()[0]
     assert web == 10
@@ -50,3 +50,21 @@ def test_sample_build(tmp_path):
         "SELECT rowid FROM commentary_fts WHERE commentary_fts MATCH 'superscription'"
     ).fetchall()
     assert len(hit) == 1
+
+
+def test_sample_build_deuterocanon(tmp_path, capsys):
+    out = tmp_path / "content.sqlite"
+    assert cli.main(["build", "--sample", "--version", "0.0.0-test", "--out", str(out)]) == 0
+    assert "skipped (not in canon): ENO" in capsys.readouterr().out
+    conn = sqlite3.connect(out)
+    assert conn.execute("SELECT COUNT(*) FROM books").fetchone()[0] == 75
+    orders = conn.execute(
+        "SELECT tradition, COUNT(*) FROM book_orders GROUP BY tradition ORDER BY tradition"
+    ).fetchall()
+    # 73 Catholic books, plus DanGr holding the Greek additions separately.
+    assert orders == [("catholic", 74), ("protestant", 66)]
+    # Greek Daniel 3:91 landed on canonical Daniel 3:24 with its native label.
+    row = conn.execute(
+        "SELECT native_ref FROM verses WHERE translation_id='webc' AND verse_id=?", (27_003_024,)
+    ).fetchone()
+    assert row == ("3:91",)

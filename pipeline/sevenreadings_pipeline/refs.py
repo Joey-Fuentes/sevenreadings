@@ -59,16 +59,35 @@ CANON: tuple[Book, ...] = tuple(Book(*row) for row in [
     (61, "2PE", "2Pet", "2 Peter", 3), (62, "1JN", "1John", "1 John", 5),
     (63, "2JN", "2John", "2 John", 1), (64, "3JN", "3John", "3 John", 1),
     (65, "JUD", "Jude", "Jude", 1), (66, "REV", "Rev", "Revelation", 22),
+    # Deuterocanon (see packages/sr_core canon.dart for the rationale)
+    (67, "TOB", "Tob", "Tobit", 14), (68, "JDT", "Jdt", "Judith", 16),
+    (69, "ESG", "EsthGr", "Esther (Greek)", 16), (70, "WIS", "Wis", "Wisdom of Solomon", 19),
+    (71, "SIR", "Sir", "Sirach", 51), (72, "BAR", "Bar", "Baruch", 6),
+    (73, "1MA", "1Macc", "1 Maccabees", 16), (74, "2MA", "2Macc", "2 Maccabees", 15),
+    (75, "DAG", "DanGr", "Daniel (Greek additions)", 14),
 ])
 # fmt: on
+MAX_BOOK_ID = CANON[-1].id
 
 BY_USFM = {b.usfm: b for b in CANON}
 BY_OSIS = {b.osis: b for b in CANON}
 BY_NAME = {b.name.lower(): b for b in CANON}
 
+# Display order per tradition. Ids never move; only these lists do.
+PROTESTANT_ORDER = list(range(1, 67))
+CATHOLIC_ORDER = (
+    list(range(1, 17))  # Genesis - Nehemiah
+    + [67, 68, 69, 73, 74]  # Tobit, Judith, Esther (Greek), 1-2 Maccabees
+    + [18, 19, 20, 21, 22, 70, 71]  # Job - Song, Wisdom, Sirach
+    + [23, 24, 25, 72, 26, 27, 75]  # Isaiah - Lamentations, Baruch, Ezekiel, Daniel (+Greek)
+    + list(range(28, 40))  # Hosea - Malachi
+    + list(range(40, 67))  # New Testament
+)
+BOOK_ORDERS = {"protestant": PROTESTANT_ORDER, "catholic": CATHOLIC_ORDER}
+
 
 def verse_id(book: int, chapter: int, verse: int) -> int:
-    if not 1 <= book <= 66:
+    if not 1 <= book <= MAX_BOOK_ID:
         raise ValueError(f"book out of range: {book}")
     if not 1 <= chapter <= 999 or not 0 <= verse <= 999:
         raise ValueError(f"chapter/verse out of range: {chapter}:{verse}")

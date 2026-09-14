@@ -23,6 +23,15 @@ Ibn Kathir is not anchored to the Bible at all.
 - Partial coverage is the norm. The UI lists all seven perspectives for every
   verse and states plainly when one has nothing there.
 
+## Extension: deuterocanon (2026-09)
+Book ids 67-75 were appended for the Catholic deuterocanon. Ids never move;
+display order per tradition lives in `book_orders`. Greek Esther keeps its own
+numbering as book 69. Greek Daniel is split at ingest: whatever overlaps
+Hebrew Daniel is stored under Daniel at canonical numbers (Greek 3:91 becomes
+Daniel 3:24, with `native_ref = '3:91'`), and only the additions (3:24-90,
+13, 14) live in book 75 "Daniel (Greek additions)". The Letter of Jeremiah is
+stored as Baruch 6. See `pipeline/sevenreadings_pipeline/deuterocanon.py`.
+
 ## Consequences
 `sr_core` (Dart) and `refs.py` (Python) implement the encoding twice, with
 tests on identical fixtures. Change one, change both.

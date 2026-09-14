@@ -1,7 +1,8 @@
 # sevenreadings
 
-Offline, local-only Scripture study across seven readings: two public-domain
-Bible translations (BSB, WEB) read alongside Jewish literal, Jewish rationalist,
+Offline, local-only Scripture study across seven readings: public-domain
+Bible translations (BSB, WEB, and the WEB Catholic Edition for the
+deuterocanon) read alongside Jewish literal, Jewish rationalist,
 Catholic, Orthodox, Protestant, Islamic and secular-academic commentary.
 
 Flutter/Dart. Targets Android, iOS, macOS, Windows, Linux, Web.

@@ -8,8 +8,14 @@ allSources: SELECT * FROM sources ORDER BY perspective_id, id;
 
 metaValue: SELECT value FROM meta WHERE name = :name;
 
+bookOrder:
+  SELECT b.* FROM book_orders o
+  JOIN books b ON b.id = o.book_id
+  WHERE o.tradition = :tradition
+  ORDER BY o.position;
+
 chapterVerses:
-  SELECT verse_id, body FROM verses
+  SELECT verse_id, body, native_ref FROM verses
   WHERE translation_id = :translation
     AND verse_id BETWEEN :startId AND :endId
   ORDER BY verse_id;
