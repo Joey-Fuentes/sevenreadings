@@ -42,6 +42,17 @@ remaining mismatch against the reference translation, so the rule table is
 corrected from data. The `versification_map` table stays for lookups the app
 may want later; ingest-time normalisation is the primary mechanism.
 
+## Extension: Septuagint (2026-09)
+Swete's LXX (via nathans/lxx-swete) is renumbered by `apply_lxx`: the LXX
+psalm scheme (9 = Hebrew 9+10, the offset-by-one run, the 113-116 and
+146-147 splits, 151 kept), Jeremiah's rearranged oracles, the 3 Kingdoms
+20/21 swap, and a short table of LXX-vs-English verse shifts. The digitised
+edition follows the English chapter breaks in all but six chapters, so the
+Hebrew rule table is not applied to it. Known gaps at their LXX numbers:
+Exodus 36-40 and Proverbs 24-31 (reordered). Corpus defects (missing
+Ecclesiastes, OCR-lost verses, stray chapter-boundary lines) are reported
+by the build; the stray lines are repaired at parse time.
+
 ## Consequences
 `sr_core` (Dart) and `refs.py` (Python) implement the encoding twice, with
 tests on identical fixtures. Change one, change both.

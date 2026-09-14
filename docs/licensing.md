@@ -12,6 +12,7 @@ must be verified against the actual upstream files before shipping.
 | - | World English Bible Catholic Edition | Bible (deuterocanon) | n/a | Public domain; no imprimatur; deuterocanon derived from RV Apocrypha/Brenton | clear |
 | - | SBL Greek New Testament | Greek NT | n/a | CC BY 4.0 (SBL / Logos, 2010; v1.2 2023) | clear |
 | - | Westminster Leningrad Codex (Open Scriptures) | Hebrew Bible | Public domain text | OSHB markup CC BY 4.0 | clear |
+| - | Septuagint, Swete (nathans/lxx-swete) | Greek OT | Public domain edition | CC BY-SA 4.0 digitisation | clear (share-alike) |
 | 1 | Rashi (Sefaria-Export) | Jewish literal | Hebrew: public domain | Per text; several Sefaria translations are CC-BY-NC or have other terms | review |
 | 2 | Ibn Ezra (Sefaria-Export) | Jewish rationalist | Hebrew: public domain | Per text; English coverage is partial | review |
 | 3 | Haydock (1859) | Catholic | Public domain | Public domain; check the transcription project's own license | review |

@@ -124,8 +124,7 @@ class ArchiveBibleSource(Source):
                 (f"{ref} OT verses with no {self.id} text", only_r),
             ):
                 if ids:
-                    more = " ..." if len(ids) > 30 else ""
-                    ctx.log(f"{self.id}: {len(ids)} {label}: {', '.join(ids[:30])}{more}")
+                    ctx.log(f"{self.id}: {len(ids)} {label}: {versification.summarize(ids)}")
 
     def _members(self, ctx: BuildContext) -> Iterator[tuple[str, bytes]]:
         pattern = self.cfg["glob"]

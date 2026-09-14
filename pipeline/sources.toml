@@ -72,6 +72,19 @@ reference = "web"
 license = "CC BY 4.0 (Open Scriptures Hebrew Bible); WLC text itself is public domain"
 license_status = "clear"
 
+[lxx]
+kind = "lxx_tokens"
+name = "Septuagint (Swete)"
+abbreviation = "LXX"
+language = "grc"
+# Pin a commit: gh api repos/nathans/lxx-swete/commits/master --jq .sha
+url = "https://github.com/nathans/lxx-swete/archive/26bad3eb42bba98471d154c954e36a6f30a0279d.zip"
+sha256 = "e85c7740c7845afca6b367bf853c3238f9264cb75b775487858262918b078e1e"
+glob = "*/data/*.txt"
+reference = "web"
+license = "CC BY-SA 4.0 (digitisation via First1KGreek / Open Greek and Latin); Swete's edition is public domain"
+license_status = "clear"
+
 # ------------------------------------------------------------ Commentaries
 
 [rashi]

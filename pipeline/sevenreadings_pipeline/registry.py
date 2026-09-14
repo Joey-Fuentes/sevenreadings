@@ -15,6 +15,7 @@ from .sources.stubs import (
     SefariaExportSource,
     TafsirApiSource,
 )
+from .sources.swete_lxx import SweteLxxSource
 from .sources.usfm_bible import UsfmBibleSource
 
 SOURCES_TOML = Path(__file__).resolve().parents[1] / "sources.toml"
@@ -22,6 +23,7 @@ SOURCES_TOML = Path(__file__).resolve().parents[1] / "sources.toml"
 KINDS: dict[str, type[Source]] = {
     "usfm_zip": UsfmBibleSource,
     "archive": ArchiveBibleSource,
+    "lxx_tokens": SweteLxxSource,
     "jsonl": JsonlCommentarySource,
     "sefaria_export": SefariaExportSource,
     "haydock": HaydockSource,
@@ -30,7 +32,7 @@ KINDS: dict[str, type[Source]] = {
     "icc": IccSource,
 }
 
-BIBLE_KINDS = {"usfm_zip", "archive"}
+BIBLE_KINDS = {"usfm_zip", "archive", "lxx_tokens"}
 
 # Sample-mode sources: what CI builds from committed fixtures, no network.
 SAMPLE_SOURCES: dict[str, dict] = {
@@ -85,6 +87,16 @@ SAMPLE_SOURCES: dict[str, dict] = {
         "format": "oshb_osis",
         "glob": "*.xml",
         "versification": "mt",
+    },
+    "lxx": {
+        "kind": "lxx_tokens",
+        "name": "Septuagint (Swete)",
+        "abbreviation": "LXX",
+        "language": "grc",
+        "license": "CC BY-SA 4.0",
+        "license_status": "clear",
+        "url": "fixture",
+        "glob": "*.txt",
     },
     "sample": {
         "kind": "jsonl",

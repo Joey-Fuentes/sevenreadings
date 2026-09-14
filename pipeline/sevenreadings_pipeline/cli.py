@@ -61,6 +61,43 @@ def cmd_build(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_probe(args: argparse.Namespace) -> int:
+    """Per chapter: how many verses the translation has in its own numbering
+    versus the reference's numbering. Prints only chapters that differ."""
+    import sqlite3
+
+    from .refs import BY_OSIS, decode
+
+    conn = sqlite3.connect(args.db)
+    for osis in args.books.split(","):
+        book = BY_OSIS[osis]
+        native: dict[int, int] = {}
+        rows = conn.execute(
+            "SELECT verse_id, native_ref FROM verses WHERE translation_id=? AND verse_id/1000000=?",
+            (args.translation, book.id),
+        ).fetchall()
+        for vid, ref in rows:
+            _, c, v = decode(vid)
+            for part in ref.split(", ") if ref else [f"{c}:{v}"]:
+                if ":" in part and part.split(":")[0].isdigit():
+                    nc, nv = (int(x) for x in part.split(":"))
+                    native[nc] = max(native.get(nc, 0), nv)
+        english = dict(
+            conn.execute(
+                "SELECT verse_id/1000%1000, MAX(verse_id%1000) FROM verses "
+                "WHERE translation_id=? AND verse_id/1000000=? GROUP BY 1",
+                (args.reference, book.id),
+            ).fetchall()
+        )
+        diffs = [
+            f"{c}: {native.get(c, 0)}/{english.get(c, 0)}"
+            for c in sorted(set(native) | set(english))
+            if native.get(c) != english.get(c)
+        ]
+        print(f"{osis}: {'  '.join(diffs) if diffs else 'all chapters match'}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="srp", description="sevenreadings content pipeline")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -78,6 +115,13 @@ def main(argv: list[str] | None = None) -> int:
     build.add_argument("--sample", action="store_true", help="fixtures only, no network")
     build.add_argument("--strict", action="store_true", help="fail on sources that are not wired")
     build.set_defaults(fn=cmd_build)
+
+    probe = sub.add_parser("probe", help="compare a translation's chapter lengths with a reference")
+    probe.add_argument("--db", required=True)
+    probe.add_argument("--translation", required=True)
+    probe.add_argument("--reference", default="web")
+    probe.add_argument("--books", required=True, help="comma-separated OSIS ids, e.g. Exod,Lev")
+    probe.set_defaults(fn=cmd_probe)
 
     args = p.parse_args(argv)
     return args.fn(args)
