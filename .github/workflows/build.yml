@@ -29,7 +29,7 @@ jobs:
         with:
           mode: ${{ env.CONTENT_MODE }}
           token: ${{ github.token }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: content
           path: app/assets/content/
@@ -55,7 +55,7 @@ jobs:
         run: flutter build apk --release
       - working-directory: app
         run: flutter build appbundle --release
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: android
           path: |
@@ -76,7 +76,7 @@ jobs:
       - run: tools/web-assets.sh
       - working-directory: app
         run: flutter build web --release
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with: { name: web, path: app/build/web }
 
   linux:
@@ -103,7 +103,7 @@ jobs:
         run: |
           bundle=$(find app/build/linux -type d -path '*/release/bundle' | head -n1)
           tar -C "$(dirname "$bundle")" -czf sevenreadings-linux-${{ matrix.arch }}.tar.gz bundle
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: linux-${{ matrix.arch }}
           path: sevenreadings-linux-${{ matrix.arch }}.tar.gz
@@ -124,7 +124,7 @@ jobs:
       - name: Package
         shell: pwsh
         run: Compress-Archive -Path app/build/windows/x64/runner/Release/* -DestinationPath sevenreadings-windows-x64.zip
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with: { name: windows-x64, path: sevenreadings-windows-x64.zip }
 
   macos:
@@ -143,7 +143,7 @@ jobs:
         run: flutter build macos --release
       - name: Package
         run: ditto -c -k --keepParent app/build/macos/Build/Products/Release/sevenreadings.app sevenreadings-macos.zip
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with: { name: macos, path: sevenreadings-macos.zip }
 
   ios:
@@ -163,5 +163,5 @@ jobs:
         run: flutter build ios --release --no-codesign
       - name: Package
         run: ditto -c -k --keepParent app/build/ios/iphoneos/Runner.app sevenreadings-ios-unsigned.zip
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with: { name: ios-unsigned, path: sevenreadings-ios-unsigned.zip }
