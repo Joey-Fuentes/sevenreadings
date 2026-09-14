@@ -1,0 +1,40 @@
+name: Tools for offline review
+
+# Manual. Packages the exact ruff the pipeline resolves as a wheel artifact,
+# so it can be handed to an environment without network access and produce
+# the same lint/format results as CI.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  ruff-wheel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.12"
+          cache-dependency-glob: pipeline/pyproject.toml
+      - name: Resolve the project's ruff version
+        id: ruff
+        working-directory: pipeline
+        run: |
+          uv sync
+          v=$(uv run ruff --version | awk '{print $2}')
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          echo "ruff $v"
+      - name: Download the manylinux x86_64 wheel
+        run: |
+          pip download "ruff==${{ steps.ruff.outputs.version }}" \
+            --only-binary=:all: --no-deps \
+            --platform manylinux2014_x86_64 --platform manylinux_2_17_x86_64 \
+            --python-version 3.12 --implementation py --abi none \
+            --dest wheels
+          ls -la wheels
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ruff-${{ steps.ruff.outputs.version }}-wheel
+          path: wheels/*.whl
+          if-no-files-found: error
+          retention-days: 30
