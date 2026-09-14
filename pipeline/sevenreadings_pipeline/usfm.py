@@ -35,22 +35,23 @@ _LEFTOVER = re.compile(r"\\\+?[a-z]+[0-9]*\*?")
 _WS = re.compile(r"\s+")
 
 # Paragraph-level markers whose text continues the current verse.
-_CONTINUE = {
-    "p", "m", "po", "pr", "cls", "pmo", "pm", "pmc", "pmr", "pi", "pi1", "pi2", "pi3",
-    "mi", "nb", "pc", "ph", "ph1", "ph2", "b", "q", "q1", "q2", "q3", "q4", "qr", "qc",
-    "qm", "qm1", "qm2", "qm3", "qd", "li", "li1", "li2", "li3", "li4", "lim", "lim1",
-    "lim2", "tr", "th1", "th2", "th3", "th4", "tc1", "tc2", "tc3", "tc4", "lh", "lf",
-}
+_CONTINUE = frozenset(
+    """
+    p m po pr cls pmo pm pmc pmr pi pi1 pi2 pi3 mi nb pc ph ph1 ph2 b
+    q q1 q2 q3 q4 qr qc qm qm1 qm2 qm3 qd li li1 li2 li3 li4 lim lim1 lim2
+    tr th1 th2 th3 th4 tc1 tc2 tc3 tc4 lh lf
+    """.split()
+)
 # Markers whose whole line is dropped (headings, front matter, references).
-_DROP = {
-    "ide", "usfm", "sts", "rem", "h", "h1", "h2", "h3", "toc1", "toc2", "toc3", "toca1",
-    "toca2", "toca3", "mt", "mt1", "mt2", "mt3", "mt4", "mte", "mte1", "mte2", "ms",
-    "ms1", "ms2", "ms3", "mr", "s", "s1", "s2", "s3", "s4", "sr", "r", "sp", "sd",
-    "sd1", "sd2", "sd3", "cl", "cp", "cd", "ca", "va", "vp", "periph", "imt", "imt1",
-    "imt2", "is", "is1", "is2", "ip", "ipi", "im", "imi", "ipq", "imq", "ipr", "iq",
-    "iq1", "iq2", "ib", "ili", "ili1", "ili2", "iot", "io", "io1", "io2", "io3", "iex",
-    "imte", "ie", "qa", "qs",
-}
+_DROP = frozenset(
+    """
+    ide usfm sts rem h h1 h2 h3 toc1 toc2 toc3 toca1 toca2 toca3
+    mt mt1 mt2 mt3 mt4 mte mte1 mte2 ms ms1 ms2 ms3 mr s s1 s2 s3 s4 sr r sp
+    sd sd1 sd2 sd3 cl cp cd ca va vp periph
+    imt imt1 imt2 is is1 is2 ip ipi im imi ipq imq ipr iq iq1 iq2 ib
+    ili ili1 ili2 iot io io1 io2 io3 iex imte ie qa qs
+    """.split()
+)
 
 
 def clean(text: str) -> str:

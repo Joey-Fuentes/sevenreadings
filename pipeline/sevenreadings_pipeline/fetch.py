@@ -42,7 +42,7 @@ def fetch(url: str, expected_sha256: str | None) -> Path:
     actual = sha256_of(target)
     if not expected_sha256 or expected_sha256.upper().startswith("TODO"):
         raise SystemExit(
-            f"\nUnpinned upstream: {url}\n  sha256 = \"{actual}\"\n"
+            f'\nUnpinned upstream: {url}\n  sha256 = "{actual}"\n'
             "Paste this into sources.toml and re-run."
         )
     if actual != expected_sha256:

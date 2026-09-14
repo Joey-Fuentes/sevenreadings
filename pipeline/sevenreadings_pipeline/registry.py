@@ -33,19 +33,31 @@ BIBLE_KINDS = {"usfm_zip"}
 # Sample-mode sources: what CI builds from committed fixtures, no network.
 SAMPLE_SOURCES: dict[str, dict] = {
     "web": {
-        "kind": "usfm_zip", "name": "World English Bible", "abbreviation": "WEB",
-        "language": "en", "license": "Public domain", "license_status": "clear",
+        "kind": "usfm_zip",
+        "name": "World English Bible",
+        "abbreviation": "WEB",
+        "language": "en",
+        "license": "Public domain",
+        "license_status": "clear",
         "url": "fixture",
     },
     "bsb": {
-        "kind": "usfm_zip", "name": "Berean Standard Bible", "abbreviation": "BSB",
-        "language": "en", "license": "Public domain (CC0)", "license_status": "clear",
+        "kind": "usfm_zip",
+        "name": "Berean Standard Bible",
+        "abbreviation": "BSB",
+        "language": "en",
+        "license": "Public domain (CC0)",
+        "license_status": "clear",
         "url": "fixture",
     },
     "sample": {
-        "kind": "jsonl", "perspective": "protestant", "author": "Fixture",
-        "title": "Sample commentary (CI only)", "license": "CC0",
-        "license_status": "clear", "url": "fixture",
+        "kind": "jsonl",
+        "perspective": "protestant",
+        "author": "Fixture",
+        "title": "Sample commentary (CI only)",
+        "license": "CC0",
+        "license_status": "clear",
+        "url": "fixture",
     },
 }
 

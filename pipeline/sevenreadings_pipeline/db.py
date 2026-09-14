@@ -56,16 +56,21 @@ def add_translation(conn: sqlite3.Connection, tid: str, cfg: dict, version: str)
     conn.execute(
         "INSERT INTO translations (id, name, abbreviation, language, license, source_url, "
         "source_version) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        (tid, cfg["name"], cfg["abbreviation"], cfg["language"], cfg["license"],
-         cfg.get("url") or cfg.get("repo", ""), version),
+        (
+            tid,
+            cfg["name"],
+            cfg["abbreviation"],
+            cfg["language"],
+            cfg["license"],
+            cfg.get("url") or cfg.get("repo", ""),
+            version,
+        ),
     )
 
 
 def add_verses(conn: sqlite3.Connection, tid: str, verses: Iterable[Verse]) -> int:
     rows = [(tid, v.id, v.text) for v in verses]
-    conn.executemany(
-        "INSERT INTO verses (translation_id, verse_id, body) VALUES (?, ?, ?)", rows
-    )
+    conn.executemany("INSERT INTO verses (translation_id, verse_id, body) VALUES (?, ?, ?)", rows)
     return len(rows)
 
 
@@ -73,8 +78,16 @@ def add_source(conn: sqlite3.Connection, sid: str, cfg: dict, version: str) -> N
     conn.execute(
         "INSERT INTO sources (id, perspective_id, author, title, license, license_status, "
         "source_url, source_version) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-        (sid, cfg["perspective"], cfg["author"], cfg["title"], cfg["license"],
-         cfg["license_status"], cfg.get("url") or cfg.get("repo", ""), version),
+        (
+            sid,
+            cfg["perspective"],
+            cfg["author"],
+            cfg["title"],
+            cfg["license"],
+            cfg["license_status"],
+            cfg.get("url") or cfg.get("repo", ""),
+            version,
+        ),
     )
 
 
