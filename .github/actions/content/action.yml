@@ -1,0 +1,44 @@
+name: Provide content database
+description: >
+  Puts sevenreadings.sqlite + manifest.json in app/assets/content/. Either downloads
+  the release pinned in app/content.lock (mode=release) or builds a tiny fixture
+  database with the pipeline (mode=sample).
+inputs:
+  mode:
+    description: release | sample
+    default: release
+  token:
+    description: GitHub token (release downloads)
+    required: true
+runs:
+  using: composite
+  steps:
+    - uses: astral-sh/setup-uv@v5
+      if: inputs.mode == 'sample'
+      with:
+        python-version: "3.12"
+    - name: Build sample content from fixtures
+      if: inputs.mode == 'sample'
+      shell: bash
+      working-directory: pipeline
+      run: |
+        uv sync --frozen 2>/dev/null || uv sync
+        uv run srp build --sample --version 0.0.0-sample \
+          --out ../app/assets/content/sevenreadings.sqlite
+    - name: Download pinned content release
+      if: inputs.mode == 'release'
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        GH_REPO: ${{ github.repository }}
+      run: |
+        set -euo pipefail
+        version=$(jq -r .version app/content.lock)
+        asset=$(jq -r .asset app/content.lock)
+        expected=$(jq -r .sha256 app/content.lock)
+        case "$expected" in TODO*|"") echo "app/content.lock has no sha256; publish a content release first (Actions > Content) or run with mode=sample." >&2; exit 1;; esac
+        mkdir -p app/assets/content && cd app/assets/content
+        gh release download "content-v${version}" -p "$asset" -p manifest.json --clobber
+        echo "${expected}  ${asset}" | sha256sum -c -
+        gunzip -f "$asset"
+        ls -la

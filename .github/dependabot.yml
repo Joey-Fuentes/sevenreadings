@@ -1,0 +1,13 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly }
+  - package-ecosystem: pub
+    directory: /
+    schedule: { interval: weekly }
+    groups:
+      dart: { patterns: ["*"] }
+  - package-ecosystem: uv
+    directory: /pipeline
+    schedule: { interval: weekly }

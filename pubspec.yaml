@@ -1,0 +1,9 @@
+# Pub workspace root. Members resolve dependencies together and share one lockfile.
+name: sevenreadings_workspace
+publish_to: none
+environment:
+  sdk: ^3.6.0
+workspace:
+  - app
+  - packages/sr_core
+  - packages/sr_data

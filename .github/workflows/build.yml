@@ -1,0 +1,167 @@
+name: Build all targets
+
+on:
+  workflow_dispatch:
+    inputs:
+      content:
+        description: Content to bundle
+        type: choice
+        options: [release, sample]
+        default: release
+  workflow_call:
+    inputs:
+      content:
+        type: string
+        default: release
+  schedule:
+    - cron: "0 5 * * 1" # weekly canary against latest stable Flutter
+
+env:
+  CONTENT_MODE: ${{ inputs.content || 'release' }}
+
+jobs:
+  content:
+    name: Content
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/content
+        with:
+          mode: ${{ env.CONTENT_MODE }}
+          token: ${{ github.token }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: content
+          path: app/assets/content/
+          if-no-files-found: error
+          retention-days: 3
+
+  android:
+    name: Android
+    needs: content
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { name: content, path: app/assets/content }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "17" }
+      - uses: ./.github/actions/setup-flutter
+      - name: Bootstrap (no-op once platform folders are committed)
+        working-directory: app
+        run: flutter create --org org.sevenreadings --project-name sevenreadings --platforms=android .
+      # Signing: see README. Without key.properties these are debug-signed.
+      - working-directory: app
+        run: flutter build apk --release
+      - working-directory: app
+        run: flutter build appbundle --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android
+          path: |
+            app/build/app/outputs/flutter-apk/app-release.apk
+            app/build/app/outputs/bundle/release/app-release.aab
+
+  web:
+    name: Web
+    needs: content
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { name: content, path: app/assets/content }
+      - uses: ./.github/actions/setup-flutter
+      - working-directory: app
+        run: flutter create --org org.sevenreadings --project-name sevenreadings --platforms=web .
+      - run: tools/web-assets.sh
+      - working-directory: app
+        run: flutter build web --release
+      - uses: actions/upload-artifact@v4
+        with: { name: web, path: app/build/web }
+
+  linux:
+    name: Linux (${{ matrix.arch }})
+    needs: content
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: ubuntu-latest, arch: x64 }
+          - { runner: ubuntu-24.04-arm, arch: arm64 }
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { name: content, path: app/assets/content }
+      - run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev
+      - uses: ./.github/actions/setup-flutter
+      - working-directory: app
+        run: flutter create --org org.sevenreadings --project-name sevenreadings --platforms=linux .
+      - working-directory: app
+        run: flutter build linux --release
+      - name: Package
+        run: |
+          bundle=$(find app/build/linux -type d -path '*/release/bundle' | head -n1)
+          tar -C "$(dirname "$bundle")" -czf sevenreadings-linux-${{ matrix.arch }}.tar.gz bundle
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-${{ matrix.arch }}
+          path: sevenreadings-linux-${{ matrix.arch }}.tar.gz
+
+  windows:
+    name: Windows
+    needs: content
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { name: content, path: app/assets/content }
+      - uses: ./.github/actions/setup-flutter
+      - working-directory: app
+        run: flutter create --org org.sevenreadings --project-name sevenreadings --platforms=windows .
+      - working-directory: app
+        run: flutter build windows --release
+      - name: Package
+        shell: pwsh
+        run: Compress-Archive -Path app/build/windows/x64/runner/Release/* -DestinationPath sevenreadings-windows-x64.zip
+      - uses: actions/upload-artifact@v4
+        with: { name: windows-x64, path: sevenreadings-windows-x64.zip }
+
+  macos:
+    name: macOS
+    needs: content
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { name: content, path: app/assets/content }
+      - uses: ./.github/actions/setup-flutter
+      - working-directory: app
+        run: flutter create --org org.sevenreadings --project-name sevenreadings --platforms=macos .
+      # Unsigned. Add Developer ID signing + notarization once certificates exist.
+      - working-directory: app
+        run: flutter build macos --release
+      - name: Package
+        run: ditto -c -k --keepParent app/build/macos/Build/Products/Release/sevenreadings.app sevenreadings-macos.zip
+      - uses: actions/upload-artifact@v4
+        with: { name: macos, path: sevenreadings-macos.zip }
+
+  ios:
+    name: iOS
+    needs: content
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { name: content, path: app/assets/content }
+      - uses: ./.github/actions/setup-flutter
+      - working-directory: app
+        run: flutter create --org org.sevenreadings --project-name sevenreadings --platforms=ios .
+      # --no-codesign proves the build; switch to `flutter build ipa` with an
+      # export options plist once an Apple Developer account is wired in.
+      - working-directory: app
+        run: flutter build ios --release --no-codesign
+      - name: Package
+        run: ditto -c -k --keepParent app/build/ios/iphoneos/Runner.app sevenreadings-ios-unsigned.zip
+      - uses: actions/upload-artifact@v4
+        with: { name: ios-unsigned, path: sevenreadings-ios-unsigned.zip }

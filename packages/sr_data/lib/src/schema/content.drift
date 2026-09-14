@@ -1,0 +1,95 @@
+-- sevenreadings content database.
+--
+-- PLAIN SQL BY DESIGN. drift generates the Dart layer from this file and the
+-- Python pipeline executes it verbatim. Do not add drift-only syntax here;
+-- named queries live in content_queries.drift. FTS5 tables are created by the
+-- pipeline after loading (pipeline/sevenreadings_pipeline/sql/fts.sql).
+--
+-- Verse ids: book*1000000 + chapter*1000 + verse (see sr_core VerseRef).
+
+CREATE TABLE meta (
+  key TEXT NOT NULL PRIMARY KEY,
+  value TEXT NOT NULL
+);
+
+CREATE TABLE books (
+  id INTEGER NOT NULL PRIMARY KEY,
+  usfm TEXT NOT NULL UNIQUE,
+  osis TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  chapters INTEGER NOT NULL
+);
+
+CREATE TABLE translations (
+  id TEXT NOT NULL PRIMARY KEY,
+  name TEXT NOT NULL,
+  abbreviation TEXT NOT NULL,
+  language TEXT NOT NULL,
+  license TEXT NOT NULL,
+  source_url TEXT NOT NULL,
+  source_version TEXT NOT NULL
+);
+
+CREATE TABLE verses (
+  id INTEGER NOT NULL PRIMARY KEY,
+  translation_id TEXT NOT NULL REFERENCES translations (id),
+  verse_id INTEGER NOT NULL,
+  text TEXT NOT NULL,
+  UNIQUE (translation_id, verse_id)
+);
+
+CREATE TABLE perspectives (
+  id TEXT NOT NULL PRIMARY KEY,
+  sort_order INTEGER NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  tradition TEXT NOT NULL
+);
+
+CREATE TABLE sources (
+  id TEXT NOT NULL PRIMARY KEY,
+  perspective_id TEXT NOT NULL REFERENCES perspectives (id),
+  author TEXT NOT NULL,
+  title TEXT NOT NULL,
+  license TEXT NOT NULL,
+  license_status TEXT NOT NULL,
+  source_url TEXT NOT NULL,
+  source_version TEXT NOT NULL
+);
+
+-- Commentary anchors to an inclusive verse-id range. A whole-chapter note is
+-- (chapter:0, chapter:999); a pericope is (start, end).
+CREATE TABLE commentary_entries (
+  id INTEGER NOT NULL PRIMARY KEY,
+  source_id TEXT NOT NULL REFERENCES sources (id),
+  start_verse_id INTEGER NOT NULL,
+  end_verse_id INTEGER NOT NULL,
+  heading TEXT,
+  body TEXT NOT NULL,
+  citation TEXT,
+  CHECK (end_verse_id >= start_verse_id)
+);
+CREATE INDEX ix_commentary_range ON commentary_entries (start_verse_id, end_verse_id);
+CREATE INDEX ix_commentary_source ON commentary_entries (source_id, start_verse_id);
+
+-- Links from a Bible range to material that is not verse-anchored at all,
+-- e.g. Quran passages discussed in Ibn Kathir.
+CREATE TABLE parallels (
+  id INTEGER NOT NULL PRIMARY KEY,
+  source_id TEXT NOT NULL REFERENCES sources (id),
+  start_verse_id INTEGER NOT NULL,
+  end_verse_id INTEGER NOT NULL,
+  external_ref TEXT NOT NULL,
+  entry_id INTEGER REFERENCES commentary_entries (id),
+  note TEXT
+);
+CREATE INDEX ix_parallels_range ON parallels (start_verse_id, end_verse_id);
+
+-- Non-canonical numbering -> canonical verse id. scheme: 'mt', 'lxx', 'vul'.
+CREATE TABLE versification_map (
+  scheme TEXT NOT NULL,
+  book_id INTEGER NOT NULL REFERENCES books (id),
+  chapter INTEGER NOT NULL,
+  verse INTEGER NOT NULL,
+  canonical_verse_id INTEGER NOT NULL,
+  PRIMARY KEY (scheme, book_id, chapter, verse)
+) WITHOUT ROWID;

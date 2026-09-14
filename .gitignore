@@ -1,0 +1,35 @@
+# Dart / Flutter
+.dart_tool/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.iml
+.idea/
+.vscode/
+**/*.g.dart
+**/*.drift.dart
+
+# Content is a build artifact (see README)
+app/assets/content/*.sqlite
+app/assets/content/manifest.json
+
+# Web runtime assets (fetched/compiled by tools/web-assets.sh)
+app/web/sqlite3.wasm
+app/web/drift_worker.js
+
+# Pipeline
+pipeline/.venv/
+pipeline/.cache/
+pipeline/dist/
+pipeline/**/__pycache__/
+pipeline/.pytest_cache/
+pipeline/.ruff_cache/
+
+# Signing material must never be committed
+app/android/key.properties
+*.jks
+*.keystore
+*.p12
+*.mobileprovision
+
+.DS_Store

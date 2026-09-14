@@ -1,0 +1,31 @@
+import 'content.drift';
+
+allTranslations: SELECT * FROM translations ORDER BY id;
+
+allPerspectives: SELECT * FROM perspectives ORDER BY sort_order;
+
+allSources: SELECT * FROM sources ORDER BY perspective_id, id;
+
+metaValue: SELECT value FROM meta WHERE key = :key;
+
+chapterVerses:
+  SELECT verse_id, text FROM verses
+  WHERE translation_id = :translation
+    AND verse_id BETWEEN :startId AND :endId
+  ORDER BY verse_id;
+
+readingsForVerse:
+  SELECT ce.id, ce.source_id, ce.start_verse_id, ce.end_verse_id,
+         ce.heading, ce.body, ce.citation,
+         s.author, s.title, s.perspective_id,
+         p.name AS perspective_name, p.sort_order
+  FROM commentary_entries ce
+  JOIN sources s ON s.id = ce.source_id
+  JOIN perspectives p ON p.id = s.perspective_id
+  WHERE ce.start_verse_id <= :verseId AND ce.end_verse_id >= :verseId
+  ORDER BY p.sort_order, ce.start_verse_id DESC, ce.end_verse_id;
+
+parallelsForVerse:
+  SELECT * FROM parallels
+  WHERE start_verse_id <= :verseId AND end_verse_id >= :verseId
+  ORDER BY source_id;

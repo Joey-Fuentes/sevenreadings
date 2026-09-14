@@ -1,0 +1,29 @@
+name: sevenreadings
+description: Scripture study across seven readings. Offline, local-only.
+publish_to: none
+version: 0.1.0+1
+resolution: workspace
+environment:
+  sdk: ^3.6.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  drift: ^2.20.0
+  sr_core:
+    path: ../packages/sr_core
+  sr_data:
+    path: ../packages/sr_data
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  # Both files are produced by the content pipeline / fetched by CI.
+  # They are gitignored. `make content-sample` creates them locally.
+  assets:
+    - assets/content/sevenreadings.sqlite
+    - assets/content/manifest.json

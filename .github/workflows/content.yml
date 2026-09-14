@@ -1,0 +1,59 @@
+name: Content release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Content version (semver, e.g. 0.1.0)
+        required: true
+      sources:
+        description: Comma-separated source ids, or "all"
+        default: all
+      strict:
+        description: Fail if any selected source is not wired
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  build-content:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - name: Cache upstream downloads
+        uses: actions/cache@v4
+        with:
+          path: pipeline/.cache
+          key: upstream-${{ hashFiles('pipeline/sources.toml') }}
+      - name: Build
+        working-directory: pipeline
+        run: |
+          uv sync
+          uv run srp build --version "${{ inputs.version }}" --only "${{ inputs.sources }}" \
+            ${{ inputs.strict && '--strict' || '' }} --out dist/sevenreadings.sqlite
+      - name: Package
+        working-directory: pipeline/dist
+        run: |
+          gzip -9 -k sevenreadings.sqlite
+          sha256sum sevenreadings.sqlite.gz manifest.json > SHA256SUMS
+          cat SHA256SUMS
+          echo "Pin in app/content.lock:"
+          echo "  version: ${{ inputs.version }}"
+          echo "  sha256:  $(sha256sum sevenreadings.sqlite.gz | cut -d' ' -f1)"
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: content-v${{ inputs.version }}
+          name: Content ${{ inputs.version }}
+          body: |
+            Content database for sevenreadings. Built from the sources pinned in
+            `pipeline/sources.toml` at ${{ github.sha }}.
+            Update `app/content.lock` with this version and the SHA-256 from `SHA256SUMS`.
+          files: |
+            pipeline/dist/sevenreadings.sqlite.gz
+            pipeline/dist/manifest.json
+            pipeline/dist/SHA256SUMS

@@ -1,0 +1,17 @@
+name: Set up Flutter workspace
+description: Install the pinned Flutter, restore caches, resolve the pub workspace, run drift codegen.
+runs:
+  using: composite
+  steps:
+    - uses: subosito/flutter-action@v2
+      with:
+        # TODO: pin an exact version (flutter-version: 3.x.y) and mirror it in .fvmrc.
+        channel: stable
+        cache: true
+    - name: Resolve workspace
+      shell: bash
+      run: flutter pub get
+    - name: Generate drift code
+      shell: bash
+      working-directory: packages/sr_data
+      run: dart run build_runner build --delete-conflicting-outputs

@@ -1,0 +1,24 @@
+name: sr_data
+description: Drift schema, typed queries and per-platform database opening for sevenreadings.
+publish_to: none
+version: 0.1.0
+resolution: workspace
+environment:
+  sdk: ^3.6.0
+dependencies:
+  flutter:
+    sdk: flutter
+  drift: ^2.20.0
+  drift_flutter: ^0.2.0
+  path: ^1.9.0
+  path_provider: ^2.1.4
+  sqlite3: ^2.4.0
+  sqlite3_flutter_libs: ^0.5.24
+  sr_core:
+    path: ../sr_core
+dev_dependencies:
+  build_runner: ^2.4.13
+  drift_dev: ^2.20.0
+  flutter_lints: ^5.0.0
+  flutter_test:
+    sdk: flutter

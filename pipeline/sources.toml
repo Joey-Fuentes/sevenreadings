@@ -1,0 +1,108 @@
+# One entry per source. Pins and checksums make content builds reproducible.
+#
+#   kind            parser family (see sevenreadings_pipeline/registry.py)
+#   url / repo+commit  where to fetch; fill sha256 with `uv run srp lock <id>`
+#   license         human-readable license of the *text we ship*
+#   license_status  clear | review | blocked   (blocked sources are skipped)
+#
+# URLs below are the best-known upstream locations and MUST be verified on the
+# first real build. See docs/licensing.md for the reasoning behind each status.
+
+# ---------------------------------------------------------------- Bibles
+
+[bsb]
+kind = "usfm_zip"
+name = "Berean Standard Bible"
+abbreviation = "BSB"
+language = "en"
+url = "https://ebible.org/Scriptures/engbsb_usfm.zip"
+sha256 = "TODO"
+license = "Public domain (CC0 dedication, 2023)"
+license_status = "clear"
+
+[web]
+kind = "usfm_zip"
+name = "World English Bible"
+abbreviation = "WEB"
+language = "en"
+url = "https://ebible.org/Scriptures/engwebp_usfm.zip"
+sha256 = "TODO"
+license = "Public domain"
+license_status = "clear"
+
+# ------------------------------------------------------------ Commentaries
+
+[rashi]
+kind = "sefaria_export"
+perspective = "jewish_literal"
+author = "Rashi"
+title = "Rashi on Tanakh"
+repo = "https://github.com/Sefaria/Sefaria-Export"
+commit = "TODO"
+paths = ["json/Commentary/Tanakh/Rashi"]
+versification = "mt"
+license = "Hebrew: public domain. English: per-text on Sefaria; some CC-BY-NC"
+license_status = "review"
+
+[ibn_ezra]
+kind = "sefaria_export"
+perspective = "jewish_rational"
+author = "Ibn Ezra"
+title = "Ibn Ezra on Tanakh"
+repo = "https://github.com/Sefaria/Sefaria-Export"
+commit = "TODO"
+paths = ["json/Commentary/Tanakh/Ibn_Ezra"]
+versification = "mt"
+license = "Hebrew: public domain. English: per-text on Sefaria; coverage partial"
+license_status = "review"
+
+[haydock]
+kind = "haydock"
+perspective = "catholic"
+author = "George Leo Haydock"
+title = "Haydock's Catholic Bible Commentary (1859)"
+repo = "https://github.com/Data-Science-Link/the_depositum"
+commit = "TODO"
+versification = "vul"
+license = "Public domain (1859); verify transcription/markup license"
+license_status = "review"
+
+[chrysostom]
+kind = "hcf_database"
+perspective = "orthodox"
+author = "St. John Chrysostom"
+title = "Homilies (NPNF series 1, vols. 9-14)"
+repo = "https://github.com/HistoricalChristianFaith/Commentaries-Database"
+commit = "TODO"
+license = "Public domain (Schaff, 1888-1890); verify database license"
+license_status = "review"
+
+[matthew_henry]
+kind = "hcf_database"
+perspective = "protestant"
+author = "Matthew Henry"
+title = "Commentary on the Whole Bible (1706-1721)"
+repo = "https://github.com/HistoricalChristianFaith/Commentaries-Database"
+commit = "TODO"
+license = "Public domain; verify database license"
+license_status = "review"
+
+[ibn_kathir]
+kind = "tafsir_api"
+perspective = "islamic"
+author = "Ibn Kathir"
+title = "Tafsir Ibn Kathir"
+repo = "https://github.com/spa5k/tafsir_api"
+commit = "TODO"
+license = "Arabic: public domain. English: no public-domain translation known; the common abridgment is copyrighted"
+license_status = "blocked"
+
+[icc]
+kind = "icc"
+perspective = "academic"
+author = "International Critical Commentary"
+title = "ICC (pre-1929 volumes)"
+url = "https://archive.org"
+sha256 = "TODO"
+license = "Public domain in the US for volumes published before 1929; later volumes excluded"
+license_status = "review"

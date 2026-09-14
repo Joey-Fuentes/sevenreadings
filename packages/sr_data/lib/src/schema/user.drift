@@ -1,0 +1,35 @@
+-- Per-user data. Lives in its own database so content updates never touch it.
+
+CREATE TABLE bookmarks (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  verse_id INTEGER NOT NULL,
+  label TEXT,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX ix_bookmarks_verse ON bookmarks (verse_id);
+
+CREATE TABLE notes (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  start_verse_id INTEGER NOT NULL,
+  end_verse_id INTEGER NOT NULL,
+  body TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE INDEX ix_notes_range ON notes (start_verse_id, end_verse_id);
+
+CREATE TABLE reading_positions (
+  translation_id TEXT NOT NULL PRIMARY KEY,
+  verse_id INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+CREATE TABLE settings (
+  key TEXT NOT NULL PRIMARY KEY,
+  value TEXT NOT NULL
+);
+
+notesForVerse:
+  SELECT * FROM notes
+  WHERE start_verse_id <= :verseId AND end_verse_id >= :verseId
+  ORDER BY updated_at DESC;
