@@ -83,7 +83,16 @@ CATHOLIC_ORDER = (
     + list(range(28, 40))  # Hosea - Malachi
     + list(range(40, 67))  # New Testament
 )
-BOOK_ORDERS = {"protestant": PROTESTANT_ORDER, "catholic": CATHOLIC_ORDER}
+TANAKH_ORDER = (
+    [1, 2, 3, 4, 5]  # Torah
+    + [6, 7, 9, 10, 11, 12, 23, 24, 26] + list(range(28, 40))  # Nevi'im
+    + [19, 20, 18, 22, 8, 25, 21, 17, 27, 15, 16, 13, 14]  # Ketuvim
+)
+BOOK_ORDERS = {
+    "protestant": PROTESTANT_ORDER,
+    "catholic": CATHOLIC_ORDER,
+    "tanakh": TANAKH_ORDER,
+}
 
 
 def verse_id(book: int, chapter: int, verse: int) -> int:

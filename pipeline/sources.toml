@@ -41,6 +41,37 @@ remap = "catholic"   # Greek Daniel/Esther and Letter of Jeremiah handling, see 
 license = "Public domain"
 license_status = "clear"
 
+# ------------------------------------------------- Original languages
+
+[sblgnt]
+kind = "archive"
+name = "SBL Greek New Testament"
+abbreviation = "SBLGNT"
+language = "grc"
+# Pin a commit: gh api repos/Faithlife/SBLGNT/commits/master --jq .sha
+url = "https://github.com/Faithlife/SBLGNT/archive/c4d241a9c1c479a55b989ba35a4976c1d0b8052c.zip"
+sha256 = "4fc2659ce10ec6f57552f22e039de927ed3e417c7b5a757f34f05dae530e4c0f"
+format = "ref_tab_text"
+glob = "*/data/sblgnt/text/*.txt"   # not sblgntapp: that is the apparatus
+license = "CC BY 4.0 (Society of Biblical Literature and Logos Bible Software, 2010)"
+license_status = "clear"
+
+[wlc]
+kind = "archive"
+name = "Westminster Leningrad Codex"
+abbreviation = "WLC"
+language = "hbo"
+direction = "rtl"
+# Pin a commit: gh api repos/openscriptures/morphhb/commits/master --jq .sha
+url = "https://github.com/openscriptures/morphhb/archive/3d15126fb1ef74867fc1434be1942e837932691f.zip"
+sha256 = "f56c150708b5d74719ecb709c712c31eae9855bca7b111fd82ec91b5d177b4c7"
+format = "oshb_osis"
+glob = "*/wlc/*.xml"
+versification = "mt"   # Masoretic numbering -> canonical, checked against `reference`
+reference = "web"
+license = "CC BY 4.0 (Open Scriptures Hebrew Bible); WLC text itself is public domain"
+license_status = "clear"
+
 # ------------------------------------------------------------ Commentaries
 
 [rashi]

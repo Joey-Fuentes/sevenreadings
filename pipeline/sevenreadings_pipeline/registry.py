@@ -14,12 +14,14 @@ from .sources.stubs import (
     SefariaExportSource,
     TafsirApiSource,
 )
+from .sources.archive_bible import ArchiveBibleSource
 from .sources.usfm_bible import UsfmBibleSource
 
 SOURCES_TOML = Path(__file__).resolve().parents[1] / "sources.toml"
 
 KINDS: dict[str, type[Source]] = {
     "usfm_zip": UsfmBibleSource,
+    "archive": ArchiveBibleSource,
     "jsonl": JsonlCommentarySource,
     "sefaria_export": SefariaExportSource,
     "haydock": HaydockSource,
@@ -28,7 +30,7 @@ KINDS: dict[str, type[Source]] = {
     "icc": IccSource,
 }
 
-BIBLE_KINDS = {"usfm_zip"}
+BIBLE_KINDS = {"usfm_zip", "archive"}
 
 # Sample-mode sources: what CI builds from committed fixtures, no network.
 SAMPLE_SOURCES: dict[str, dict] = {
@@ -59,6 +61,30 @@ SAMPLE_SOURCES: dict[str, dict] = {
         "license_status": "clear",
         "url": "fixture",
         "remap": "catholic",
+    },
+    "sblgnt": {
+        "kind": "archive",
+        "name": "SBL Greek New Testament",
+        "abbreviation": "SBLGNT",
+        "language": "grc",
+        "license": "CC BY 4.0",
+        "license_status": "clear",
+        "url": "fixture",
+        "format": "ref_tab_text",
+        "glob": "*.txt",
+    },
+    "wlc": {
+        "kind": "archive",
+        "name": "Westminster Leningrad Codex",
+        "abbreviation": "WLC",
+        "language": "hbo",
+        "direction": "rtl",
+        "license": "CC BY 4.0",
+        "license_status": "clear",
+        "url": "fixture",
+        "format": "oshb_osis",
+        "glob": "*.xml",
+        "versification": "mt",
     },
     "sample": {
         "kind": "jsonl",

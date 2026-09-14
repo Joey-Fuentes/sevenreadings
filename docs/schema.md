@@ -6,7 +6,7 @@ Defined once in `packages/sr_data/lib/src/schema/content.drift` (plain SQL).
 |-------|---------|
 | `meta` (`name`, `value`) | `content_version`, `schema_version`, `built_at`, `sources` |
 | `books` / `book_orders` | Books with stable ids (1-66 Protestant, 67+ deuterocanon); display order per tradition |
-| `translations` / `verses` | One row per verse per translation; `verse_id` is canonical (ADR 0003) |
+| `translations` / `verses` | One row per verse per translation; `verse_id` is canonical (ADR 0003); `direction` is ltr/rtl; `native_ref` keeps the source numbering when it differs |
 | `perspectives` | The seven readings, in display order |
 | `sources` | One row per commentary source with license + status |
 | `commentary_entries` | Range-anchored commentary, Markdown body |

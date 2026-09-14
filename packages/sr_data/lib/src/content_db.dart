@@ -13,7 +13,7 @@ class ContentDb extends _$ContentDb {
   ContentDb(super.executor);
 
   /// Must equal the `PRAGMA user_version` the pipeline stamps into the file.
-  static const int contentSchemaVersion = 2;
+  static const int contentSchemaVersion = 3;
 
   @override
   int get schemaVersion => contentSchemaVersion;

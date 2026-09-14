@@ -20,7 +20,7 @@ void main() {
         raw.execute('PRAGMA user_version = ${ContentDb.contentSchemaVersion}');
         raw.execute(
           "INSERT INTO translations VALUES ('web','World English Bible',"
-          "'WEB','en','Public domain','https://ebible.org','test')",
+          "'WEB','en','ltr','Public domain','https://ebible.org','test')",
         );
         raw.execute(
           "INSERT INTO perspectives VALUES ('protestant',5,"

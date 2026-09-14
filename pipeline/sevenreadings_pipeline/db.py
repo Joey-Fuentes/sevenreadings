@@ -18,7 +18,7 @@ SCHEMA_PATH = REPO_ROOT / "packages" / "sr_data" / "lib" / "src" / "schema" / "c
 FTS_PATH = PIPELINE_DIR / "sql" / "fts.sql"
 
 # Must match ContentDb.contentSchemaVersion in packages/sr_data.
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 PERSPECTIVES = [
     ("jewish_literal", 1, "Jewish: Literal (Peshat)", "Judaism"),
@@ -58,13 +58,14 @@ def create(path: Path) -> sqlite3.Connection:
 
 def add_translation(conn: sqlite3.Connection, tid: str, cfg: dict, version: str) -> None:
     conn.execute(
-        "INSERT INTO translations (id, name, abbreviation, language, license, source_url, "
-        "source_version) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO translations (id, name, abbreviation, language, direction, license, "
+        "source_url, source_version) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         (
             tid,
             cfg["name"],
             cfg["abbreviation"],
             cfg["language"],
+            cfg.get("direction", "ltr"),
             cfg["license"],
             cfg.get("url") or cfg.get("repo", ""),
             version,

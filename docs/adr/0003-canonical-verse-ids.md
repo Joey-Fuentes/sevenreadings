@@ -32,6 +32,16 @@ Daniel 3:24, with `native_ref = '3:91'`), and only the additions (3:24-90,
 13, 14) live in book 75 "Daniel (Greek additions)". The Letter of Jeremiah is
 stored as Baruch 6. See `pipeline/sevenreadings_pipeline/deuterocanon.py`.
 
+## Extension: original languages (2026-09)
+Hebrew (WLC) arrives in Masoretic numbering and is renumbered at ingest by
+`pipeline/sevenreadings_pipeline/versification.py`: a rule table for chapter
+boundary shifts (Joel 3-4, Malachi 3-4, ...) plus psalm-title offsets derived
+by comparing MT and English verse counts. MT verses that land on one English
+verse are joined; `native_ref` keeps the MT numbers. The build logs every
+remaining mismatch against the reference translation, so the rule table is
+corrected from data. The `versification_map` table stays for lookups the app
+may want later; ingest-time normalisation is the primary mechanism.
+
 ## Consequences
 `sr_core` (Dart) and `refs.py` (Python) implement the encoding twice, with
 tests on identical fixtures. Change one, change both.

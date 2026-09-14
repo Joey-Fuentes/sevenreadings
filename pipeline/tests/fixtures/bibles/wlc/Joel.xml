@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<osis xmlns="http://www.bibletechnologies.net/2003/OSIS/namespace">
+<osisText osisIDWork="WLC" xml:lang="hbo">
+<div type="book" osisID="Joel">
+<chapter osisID="Joel.3"><verse osisID="Joel.3.1"><w>וְ/הָיָ֣ה</w></verse></chapter>
+<chapter osisID="Joel.4"><verse osisID="Joel.4.1"><w>כִּ֗י</w></verse></chapter>
+</div>
+</osisText>
+</osis>

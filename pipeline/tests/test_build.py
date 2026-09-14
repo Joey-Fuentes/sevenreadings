@@ -62,7 +62,7 @@ def test_sample_build_deuterocanon(tmp_path, capsys):
         "SELECT tradition, COUNT(*) FROM book_orders GROUP BY tradition ORDER BY tradition"
     ).fetchall()
     # 73 Catholic books, plus DanGr holding the Greek additions separately.
-    assert orders == [("catholic", 74), ("protestant", 66)]
+    assert orders == [("catholic", 74), ("protestant", 66), ("tanakh", 39)]
     # Greek Daniel 3:91 landed on canonical Daniel 3:24 with its native label.
     row = conn.execute(
         "SELECT native_ref FROM verses WHERE translation_id='webc' AND verse_id=?", (27_003_024,)

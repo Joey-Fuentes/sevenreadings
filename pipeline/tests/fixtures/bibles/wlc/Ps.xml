@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<osis xmlns="http://www.bibletechnologies.net/2003/OSIS/namespace">
+<osisText osisIDWork="WLC" xml:lang="hbo">
+<div type="book" osisID="Ps">
+<chapter osisID="Ps.3">
+<verse osisID="Ps.3.1"><w lemma="4210" morph="HNcmsc">מִזְמ֥וֹר</w> <w lemma="l/1732" morph="HR/Np">לְ/דָוִ֑ד</w><seg type="x-sof-pasuq">׃</seg></verse>
+<verse osisID="Ps.3.2"><w lemma="3068">יְ֭הוָה</w> <w lemma="4100">מָֽה</w><seg type="x-maqqef">־</seg><w lemma="7231">רַבּ֣וּ</w> <note type="variant"><rdg type="x-qere"><w lemma="6862">צָרָ֑/י</w></rdg></note><seg type="x-sof-pasuq">׃</seg></verse>
+<verse osisID="Ps.3.3"><w lemma="7227">רַבִּים֮</w><seg type="x-sof-pasuq">׃</seg></verse>
+</chapter>
+</div>
+</osisText>
+</osis>

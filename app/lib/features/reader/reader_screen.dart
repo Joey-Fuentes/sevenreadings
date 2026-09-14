@@ -266,6 +266,7 @@ class _BookPickerState extends State<_BookPicker> {
               segments: const [
                 ButtonSegment(value: 'protestant', label: Text('Protestant')),
                 ButtonSegment(value: 'catholic', label: Text('Catholic')),
+                ButtonSegment(value: 'tanakh', label: Text('Tanakh')),
               ],
               selected: {_tradition},
               onSelectionChanged: (s) => _setTradition(s.first),
@@ -314,33 +315,41 @@ class _TranslationColumn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Text(translation.abbreviation, style: theme.textTheme.labelLarge),
-        const SizedBox(height: 8),
-        if (verses.isEmpty)
-          Text('Not in this translation.', style: theme.textTheme.bodySmall),
-        for (final v in verses)
-          InkWell(
-            onTap: () => onTap(v.verseId),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text: _label(v),
-                      style: theme.textTheme.labelSmall,
-                    ),
-                    TextSpan(text: v.body),
-                  ],
+    final rtl = translation.direction == 'rtl';
+    // Hebrew with vowel points reads better a little larger.
+    final body = rtl
+        ? theme.textTheme.titleMedium?.copyWith(height: 1.6)
+        : theme.textTheme.bodyLarge;
+    return Directionality(
+      textDirection: rtl ? TextDirection.rtl : TextDirection.ltr,
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Text(translation.abbreviation, style: theme.textTheme.labelLarge),
+          const SizedBox(height: 8),
+          if (verses.isEmpty)
+            Text('Not in this translation.', style: theme.textTheme.bodySmall),
+          for (final v in verses)
+            InkWell(
+              onTap: () => onTap(v.verseId),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: _label(v),
+                        style: theme.textTheme.labelSmall,
+                      ),
+                      TextSpan(text: v.body),
+                    ],
+                  ),
+                  style: body,
                 ),
-                style: theme.textTheme.bodyLarge,
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }
