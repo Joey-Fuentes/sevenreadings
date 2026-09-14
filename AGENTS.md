@@ -17,16 +17,20 @@ Current content (see `pipeline/sources.toml` for pins and licenses):
 | id | what | status |
 |----|------|--------|
 | bsb, web, webc | English Bibles (BSB; WEB; WEB Catholic Edition with deuterocanon) | live |
+| douay | Douay-Rheims (Challoner), the text quoted on the Haydock pages; Vulgate numbering mapped at ingest (`apply_vul`) | pinned to GitLab commit 184c103; first build read, rules corrected; not yet released |
 | sblgnt | SBL Greek New Testament (CC BY 4.0) | live |
+| byz | Byzantine Majority Text, Robinson-Pierpont 2018 (byztxt, public domain), Received-Text numbering | pinned to v3.3.2 commit, built: 7953 verses, 27 books; not yet released |
 | wlc | Hebrew Bible, Westminster Leningrad Codex via OSHB (CC BY 4.0), Masoretic numbering mapped at ingest | live |
 | lxx | Septuagint, Swete's edition via nathans/lxx-swete (CC BY-SA 4.0), LXX numbering mapped at ingest | live, known gaps: Exodus 36-40 and Proverbs 24-31 reordered, Ecclesiastes missing upstream |
 | matthew_henry | Matthew Henry's Commentary, CCEL public-domain HTML edition | live (Protestant reading) |
-| rashi, ibn_ezra, haydock, chrysostom, ibn_kathir, icc | documented stubs in `pipeline/sevenreadings_pipeline/sources/stubs.py` | not wired; ibn_kathir blocked on licensing |
+| haydock | Haydock's Catholic Bible Commentary (1859), JohnBlood GitLab transcription; notes anchored where the Douay verses land | same pin as douay; transcription license under review; not yet released |
+| rashi, ibn_ezra, chrysostom, ibn_kathir, icc | documented stubs in `pipeline/sevenreadings_pipeline/sources/stubs.py` | not wired; ibn_kathir blocked on licensing |
 
 App: verse-by-verse phone layout, side-by-side on wide screens, translation
 chips, book/chapter picker with Protestant/Catholic/Tanakh order, readings
-sheet with collapsible Markdown entries. No search UI, notes, or bookmarks yet
-(the schema and `UserDb` exist for them).
+sheet with collapsible Markdown entries, full-text search (verses per
+translation, readings per source; a hit opens the chapter on that verse). No
+notes or bookmarks yet (the schema and `UserDb` exist for them).
 
 ## Setting up a session (AI side)
 
@@ -36,8 +40,8 @@ The maintainer will upload two things: the repo as `sevenreadings_tar.gz`
 artifact from the `Tools for offline review` workflow.
 
 ```
-mkdir -p /tmp/in && tar -xzf /mnt/user-data/uploads/sevenreadings_tar.gz -C /tmp/in
-rm -rf /home/claude/sevenreadings && cp -r /tmp/in/data/data/com.termux/files/home/sevenreadings /home/claude/
+mkdir -p /home/claude/in && tar -xzf /mnt/user-data/uploads/sevenreadings_tar.gz -C /home/claude/in
+rm -rf /home/claude/sevenreadings && cp -r /home/claude/in/data/data/com.termux/files/home/sevenreadings /home/claude/
 pip install --break-system-packages --no-index <uploaded>.whl        # ruff alone, or:
 pip install --break-system-packages --no-index --find-links wheels -r wheels/requirements.txt
 cd /home/claude/sevenreadings/pipeline && ruff check . && ruff format --check .
@@ -62,6 +66,12 @@ have. The sandbox filesystem may reset between conversations; keep the copy in
   maintainer to run a command in Termux and paste the output (see
   `docs/workflow.md`, "Inspecting an upstream"). Don't guess file layouts;
   every guess so far cost a round trip.
+- **Never use `/tmp`, anywhere, in any command or script.** Termux has no
+  writable `/tmp` (`Permission denied`), so a command that extracts or
+  writes there fails and every command chained after it fails too. Scratch
+  space is `~/scratch` (`mkdir -p ~/scratch`) on the maintainer's side and
+  `/home/claude` on the AI's side. Python code uses `tempfile` / pytest's
+  `tmp_path`, which honour `$TMPDIR`; never a literal path.
 
 ## How changes are delivered
 
@@ -104,25 +114,60 @@ Rules that keep patches applying cleanly:
   reserved word in its parser. Generated data classes are the singular of the
   table name (`translations` → `Translation`), so avoid table names whose
   singular collides with sr_core types (`CanonBook` exists for that reason).
-- ruff: imports must be sorted (I001) and unused loop variables renamed (B007);
-  line length 100; ruff measures display width, so Hebrew/Greek lines look
-  longer than they count.
 - Sources are renumbered at ingest to canonical ids (`versification.py`); the
   build prints every verse that has no counterpart in the reference
   translation, per book. Trust that report over memory: the Hebrew rule table
   was right first time; the Septuagint's was corrected three times from data.
 - The Swete LXX digitisation advances chapter numbers one line early in ~90
   places; `parse_tokens` repairs that. Its Psalms are LXX-numbered throughout.
+- An unpinned source (`sha256 = "TODO"`, `COMMIT` in a url) aborts the build
+  at that source; the partial database makes `probe` print `0/N` everywhere.
+  `srp lock --write <source>` records the hash; `docs/workflow.md` has the
+  loop in one block. Hand the maintainer that block, not a paraphrase.
+- `probe` is chapter-N-against-chapter-N; for LXX/Vulgate psalms use the
+  build report instead.
+- `/tmp` does not exist for the maintainer (Termux). Absolute rule: no
+  `/tmp` in commands, docs, scripts or tests. Use `~/scratch` there and
+  `/home/claude` in the sandbox.
+- Haydock/Douay: one GitLab archive feeds two sources. The site's index
+  pages (`index.html`, `id330.html`) decide which `idNNN.html` is which
+  chapter; the archive also holds stale duplicates and a mis-titled page, so
+  titles are only cross-checked and logged. The `confraternity/` sister site
+  has the same page shape and is skipped by path. Douay verse lines come as
+  `8 text`, `*8 text` and, in the psalms the Vulgate splits differently
+  (9, 113, 115, 147), `10(1) text` = Hebrew(Vulgate); the parser keeps the
+  Vulgate number and, on those psalms, aliases the Hebrew number for the
+  notes (Haydock says `Ver. 11` for `11(2)`). Lines break at the *English*
+  verse boundaries, so a Vulgate number can sit mid-line (`...commanded: 8
+  and a congregation`, `thy sword 14 from the enemies`); the parser splits
+  there when the number is the next in sequence. The cross-reference list
+  under the verses is not always behind a rule; `N: ...` lines end the
+  verses. Numbers the transcription simply dropped (Genesis 49:25, Psalm
+  12:7 ...) stay in the report. `VUL_RULES` holds chapter-boundary shifts settled from the
+  build report; single-verse splits and joins inside a chapter are reported,
+  not mapped. Notes cite the canonical verse and add `(Douay c:v)` when the
+  numbering differs.
+- `htmltext.blocks` keeps bold only with `keep_bold=True` (Haydock's
+  `Ver. N.` markers); Matthew Henry's output is unchanged by that.
+- FTS5 `remove_diacritics 2` does not fold Greek accents or Hebrew points in
+  the SQLite builds seen so far; search for Greek with accents. A folded
+  index column is the fix if that matters.
+- ruff: imports must be sorted (I001) and unused loop variables renamed (B007);
+  line length 100; ruff measures display width, so Hebrew/Greek lines look
+  longer than they count. `tests/_run_without_pytest.py` has no
+  `pytest.mark`; write loops, not `parametrize`.
 - Pages deploys only when all CI jobs pass on `main`; the content workflow
   re-triggers CI after pinning, because pushes made with the built-in token do
   not start workflows on their own.
 
 ## Where to go next
 
-In rough order of value: Haydock (Catholic; pairs with a Douay-Rheims Bible),
-Chrysostom (NPNF), the Jewish commentaries once Sefaria's per-text licenses are
-settled, Byzantine Majority Text for the NT, search UI, notes/bookmarks,
-Exodus 36-40 and Proverbs 24-31 LXX tables, Play Asset Delivery if the AAB
-passes 200 MB. Each new source: verify the upstream and its license from the
-actual repository, write the parser against a real sample, wire
+In rough order of value: pin and build Haydock/Douay and Byzantine (the
+`lock -> build -> probe -> push` loop, then flip `license_status` once the
+transcription terms are confirmed), Chrysostom (NPNF), the Jewish
+commentaries once Sefaria's per-text licenses are settled, notes/bookmarks,
+scroll-to-verse in the wide layout, Exodus 36-40 and Proverbs 24-31 LXX
+tables, Play Asset Delivery if the AAB passes 200 MB. Each new source: verify
+the upstream and its license from the actual repository, write the parser
+against a real sample, wire
 `sources.toml`, fixtures, tests, then the `lock → build → push` loop.

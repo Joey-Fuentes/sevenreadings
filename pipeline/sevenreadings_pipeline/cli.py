@@ -20,11 +20,19 @@ def cmd_lock(args: argparse.Namespace) -> int:
     if not urls:
         print(f"{args.source} is pinned by git commit, not a URL; set `commit` by hand.")
         return 1
+    if "COMMIT" in "".join(urls) or "TODO" in "".join(urls):
+        print(f"{args.source}: replace the placeholder in its url first (see docs/workflow.md).")
+        return 1
     for url in urls:
-        try:
-            fetch.fetch(url, None)
-        except SystemExit as e:  # fetch prints the hash when unpinned
-            print(e)
+        sha = fetch.sha256_of(fetch.download(url))
+        print(f'{url}\n  sha256 = "{sha}"')
+        if args.write:
+            text, n = fetch.write_pin(registry.SOURCES_TOML.read_text(encoding="utf-8"), url, sha)
+            if n:
+                registry.SOURCES_TOML.write_text(text, encoding="utf-8")
+                print(f"  written to sources.toml ({n} entr{'y' if n == 1 else 'ies'})")
+            else:
+                print("  not written: no `url = ...` line followed by `sha256 =`; paste by hand")
     return 0
 
 
@@ -108,6 +116,11 @@ def main(argv: list[str] | None = None) -> int:
 
     lock = sub.add_parser("lock", help="print the SHA-256 of a source's upstream file")
     lock.add_argument("source")
+    lock.add_argument(
+        "--write",
+        action="store_true",
+        help="record the hash in sources.toml (every entry sharing the url)",
+    )
     lock.set_defaults(fn=cmd_lock)
 
     build = sub.add_parser("build", help="build the content database")

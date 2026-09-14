@@ -4,7 +4,9 @@ mapping plan so the next person (or model) can implement it without research.
 Implementing one means: fetch the pinned upstream, parse it into `Entry`
 records with canonical verse-id ranges, call db.add_source + db.add_entries.
 Use refs.parse_ref for references and the versification_map table when the
-upstream numbers verses differently (rashi, ibn_ezra: Masoretic; haydock: Vulgate).
+upstream numbers verses differently (rashi, ibn_ezra: Masoretic). See
+sources/haydock.py for a worked example of anchoring notes through a
+translation that shares the upstream's numbering.
 """
 
 from __future__ import annotations
@@ -29,15 +31,6 @@ class SefariaExportSource(NotWired):
     map (book, chapter, verse) through versification_map scheme='mt';
     read the license field per file and refuse files whose license is not on the
     allow-list in sources.toml.
-    """
-
-
-class HaydockSource(NotWired):
-    plan = """
-    Upstream: the_depositum repo (Markdown per chapter) or johnblood.gitlab.io/haydock.
-    Shape: "Ver. N." paragraphs per chapter, Douay-Rheims (Vulgate) numbering.
-    Plan: split on 'Ver. N' markers; anchor to (chapter, N) via scheme='vul';
-    strip Douay verse quotations that precede the note.
     """
 
 

@@ -1,16 +1,23 @@
 """Bible texts fetched as a zip archive (typically a pinned GitHub commit).
 
 Config keys: url, sha256, glob (fnmatch over archive member paths, `*`
-crosses directories), format, and optionally versification ("mt").
+crosses directories), format, optionally versification ("mt"), and `align`
+("ot" or "nt": which testament to compare with the reference translation
+after loading; "mt" sources default to "ot").
 
 Formats:
   ref_tab_text  one verse per line: `Matt 1:1<TAB>text` (SBLGNT plain text)
   oshb_osis     Open Scriptures Hebrew Bible OSIS XML, one book per file
+  byz_csv       byztxt/byzantine-majority-text `csv-unicode/ccat/no-variants`:
+                one book per file named by a three-letter code, header
+                `chapter,verse,text`, a pilcrow opening paragraph-initial verses
 """
 
 from __future__ import annotations
 
+import csv
 import fnmatch
+import io
 import re
 import zipfile
 from collections.abc import Iterator
@@ -19,11 +26,15 @@ from xml.etree import ElementTree as ET
 
 from .. import db, fetch, versification
 from ..context import BuildContext
-from ..refs import BY_OSIS
+from ..refs import BY_OSIS, BY_USFM
 from ..usfm import Verse
 from .base import Source
 
 _REF_LINE = re.compile(r"^\s*([1-3]?[A-Za-z]+)\s+(\d+):(\d+)\s*\t?\s+(.*\S)\s*$")
+
+# byztxt file stems that are not USFM codes.
+_BYZ_CODES = {"MAR": "MRK", "JOH": "JHN", "JAM": "JAS", "1JO": "1JN", "2JO": "2JN", "3JO": "3JN"}
+_PILCROW = "\u00b6"
 
 
 def parse_ref_tab_text(text: str, name: str, skipped: list[str] | None = None) -> Iterator[Verse]:
@@ -82,7 +93,32 @@ def parse_oshb_osis(data: bytes, name: str) -> Iterator[Verse]:
             yield Verse(book.id, int(chapter), int(number), text)
 
 
-FORMATS = {"ref_tab_text": "text", "oshb_osis": "bytes"}
+def parse_byz_csv(text: str, name: str, skipped: list[str] | None = None) -> Iterator[Verse]:
+    """Yield verses from one byztxt CSV. The book comes from the file stem
+    (`MAT.csv`, `1JO.csv`); rows whose chapter or verse is not a number are
+    appended to `skipped` when given."""
+    stem = Path(name).stem.upper()
+    book = BY_USFM.get(_BYZ_CODES.get(stem, stem))
+    if book is None:
+        if skipped is not None:
+            skipped.append(f"{name}: unknown book code")
+        return
+    reader = csv.reader(io.StringIO(text))
+    header = next(reader, None)
+    if header is None or [h.strip().lower() for h in header[:3]] != ["chapter", "verse", "text"]:
+        raise SystemExit(f"{name}: expected a `chapter,verse,text` header, got {header!r}")
+    for row in reader:
+        if len(row) < 3 or not (row[0].strip().isdigit() and row[1].strip().isdigit()):
+            if skipped is not None and any(cell.strip() for cell in row):
+                skipped.append(f"{name}: {','.join(row)[:40]}")
+            continue
+        body = " ".join(row[2].replace(_PILCROW, " ").split())
+        if body:
+            yield Verse(book.id, int(row[0]), int(row[1]), body)
+
+
+FORMATS = {"ref_tab_text": "text", "oshb_osis": "bytes", "byz_csv": "text"}
+NT_BOOKS = (BY_OSIS["Matt"].id, BY_OSIS["Rev"].id)
 
 
 class ArchiveBibleSource(Source):
@@ -99,6 +135,8 @@ class ArchiveBibleSource(Source):
             matched += 1
             if fmt == "ref_tab_text":
                 verses.extend(parse_ref_tab_text(data.decode("utf-8-sig"), name, skipped))
+            elif fmt == "byz_csv":
+                verses.extend(parse_byz_csv(data.decode("utf-8-sig"), name, skipped))
             else:
                 verses.extend(parse_oshb_osis(data, name))
         if not matched:
@@ -117,11 +155,14 @@ class ArchiveBibleSource(Source):
         books = len({v.book for v in verses})
         ctx.log(f"{self.id}: {n} verses in {books} books from {matched} files")
 
-        if self.cfg.get("versification") == "mt":
-            only_t, only_r = versification.check_alignment(ctx.conn, self.id, ref)
+        align = self.cfg.get("align", "ot" if self.cfg.get("versification") == "mt" else None)
+        if align in ("ot", "nt"):
+            ref = self.cfg.get("reference", "web")
+            books = NT_BOOKS if align == "nt" else (1, BY_OSIS["Mal"].id)
+            only_t, only_r = versification.check_alignment(ctx.conn, self.id, ref, books)
             for label, ids in (
                 (f"verses with no {ref} counterpart", only_t),
-                (f"{ref} OT verses with no {self.id} text", only_r),
+                (f"{ref} {align.upper()} verses with no {self.id} text", only_r),
             ):
                 if ids:
                     ctx.log(f"{self.id}: {len(ids)} {label}: {versification.summarize(ids)}")

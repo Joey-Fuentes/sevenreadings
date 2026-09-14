@@ -53,6 +53,18 @@ Exodus 36-40 and Proverbs 24-31 (reordered). Corpus defects (missing
 Ecclesiastes, OCR-lost verses, stray chapter-boundary lines) are reported
 by the build; the stray lines are repaired at parse time.
 
+## Extension: Vulgate and Haydock (2026-09)
+The Douay-Rheims (Challoner) and Haydock's commentary share one upstream and
+one numbering: `apply_vul` maps LXX psalm numbers with the title as verse 1,
+a short table of Vulgate-vs-English verse shifts (`VUL_RULES`, settled from
+the text and extended from the build report), and routes Daniel 3:24-90,
+13-14 and Esther 10:4-16:24 to the deuterocanon books 75 and 69 so they
+align with the WEB Catholic Edition. The renumbering can record where every
+source verse landed (`trace`); the commentary looks each "Ver. N." up in
+that trace, so a note always sits beside the Douay verse it comments on
+rather than being mapped independently. The mapper signature grew from
+`(chapter, verse)` to `(book, chapter, verse)` for this.
+
 ## Consequences
 `sr_core` (Dart) and `refs.py` (Python) implement the encoding twice, with
 tests on identical fixtures. Change one, change both.

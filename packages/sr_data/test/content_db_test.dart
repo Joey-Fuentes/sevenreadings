@@ -71,4 +71,16 @@ void main() {
     final none = await db.readingsForVerse(const VerseRef(1, 2, 1).id).get();
     expect(none, isEmpty);
   });
+
+  test('free text becomes a safe FTS5 query', () {
+    expect(ContentDb.ftsQuery('in the beginn'), '"in" "the" "beginn"*');
+    // Operators and quotes are matched as words, never interpreted.
+    expect(
+      ContentDb.ftsQuery('  faith AND "works"  '),
+      '"faith" "AND" "works"*',
+    );
+    expect(ContentDb.ftsQuery('"'), '');
+    expect(ContentDb.ftsQuery('   '), '');
+    expect(ContentDb.ftsQuery('λόγος'), '"λόγος"*');
+  });
 }

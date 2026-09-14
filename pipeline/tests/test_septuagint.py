@@ -37,7 +37,9 @@ def test_lxx_psalm_numbering():
 
 
 def test_lxx_jeremiah_and_kingdoms():
-    m = versification._lxx_map
+    def m(book: int, chapter: int, verse: int) -> tuple[int, int]:
+        return versification._lxx_map(book, chapter, verse)[1:]  # drop the book
+
     assert m(JER, 26, 2) == (46, 2)
     assert m(JER, 51, 31) == (45, 1)
     assert m(JER, 40, 3) == (33, 3)
@@ -77,7 +79,9 @@ def test_chapter_zero_becomes_verse_zero_of_chapter_one():
 
 
 def test_lxx_rules_map_straight_to_english():
-    m = versification._lxx_map
+    def m(book: int, chapter: int, verse: int) -> tuple[int, int]:
+        return versification._lxx_map(book, chapter, verse)[1:]  # drop the book
+
     num, sam, job, lev, hos = (BY_OSIS[c].id for c in ("Num", "1Sam", "Job", "Lev", "Hos"))
     assert m(num, 13, 1) == (12, 16) and m(num, 13, 34) == (13, 33)
     assert m(sam, 20, 43) == (20, 42) and m(sam, 24, 1) == (23, 29)

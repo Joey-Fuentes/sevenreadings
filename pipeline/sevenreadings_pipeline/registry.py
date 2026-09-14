@@ -8,9 +8,9 @@ from pathlib import Path
 from .sources.archive_bible import ArchiveBibleSource
 from .sources.base import Source
 from .sources.ccel_mhc import CcelMhcSource
+from .sources.haydock import DouayRheimsSource, HaydockSource
 from .sources.jsonl_commentary import JsonlCommentarySource
 from .sources.stubs import (
-    HaydockSource,
     HcfDatabaseSource,
     IccSource,
     SefariaExportSource,
@@ -25,6 +25,7 @@ KINDS: dict[str, type[Source]] = {
     "usfm_zip": UsfmBibleSource,
     "archive": ArchiveBibleSource,
     "lxx_tokens": SweteLxxSource,
+    "haydock_bible": DouayRheimsSource,
     "ccel_mhc": CcelMhcSource,
     "jsonl": JsonlCommentarySource,
     "sefaria_export": SefariaExportSource,
@@ -34,7 +35,7 @@ KINDS: dict[str, type[Source]] = {
     "icc": IccSource,
 }
 
-BIBLE_KINDS = {"usfm_zip", "archive", "lxx_tokens"}
+BIBLE_KINDS = {"usfm_zip", "archive", "lxx_tokens", "haydock_bible"}
 
 # Sample-mode sources: what CI builds from committed fixtures, no network.
 SAMPLE_SOURCES: dict[str, dict] = {
@@ -66,6 +67,17 @@ SAMPLE_SOURCES: dict[str, dict] = {
         "url": "fixture",
         "remap": "catholic",
     },
+    "douay": {
+        "kind": "haydock_bible",
+        "name": "Douay-Rheims Bible (Challoner)",
+        "abbreviation": "DRB",
+        "language": "en",
+        "license": "Public domain",
+        "license_status": "clear",
+        "url": "fixture",
+        "versification": "vul",
+        "reference": "web",
+    },
     "sblgnt": {
         "kind": "archive",
         "name": "SBL Greek New Testament",
@@ -76,6 +88,18 @@ SAMPLE_SOURCES: dict[str, dict] = {
         "url": "fixture",
         "format": "ref_tab_text",
         "glob": "*.txt",
+    },
+    "byz": {
+        "kind": "archive",
+        "name": "Byzantine Majority Text (Robinson-Pierpont 2018)",
+        "abbreviation": "BYZ",
+        "language": "grc",
+        "license": "Public domain",
+        "license_status": "clear",
+        "url": "fixture",
+        "format": "byz_csv",
+        "glob": "*.csv",
+        "align": "nt",
     },
     "wlc": {
         "kind": "archive",
@@ -99,6 +123,16 @@ SAMPLE_SOURCES: dict[str, dict] = {
         "license_status": "clear",
         "url": "fixture",
         "glob": "*.txt",
+    },
+    "haydock": {
+        "kind": "haydock",
+        "perspective": "catholic",
+        "author": "George Leo Haydock",
+        "title": "Haydock's Catholic Bible Commentary (1859)",
+        "license": "Public domain",
+        "license_status": "clear",
+        "url": "fixture",
+        "reference": "web",
     },
     "matthew_henry": {
         "kind": "ccel_mhc",

@@ -10,12 +10,14 @@ must be verified against the actual upstream files before shipping.
 | - | Berean Standard Bible | Bible | n/a | Public domain (CC0, 2023) | clear |
 | - | World English Bible | Bible | n/a | Public domain | clear |
 | - | World English Bible Catholic Edition | Bible (deuterocanon) | n/a | Public domain; no imprimatur; deuterocanon derived from RV Apocrypha/Brenton | clear |
+| - | Douay-Rheims, Challoner (JohnBlood transcription) | Bible (Catholic canon) | n/a | Public domain text; the transcription states no license | review |
 | - | SBL Greek New Testament | Greek NT | n/a | CC BY 4.0 (SBL / Logos, 2010; v1.2 2023) | clear |
+| - | Byzantine Majority Text, Robinson-Pierpont 2018 (byztxt) | Greek NT | n/a | Public domain (The Unlicense) | clear |
 | - | Westminster Leningrad Codex (Open Scriptures) | Hebrew Bible | Public domain text | OSHB markup CC BY 4.0 | clear |
 | - | Septuagint, Swete (nathans/lxx-swete) | Greek OT | Public domain edition | CC BY-SA 4.0 digitisation | clear (share-alike) |
 | 1 | Rashi (Sefaria-Export) | Jewish literal | Hebrew: public domain | Per text; several Sefaria translations are CC-BY-NC or have other terms | review |
 | 2 | Ibn Ezra (Sefaria-Export) | Jewish rationalist | Hebrew: public domain | Per text; English coverage is partial | review |
-| 3 | Haydock (1859) | Catholic | Public domain | Public domain; check the transcription project's own license | review |
+| 3 | Haydock (1859), JohnBlood GitLab transcription | Catholic | Public domain | Public domain; the transcription (expanded abbreviations) states no license: confirm with the transcriber | review |
 | 4 | Chrysostom, NPNF (Schaff, 1888-90) | Orthodox | Greek: public domain | Public domain; check database/markup license | review |
 | 5 | Matthew Henry (1706-21), CCEL HTML edition | Protestant | n/a | Public domain; CCEL edition states no rights reserved | clear |
 | 6 | Tafsir Ibn Kathir | Islamic | Arabic: public domain | No public-domain English known; the common abridgment is copyrighted | blocked |

@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:sr_core/sr_core.dart';
 import 'package:sr_data/sr_data.dart';
 
+import '../search/search_screen.dart';
 import 'markdown_text.dart';
 
 /// One chapter, every translation side by side (stacked on narrow screens),
 /// tap a verse for its readings. Navigation follows the selected tradition's
-/// book order from the `book_orders` table.
+/// book order from the `book_orders` table; search opens a chapter on the
+/// verse that was hit.
 class ReaderScreen extends StatefulWidget {
   const ReaderScreen({super.key, required this.db});
 
@@ -30,6 +32,9 @@ class _ReaderScreenState extends State<ReaderScreen> {
   List<_BookInfo> _order = const [];
   VerseRef _chapter = const VerseRef(1, 1, 1);
   late Future<_ChapterData> _data = _init();
+
+  /// Verse to mark and scroll to after a search, cleared by any navigation.
+  int? _highlight;
 
   /// Translations the reader has switched off. Empty = show everything.
   final Set<String> _hidden = {};
@@ -57,11 +62,22 @@ class _ReaderScreenState extends State<ReaderScreen> {
     return _ChapterData(translations, verses);
   }
 
-  void _open(int book, int chapter) {
+  void _open(int book, int chapter, {int? highlight}) {
     setState(() {
       _chapter = VerseRef(book, chapter, 1);
+      _highlight = highlight;
       _data = _load();
     });
+  }
+
+  Future<void> _search() async {
+    final target = await Navigator.of(context).push<SearchTarget>(
+      MaterialPageRoute(builder: (_) => SearchScreen(db: widget.db)),
+    );
+    if (target == null || !mounted) return;
+    final ref = VerseRef.fromId(target.verseId);
+    _open(ref.book, ref.chapter, highlight: target.verseId);
+    if (target.showReadings) _showReadings(context, target.verseId);
   }
 
   /// Previous/next chapter, crossing book boundaries in tradition order.
@@ -116,6 +132,11 @@ class _ReaderScreenState extends State<ReaderScreen> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.search),
+            tooltip: 'Search',
+            onPressed: _search,
+          ),
+          IconButton(
             icon: const Icon(Icons.chevron_left),
             onPressed: () => _step(-1),
           ),
@@ -162,6 +183,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                               child: _TranslationColumn(
                                 translation: t,
                                 verses: data.verses[t.id] ?? const [],
+                                highlight: _highlight,
                                 onTap: (id) => _showReadings(context, id),
                               ),
                             ),
@@ -171,6 +193,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                     return _InterleavedView(
                       translations: shown,
                       verses: data.verses,
+                      highlight: _highlight,
                       onTap: (id) => _showReadings(context, id),
                     );
                   },
@@ -358,38 +381,79 @@ class _TranslationChips extends StatelessWidget {
 }
 
 /// Phone layout: one scroll, verse by verse, each translation's text under
-/// the verse number. Hebrew rows switch direction individually.
-class _InterleavedView extends StatelessWidget {
+/// the verse number. Hebrew rows switch direction individually. When a verse
+/// is highlighted (after a search) the list scrolls to it once.
+class _InterleavedView extends StatefulWidget {
   const _InterleavedView({
     required this.translations,
     required this.verses,
     required this.onTap,
+    this.highlight,
   });
 
   final List<Translation> translations;
   final Map<String, List<ChapterVersesResult>> verses;
   final ValueChanged<int> onTap;
+  final int? highlight;
+
+  @override
+  State<_InterleavedView> createState() => _InterleavedViewState();
+}
+
+class _InterleavedViewState extends State<_InterleavedView> {
+  final _controller = ScrollController();
+  final _target = GlobalKey();
+  int? _scrolledTo;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  /// Rows are lazy and uneven: jump to the proportional offset so the row
+  /// gets built, then let the framework line it up on the next frame.
+  void _scrollTo(int index, int count) {
+    if (_scrolledTo == widget.highlight) return;
+    _scrolledTo = widget.highlight;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_controller.hasClients || count == 0) return;
+      final max = _controller.position.maxScrollExtent;
+      _controller.jumpTo((max * index / count).clamp(0.0, max).toDouble());
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final ctx = _target.currentContext;
+        if (ctx != null) Scrollable.ensureVisible(ctx, alignment: 0.1);
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final byVerse = <int, Map<String, ChapterVersesResult>>{};
-    for (final t in translations) {
-      for (final v in verses[t.id] ?? const <ChapterVersesResult>[]) {
+    for (final t in widget.translations) {
+      for (final v in widget.verses[t.id] ?? const <ChapterVersesResult>[]) {
         byVerse.putIfAbsent(v.verseId, () => {})[t.id] = v;
       }
     }
     final ids = byVerse.keys.toList()..sort();
+    final highlight = widget.highlight;
+    final index = highlight == null ? -1 : ids.indexOf(highlight);
+    if (index >= 0) _scrollTo(index, ids.length);
     return ListView.builder(
+      controller: _controller,
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
       itemCount: ids.length,
       itemBuilder: (context, i) {
         final id = ids[i];
         final ref = VerseRef.fromId(id);
         final rows = byVerse[id]!;
+        final marked = id == highlight;
         return InkWell(
-          onTap: () => onTap(id),
-          child: Padding(
+          key: marked ? _target : null,
+          onTap: () => widget.onTap(id),
+          child: Container(
+            color: marked ? theme.colorScheme.secondaryContainer : null,
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -400,7 +464,7 @@ class _InterleavedView extends StatelessWidget {
                     color: theme.colorScheme.primary,
                   ),
                 ),
-                for (final t in translations)
+                for (final t in widget.translations)
                   if (rows[t.id] != null)
                     _VerseText(translation: t, verse: rows[t.id]!),
               ],
@@ -452,11 +516,13 @@ class _TranslationColumn extends StatelessWidget {
     required this.translation,
     required this.verses,
     required this.onTap,
+    this.highlight,
   });
 
   final Translation translation;
   final List<ChapterVersesResult> verses;
   final ValueChanged<int> onTap;
+  final int? highlight;
 
   /// Verse number, plus the translation's own number when it differs.
   static String _label(ChapterVersesResult v) {
@@ -485,7 +551,10 @@ class _TranslationColumn extends StatelessWidget {
           for (final v in verses)
             InkWell(
               onTap: () => onTap(v.verseId),
-              child: Padding(
+              child: Container(
+                color: v.verseId == highlight
+                    ? theme.colorScheme.secondaryContainer
+                    : null,
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Text.rich(
                   TextSpan(

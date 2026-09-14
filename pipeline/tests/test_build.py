@@ -68,3 +68,19 @@ def test_sample_build_deuterocanon(tmp_path, capsys):
         "SELECT native_ref FROM verses WHERE translation_id='webc' AND verse_id=?", (27_003_024,)
     ).fetchone()
     assert row == ("3:91",)
+
+
+def test_write_pin_updates_every_entry_sharing_the_url():
+    from sevenreadings_pipeline import fetch
+
+    toml = (
+        '[a]\nurl = "https://x/y.zip"\nsha256 = "TODO"\n\n'
+        '[b]\nurl = "https://x/y.zip"   # shared\nsha256 = "TODO"   # keep me\n\n'
+        '[c]\nurl = "https://x/z.zip"\nsha256 = "old"\n'
+    )
+    out, n = fetch.write_pin(toml, "https://x/y.zip", "abc")
+    assert n == 2  # both entries, comments on either line kept
+    assert 'url = "https://x/y.zip"\nsha256 = "abc"\n' in out
+    assert 'sha256 = "abc"   # keep me' in out
+    assert 'sha256 = "old"' in out
+    assert fetch.write_pin(toml, "https://x/none.zip", "abc")[1] == 0

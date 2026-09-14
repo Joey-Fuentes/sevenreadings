@@ -33,20 +33,46 @@ class ContentDb extends _$ContentDb {
         },
       );
 
-  /// Full-text search over commentary. The FTS5 tables are built by the
-  /// pipeline and are not part of the drift schema, hence a custom query.
+  /// Turns free text into an FTS5 MATCH expression that cannot fail to
+  /// parse: each whitespace-separated term becomes a quoted phrase, so
+  /// `AND`, `NOT`, quotes and operators are matched literally rather than
+  /// interpreted, and the last term matches as a prefix so results appear
+  /// while typing. Returns an empty string when there is nothing to search.
+  static String ftsQuery(String raw) {
+    final terms = raw
+        .split(RegExp(r'\s+'))
+        .map((t) => t.replaceAll('"', ''))
+        .where((t) => t.isNotEmpty)
+        .toList();
+    if (terms.isEmpty) return '';
+    final quoted = [for (final t in terms) '"$t"'];
+    quoted[quoted.length - 1] = '${quoted.last}*';
+    return quoted.join(' ');
+  }
+
+  /// Full-text search over commentary, optionally within one source. The
+  /// FTS5 tables are built by the pipeline and are not part of the drift
+  /// schema, hence a custom query. [query] must be FTS5 syntax; see
+  /// [ftsQuery]. Matches in the snippet are wrapped in square brackets.
   Selectable<CommentarySearchHit> searchCommentary(
     String query, {
+    String? sourceId,
     int limit = 50,
   }) {
+    final filter = sourceId == null ? '' : 'AND ce.source_id = ? ';
     return customSelect(
       'SELECT ce.id, ce.source_id, ce.start_verse_id, ce.end_verse_id, '
       'ce.heading, snippet(commentary_fts, 1, \'[\', \']\', \'\u2026\', 14) '
       'AS snippet '
       'FROM commentary_fts '
       'JOIN commentary_entries ce ON ce.id = commentary_fts.rowid '
-      'WHERE commentary_fts MATCH ? ORDER BY rank LIMIT ?',
-      variables: [Variable.withString(query), Variable.withInt(limit)],
+      'WHERE commentary_fts MATCH ? $filter'
+      'ORDER BY rank LIMIT ?',
+      variables: [
+        Variable.withString(query),
+        if (sourceId != null) Variable.withString(sourceId),
+        Variable.withInt(limit),
+      ],
       readsFrom: {commentaryEntries},
     ).map(
       (row) => CommentarySearchHit(
@@ -61,6 +87,7 @@ class ContentDb extends _$ContentDb {
   }
 
   /// Full-text search over verse text, optionally within one translation.
+  /// [query] must be FTS5 syntax; see [ftsQuery].
   Selectable<VerseSearchHit> searchVerses(
     String query, {
     String? translationId,

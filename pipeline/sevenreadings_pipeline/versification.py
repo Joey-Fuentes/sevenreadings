@@ -1,4 +1,4 @@
-"""Masoretic (MT) and Septuagint (LXX) numbering -> canonical verse ids.
+"""Masoretic (MT), Septuagint (LXX) and Vulgate (VUL) numbering -> canonical ids.
 
 Two mechanisms:
   * Chapter-boundary shifts are a fixed rule table: (osis, mt_chapter,
@@ -77,11 +77,11 @@ for _osis, _c, _a, _b, _ec, _ev in MT_RULES:
 PSALMS = BY_OSIS["Ps"].id
 
 
-def _shift(book: int, chapter: int, verse: int) -> tuple[int, int]:
+def _shift(book: int, chapter: int, verse: int) -> tuple[int, int, int]:
     for c, a, b, ec, ev in _RULES_BY_BOOK.get(book, ()):
         if c == chapter and a <= verse <= b:
-            return ec, ev + (verse - a)
-    return chapter, verse
+            return book, ec, ev + (verse - a)
+    return book, chapter, verse
 
 
 def psalm_title_offsets(
@@ -90,15 +90,21 @@ def psalm_title_offsets(
     mt_counts: dict[int, int],
     mt_first: dict[int, str],
     notes: list[str] | None = None,
+    max_title_tokens: int = 3,
 ) -> dict[int, int]:
     """Per psalm: how many leading MT verses are the superscription.
 
-    Normally the MT/English verse-count difference. When the counts agree
-    but the English has a title (verse 0) and the MT's first verse is at most
-    three tokens, the title is a separate MT verse and a split elsewhere in
-    the psalm hides it (Psalm 13, "For the choirmaster. A psalm of David.").
-    Embedded short titles (Ps 25, 87, 100, 130) run to five tokens or more
-    because the verse text follows. Such cases are reported through `notes`.
+    Normally the MT/English verse-count difference, but only for psalms the
+    English gives a title (verse 0): where it has none, the source cannot be
+    counting one, and any extra verse is a split (Vulgate Psalms 2, 43, 136).
+    When the counts agree but the English has a title and the MT's first
+    verse is at most `max_title_tokens` long, the title is a separate MT
+    verse and a split elsewhere in the psalm hides it (Psalm 13, "For the
+    choirmaster. A psalm of David."). Embedded short titles (Ps 25, 87, 100,
+    130) run to five Hebrew tokens or more because the verse text follows.
+    The Douay-Rheims spells its titles out ("Unto the end, a psalm for
+    David"), so Vulgate callers raise the limit. Such cases are reported
+    through `notes`.
     """
     rows = conn.execute(
         "SELECT verse_id/1000%1000 AS ch, "
@@ -110,8 +116,9 @@ def psalm_title_offsets(
     en_titled = {ch for ch, _, t in rows if t}
     out: dict[int, int] = {}
     for ch, n in mt_counts.items():
-        off = max(0, n - en_counts.get(ch, n))
-        if off == 0 and ch in en_titled and len(mt_first.get(ch, "").split()) <= 3:
+        off = max(0, n - en_counts.get(ch, n)) if ch in en_titled else 0
+        title_len = len(mt_first.get(ch, "").split())
+        if off == 0 and ch in en_titled and title_len <= max_title_tokens:
             off = 1
             if notes is not None:
                 notes.append(f"Psalm {ch}: title verse inferred (equal counts)")
@@ -119,7 +126,8 @@ def psalm_title_offsets(
     return out
 
 
-Mapper = Callable[[int, int, int], tuple[int, int]]
+Mapper = Callable[[int, int, int], tuple[int, int, int]]
+Trace = dict[tuple[int, int, int], int]
 
 
 def _renumber(
@@ -128,29 +136,45 @@ def _renumber(
     conn: sqlite3.Connection,
     reference: str,
     notes: list[str] | None = None,
+    trace: Trace | None = None,
+    max_title_tokens: int = 3,
 ) -> Iterator[Verse]:
-    """Apply `mapper` (book, chapter, verse) -> (chapter, verse) in MT-style
-    numbering, then psalm-title offsets against the reference, then join
-    verses that landed on the same canonical id."""
-    mapped: list[tuple[Verse, int, int]] = []
+    """Apply `mapper` (book, chapter, verse) -> (book, chapter, verse) in
+    MT-style numbering, then psalm-title offsets against the reference, then
+    join verses that landed on the same canonical id. When `trace` is given,
+    every source (book, chapter, verse) is recorded with the canonical id it
+    landed on, so commentary keyed to the same numbering can follow."""
+    mapped: list[tuple[Verse, int, int, int]] = []
     mt_counts: dict[int, int] = {}
     mt_first: dict[int, str] = {}
     for v in verses:
-        ch, n = mapper(v.book, v.chapter, v.verse)
-        mapped.append((v, ch, n))
-        if v.book == PSALMS:
+        b, ch, n = mapper(v.book, v.chapter, v.verse)
+        mapped.append((v, b, ch, n))
+        if b == PSALMS:
             mt_counts[ch] = max(mt_counts.get(ch, 0), n)
             if n == 1:
                 mt_first[ch] = v.text
-    offsets = psalm_title_offsets(conn, reference, mt_counts, mt_first, notes) if mt_counts else {}
+    offsets = (
+        psalm_title_offsets(conn, reference, mt_counts, mt_first, notes, max_title_tokens)
+        if mt_counts
+        else {}
+    )
 
     merged: dict[int, list[Verse]] = {}
-    for v, ch, n in mapped:
-        if v.book == PSALMS:
+    for v, b, ch, n in mapped:
+        if b == PSALMS:
             off = offsets.get(ch, 0)
             n = 0 if n <= off else n - off
-        native = None if (ch, n) == (v.chapter, v.verse) else f"{v.chapter}:{v.verse}"
-        merged.setdefault(verse_id(v.book, ch, n), []).append(Verse(v.book, ch, n, v.text, native))
+        if (b, ch, n) == (v.book, v.chapter, v.verse):
+            native = None
+        elif b == v.book:
+            native = f"{v.chapter}:{v.verse}"
+        else:
+            native = f"{CANON[v.book - 1].osis} {v.chapter}:{v.verse}"
+        vid = verse_id(b, ch, n)
+        if trace is not None:
+            trace[(v.book, v.chapter, v.verse)] = vid
+        merged.setdefault(vid, []).append(Verse(b, ch, n, v.text, native))
     for parts in merged.values():
         first = parts[0]
         if len(parts) == 1:
@@ -237,19 +261,19 @@ def _lxx_psalm(ch: int, v: int) -> tuple[int, int]:
     return 147, v + 11  # 147
 
 
-def _lxx_map(book: int, chapter: int, verse: int) -> tuple[int, int]:
+def _lxx_map(book: int, chapter: int, verse: int) -> tuple[int, int, int]:
     if book == PSALMS:
-        return _lxx_psalm(chapter, verse)
+        return book, *_lxx_psalm(chapter, verse)
     if book == JER:
         for c, a, b, mc, mv in LXX_JER_RULES:
             if c == chapter and a <= verse <= b:
-                return mc, mv + (verse - a)
+                return book, mc, mv + (verse - a)
     if book == KGS1 and chapter in (20, 21):  # 3 Kingdoms swaps Ahab's chapters
-        return 41 - chapter, verse
+        return book, 41 - chapter, verse
     for c, a, b, ec, ev in _LXX_BY_BOOK.get(book, ()):
         if c == chapter and a <= verse <= b:
-            return ec, ev + (verse - a)
-    return chapter, verse
+            return book, ec, ev + (verse - a)
+    return book, chapter, verse
 
 
 def apply_lxx(
@@ -262,17 +286,99 @@ def apply_lxx(
     return _renumber(verses, _lxx_map, conn, reference, notes)
 
 
-def check_alignment(conn: sqlite3.Connection, tid: str, reference: str, ot_only: bool = True):
-    """Return (ids only in tid, ids only in reference) restricted to shared books."""
-    books = "AND verse_id/1000000 <= 39" if ot_only else ""
+# --- Vulgate (Douay-Rheims) -------------------------------------------
+# The Douay-Rheims follows the Clementine Vulgate. Its chapter breaks are the
+# ones the English Bible inherited, so most of MT_RULES do not apply; the
+# psalms use the LXX numbering with the title counted as verse 1, and a
+# short list of verse shifts is shared with the LXX. Greek Daniel and the
+# Esther additions sit inside Daniel and Esther at Vulgate positions and are
+# moved to the deuterocanon books the WEB Catholic Edition uses. Rules below
+# are the ones settled from the text; anything the build reports as
+# unmatched goes into the table after `srp probe --translation douay`.
+
+ESTH = BY_OSIS["Esth"].id
+ESTH_GR = BY_OSIS["EsthGr"].id
+DAN = BY_OSIS["Dan"].id
+DAN_GR = BY_OSIS["DanGr"].id
+
+# fmt: off
+# (osis, vul_chapter, v_from, v_to, en_chapter, en_v_from): Vulgate -> English.
+# Chapter-boundary shifts only; where the Vulgate splits or joins a verse
+# inside a chapter (Num 11, 20; Josh 4, 21; Judg 5; Job 16, 42; Isa 5; Amos
+# 6, 9; Hab 3 ...) the build report lists the odd verse and the texts stay
+# side by side within a verse of each other.
+VUL_RULES: list[tuple[str, int, int, int, int, int]] = [
+    ("Num", 13, 1, 1, 12, 16), ("Num", 13, 2, 34, 13, 1),
+    ("Num", 30, 1, 1, 29, 40), ("Num", 30, 2, 17, 30, 1),
+    ("1Sam", 20, 43, 43, 20, 42),
+    ("1Sam", 24, 1, 1, 23, 29), ("1Sam", 24, 2, 23, 24, 1),
+    ("1Kgs", 22, 44, 44, 22, 43), ("1Kgs", 22, 45, 54, 22, 44),
+    ("Job", 39, 31, 35, 40, 1), ("Job", 40, 1, 19, 40, 6),
+    ("Job", 40, 20, 28, 41, 1), ("Job", 41, 1, 25, 41, 10),
+    ("Eccl", 4, 17, 17, 5, 1), ("Eccl", 5, 1, 19, 5, 2),
+    ("Song", 1, 1, 16, 1, 2),                      # English 1:1 is the title line
+    ("Song", 5, 17, 17, 6, 1), ("Song", 6, 1, 12, 6, 2),
+    ("Dan", 3, 98, 100, 4, 1), ("Dan", 4, 1, 34, 4, 4),
+    ("Hos", 14, 1, 1, 13, 16), ("Hos", 14, 2, 10, 14, 1),
+    ("Jonah", 2, 1, 1, 1, 17), ("Jonah", 2, 2, 11, 2, 1),
+    ("Hag", 2, 1, 1, 1, 15), ("Hag", 2, 2, 24, 2, 1),
+    ("Mark", 8, 39, 39, 9, 1), ("Mark", 9, 1, 49, 9, 2),
+    ("2Cor", 13, 13, 13, 13, 14),
+    ("3John", 1, 15, 15, 1, 14),
+    ("Rev", 12, 18, 18, 13, 1),
+]
+# fmt: on
+_VUL_BY_BOOK: dict[int, list[tuple[int, int, int, int, int]]] = {}
+for _osis, _c, _a, _b, _ec, _ev in VUL_RULES:
+    _VUL_BY_BOOK.setdefault(BY_OSIS[_osis].id, []).append((_c, _a, _b, _ec, _ev))
+
+
+def vul_map(book: int, chapter: int, verse: int) -> tuple[int, int, int]:
+    """Vulgate (book, chapter, verse) -> canonical numbering, psalm titles
+    still counted as verse 1 (the offsets come from the data)."""
+    if book == PSALMS:
+        return book, *_lxx_psalm(chapter, verse)
+    if book == ESTH and (chapter >= 11 or (chapter == 10 and verse >= 4)):
+        return ESTH_GR, chapter, verse  # the Greek additions, Vulgate order
+    if book == DAN:
+        if chapter in (13, 14) or (chapter == 3 and 24 <= verse <= 90):
+            return DAN_GR, chapter, verse  # Susanna, Bel, Song of the Three
+        if chapter == 3 and 91 <= verse <= 97:
+            return book, 3, verse - 67  # matches deuterocanon.remap_catholic
+    for c, a, b, ec, ev in _VUL_BY_BOOK.get(book, ()):
+        if c == chapter and a <= verse <= b:
+            return book, ec, ev + (verse - a)
+    return book, chapter, verse
+
+
+def apply_vul(
+    verses: Iterable[Verse],
+    conn: sqlite3.Connection,
+    reference: str,
+    notes: list[str] | None = None,
+    trace: Trace | None = None,
+) -> Iterator[Verse]:
+    """Renumber Vulgate-numbered verses to canonical ids, joining collisions.
+    `trace` receives source (book, chapter, verse) -> canonical id."""
+    return _renumber(verses, vul_map, conn, reference, notes, trace, max_title_tokens=8)
+
+
+def check_alignment(
+    conn: sqlite3.Connection, tid: str, reference: str, books: tuple[int, int] = (1, 39)
+):
+    """Return (ids only in tid, ids only in reference) restricted to the book
+    id range `books` (inclusive; default the Old Testament)."""
+    lo, hi = books
+    books_sql = f"AND verse_id/1000000 BETWEEN {int(lo)} AND {int(hi)}"
     only_t = conn.execute(
-        f"SELECT verse_id FROM verses WHERE translation_id=? {books} EXCEPT "
-        f"SELECT verse_id FROM verses WHERE translation_id=? {books}",
+        f"SELECT verse_id FROM verses WHERE translation_id=? {books_sql} EXCEPT "
+        f"SELECT verse_id FROM verses WHERE translation_id=? {books_sql}",
         (tid, reference),
     ).fetchall()
     only_r = conn.execute(
-        f"SELECT verse_id FROM verses WHERE translation_id=? {books} AND verse_id%1000>0 EXCEPT "
-        f"SELECT verse_id FROM verses WHERE translation_id=? {books}",
+        f"SELECT verse_id FROM verses WHERE translation_id=? {books_sql} "
+        "AND verse_id%1000>0 EXCEPT "
+        f"SELECT verse_id FROM verses WHERE translation_id=? {books_sql}",
         (reference, tid),
     ).fetchall()
 

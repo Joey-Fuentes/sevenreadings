@@ -21,28 +21,39 @@ git add -A && git commit -m "<message>" && git pull && git push
   toml edit by hand or with the Python snippet the AI provides.
 - Patches are all-or-nothing: on failure nothing was applied.
 
-## Adding or updating a source
+## Adding or updating a source: the whole loop
+
+Every step in one place. The AI's patch leaves `sha256 = "TODO"` (and, for
+GitLab upstreams, `COMMIT` in the url); nothing builds until both are real.
 
 ```
 cd ~/sevenreadings/pipeline
-python -m sevenreadings_pipeline.cli lock <source>       # prints sha256 for each upstream URL
-```
-
-Paste the hash into `sources.toml` (`sed -i '/<unique part of the url>/{n;s/TODO/<hash>/}' sources.toml`
-works when the `sha256 =` line directly follows the `url =` line; avoid `#` or
-`/` inside sed replacement text). Sources pinned by git commit use the commit
-in the archive URL: `gh api repos/<owner>/<repo>/commits/master --jq .sha`.
-
-Then build locally before pushing; this is the only place parse errors and
-versification mismatches surface with detail:
-
-```
+# 1. Commit-pinned upstreams: put the commit in the url first.
+gh api repos/<owner>/<repo>/commits/master --jq .sha                      # GitHub
+curl -s https://gitlab.com/api/v4/projects/<owner>%2F<repo>/repository/branches/master | jq -r .commit.id   # GitLab
+sed -i "s/COMMIT/<that sha>/g" sources.toml
+# 2. Record the hash. --write edits sources.toml (every entry sharing the url).
+python -m sevenreadings_pipeline.cli lock --write <source>
+# 3. Build with the reference translation, read the report.
 python -m sevenreadings_pipeline.cli build --version dev --only web,<source> --out dist/sevenreadings.sqlite
-python -m sevenreadings_pipeline.cli probe --db dist/sevenreadings.sqlite --translation <source> --books Exod,Ps
+# 4. Settle numbering from data, then push.
+python -m sevenreadings_pipeline.cli probe --db dist/sevenreadings.sqlite --translation <source> --books Exod,Job
 ```
+
+Step 2 without `--write` only prints the hash; the old way was
+`sed -i '/<unique part of the url>/{n;s/TODO/<hash>/}' sources.toml`.
+Entries that share one archive (douay and haydock) need one `lock --write`.
+
+**A build with an unpinned source stops at that source and leaves a partial
+database.** Everything that followed it in `--only` is missing, and `probe`
+on that file prints `0/N` for every chapter. That is not a numbering
+problem; go back to step 2.
 
 `probe` prints, per chapter, the source's own verse count against the
 reference's, only where they differ; it is how numbering schemes get settled.
+It compares chapter N with chapter N, so for Psalms in LXX/Vulgate numbering
+(Douay 17 is English 18) most lines are noise: read the build report's
+"verses with no counterpart" lines for those instead.
 
 Pushing anything under `pipeline/` (or the content schema) runs the Content
 release workflow, which publishes `content-v<date>-<sha>`, pins it, and
@@ -59,6 +70,16 @@ unzip -l "$Z" | head
 unzip -p "$Z" '<member path>' | head -c 6000
 gh api repos/<owner>/<repo>/contents/<dir> --jq '.[].name'
 gh api -H "Accept: application/vnd.github.raw" repos/<owner>/<repo>/contents/<file> | head -20
+```
+
+When several files need grepping, extract once into scratch space and work
+there. Never `/tmp`: Termux has no writable `/tmp`, so the extraction fails
+and everything chained after it fails with it.
+
+```
+mkdir -p ~/scratch && rm -rf ~/scratch/src && unzip -q -o "$Z" '<glob>' -d ~/scratch/src
+cd ~/scratch/src/*/
+grep -a -l '<pattern>' *.html | head
 ```
 
 ## CI, logs, Pages
@@ -97,6 +118,9 @@ appear after you merge.
 - `pkg install ruff` in Termux lets you run `ruff format . && ruff check --fix .`
   in `pipeline/` before pushing, which catches the two classes of failure
   CI has ever raised on Python.
+- There is no `/tmp` in Termux. Scratch files go under `~/scratch`; anything
+  the AI hands over that mentions `/tmp` is a bug in the handover, not in the
+  phone.
 - `python -m sevenreadings_pipeline.cli sources` lists sources and their
   license status; `blocked` ones are skipped by builds.
 - The web app persists the content database in the browser after first load;

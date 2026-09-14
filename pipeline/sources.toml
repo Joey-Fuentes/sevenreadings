@@ -41,6 +41,23 @@ remap = "catholic"   # Greek Daniel/Esther and Letter of Jeremiah handling, see 
 license = "Public domain"
 license_status = "clear"
 
+[douay]
+kind = "haydock_bible"
+name = "Douay-Rheims Bible (Challoner)"
+abbreviation = "DRB"
+language = "en"
+# The Douay text quoted on every page of the Haydock transcription (same archive
+# as the haydock source; one download serves both). Pin a commit of the GitLab repo:
+#   curl -s https://gitlab.com/api/v4/projects/JohnBlood%2Fhaydock/repository/branches/master | jq -r .commit.id
+# then replace 184c10385ba90f7127fc1c0ec69b93656db1fdb0 here and in the haydock entry, and `srp lock douay`.
+url = "https://gitlab.com/JohnBlood/haydock/-/archive/184c10385ba90f7127fc1c0ec69b93656db1fdb0/haydock-184c10385ba90f7127fc1c0ec69b93656db1fdb0.zip"
+sha256 = "aad542c2bfb2a3ab7869a9cf9057a7c823c63ba3b3b7deb2643cd2efa4e21112"
+glob = "*/id[0-9]*.html"   # chapter pages; confraternity/ is excluded by the parser
+versification = "vul"   # Vulgate numbering -> canonical, see versification.apply_vul
+reference = "web"
+license = "Public domain (Douay 1582-1610, Challoner revision 1749-52); transcription: see sources/douay/NOTICE.md"
+license_status = "review"
+
 # ------------------------------------------------- Original languages
 
 [sblgnt]
@@ -54,6 +71,21 @@ sha256 = "4fc2659ce10ec6f57552f22e039de927ed3e417c7b5a757f34f05dae530e4c0f"
 format = "ref_tab_text"
 glob = "*/data/sblgnt/text/*.txt"   # not sblgntapp: that is the apparatus
 license = "CC BY 4.0 (Society of Biblical Literature and Logos Bible Software, 2010)"
+license_status = "clear"
+
+[byz]
+kind = "archive"
+name = "Byzantine Majority Text (Robinson-Pierpont 2018)"
+abbreviation = "BYZ"
+language = "grc"
+# Release v3.3.2 (2024-12-31). Newer: gh api repos/byztxt/byzantine-majority-text/commits/master --jq .sha
+url = "https://github.com/byztxt/byzantine-majority-text/archive/27a45ff1b7be6c17ccbfeac414f3f55732ae8e28.zip"
+sha256 = "5093aa23b9302394cadc0a49fc04c70d4d99749c4ca2e580cfd7bbea1b0f9955"
+format = "byz_csv"
+glob = "*/csv-unicode/ccat/no-variants/*.csv"   # accented text, no apparatus
+align = "nt"   # report NT verses that do not line up with `reference`
+reference = "web"
+license = "Public domain (The Unlicense; text of Robinson and Pierpont, 2018 edition)"
 license_status = "clear"
 
 [wlc]
@@ -116,10 +148,13 @@ kind = "haydock"
 perspective = "catholic"
 author = "George Leo Haydock"
 title = "Haydock's Catholic Bible Commentary (1859)"
-repo = "https://github.com/Data-Science-Link/the_depositum"
-commit = "TODO"
-versification = "vul"
-license = "Public domain (1859); verify transcription/markup license"
+# John Paul Wohlscheid's transcription (johnblood.gitlab.io/haydock). Same archive
+# and commit as the douay entry; the notes are anchored where the Douay verses land.
+url = "https://gitlab.com/JohnBlood/haydock/-/archive/184c10385ba90f7127fc1c0ec69b93656db1fdb0/haydock-184c10385ba90f7127fc1c0ec69b93656db1fdb0.zip"
+sha256 = "aad542c2bfb2a3ab7869a9cf9057a7c823c63ba3b3b7deb2643cd2efa4e21112"
+glob = "*/id[0-9]*.html"
+reference = "web"
+license = "Public domain (1859); transcription: see sources/haydock/NOTICE.md"
 license_status = "review"
 
 [chrysostom]
