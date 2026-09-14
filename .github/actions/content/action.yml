@@ -5,7 +5,9 @@ description: >
   database with the pipeline (mode=sample).
 inputs:
   mode:
-    description: release | sample
+    description: >
+      release | sample | auto. auto uses the pinned release when app/content.lock
+      has a sha256, otherwise falls back to the fixture database.
     default: release
   token:
     description: GitHub token (release downloads)
@@ -13,14 +15,26 @@ inputs:
 runs:
   using: composite
   steps:
+    - id: resolve
+      shell: bash
+      run: |
+        mode="${{ inputs.mode }}"
+        if [ "$mode" = auto ]; then
+          case "$(jq -r .sha256 app/content.lock)" in
+            TODO*|"") mode=sample ;;
+            *) mode=release ;;
+          esac
+        fi
+        echo "mode=$mode" >> "$GITHUB_OUTPUT"
+        echo "Content mode: $mode"
     - uses: astral-sh/setup-uv@v7
-      if: inputs.mode == 'sample'
+      if: steps.resolve.outputs.mode == 'sample'
       with:
         python-version: "3.12"
         # No uv.lock is committed yet; key the cache on pyproject instead.
         cache-dependency-glob: pipeline/pyproject.toml
     - name: Build sample content from fixtures
-      if: inputs.mode == 'sample'
+      if: steps.resolve.outputs.mode == 'sample'
       shell: bash
       working-directory: pipeline
       run: |
@@ -28,7 +42,7 @@ runs:
         uv run srp build --sample --version 0.0.0-sample \
           --out ../app/assets/content/sevenreadings.sqlite
     - name: Download pinned content release
-      if: inputs.mode == 'release'
+      if: steps.resolve.outputs.mode == 'release'
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.token }}

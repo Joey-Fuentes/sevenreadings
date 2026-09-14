@@ -51,6 +51,15 @@ cd app && flutter run
 To build real content: `make content VERSION=0.1.0` (network required; the
 first run tells you which upstream checksums to fill in).
 
+## Web app on GitHub Pages
+
+Every push to `main` that passes all CI jobs deploys the web build to GitHub
+Pages (`pages` job in `ci.yml`). Until a content release is pinned in
+`app/content.lock` the deployed app carries the fixture database; after that it
+ships the real one. One-time setup: repository Settings → Pages → Source:
+"GitHub Actions" (or `gh api -X POST repos/<owner>/<repo>/pages -f build_type=workflows`).
+Pages requires a public repository on the free plan.
+
 ## Before the first real build
 
 - Pin an exact Flutter version in `.fvmrc` and `.github/actions/setup-flutter/action.yml`.

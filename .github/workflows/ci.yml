@@ -52,13 +52,15 @@ jobs:
       - run: uv run pytest -q
 
   smoke:
-    name: Smoke build (web + linux, sample content)
+    name: Smoke build (web + linux)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/content
         with:
-          mode: sample
+          # PRs stay hermetic. Pushes to main use the pinned content release
+          # once one exists, so the Pages deployment below ships real content.
+          mode: ${{ github.event_name == 'push' && 'auto' || 'sample' }}
           token: ${{ github.token }}
       - uses: ./.github/actions/setup-flutter
       - name: Bootstrap platform folders
@@ -72,7 +74,32 @@ jobs:
         run: tools/web-assets.sh
       - name: Build web
         working-directory: app
-        run: flutter build web --release
+        # Project Pages sites live under /<repo>/; drop --base-href for a
+        # custom domain or a <user>.github.io repository.
+        run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
       - name: Build linux
         working-directory: app
         run: flutter build linux --release
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          path: app/build/web
+
+  pages:
+    name: Deploy web app to GitHub Pages
+    # Only after every CI job passed on main. Never on PRs.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [dart, pipeline, smoke]
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
