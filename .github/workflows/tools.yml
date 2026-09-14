@@ -1,14 +1,16 @@
 name: Tools for offline review
 
-# Manual. Packages the exact ruff the pipeline resolves as a wheel artifact,
-# so it can be handed to an environment without network access and produce
-# the same lint/format results as CI.
+# Manual. Packages the pipeline's resolved dev environment (ruff, pytest,
+# httpx and their dependencies) as wheels, so an environment without network
+# access can install them with
+#   pip install --no-index --find-links wheels -r wheels/requirements.txt
+# and get the same lint, format and test results as CI.
 
 on:
   workflow_dispatch:
 
 jobs:
-  ruff-wheel:
+  pipeline-wheels:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -24,17 +26,20 @@ jobs:
           v=$(uv run ruff --version | awk '{print $2}')
           echo "version=$v" >> "$GITHUB_OUTPUT"
           echo "ruff $v"
-      - name: Download the manylinux x86_64 wheel
+      - name: Download wheels for the resolved dev environment (x86_64 Linux, Python 3.12)
+        working-directory: pipeline
         run: |
-          pip download "ruff==${{ steps.ruff.outputs.version }}" \
-            --only-binary=:all: --no-deps \
-            --platform manylinux2014_x86_64 --platform manylinux_2_17_x86_64 \
+          uv export --format requirements-txt --no-hashes --no-emit-project -o ../wheels-req.txt
+          mkdir -p ../wheels
+          pip download -r ../wheels-req.txt --only-binary=:all: --no-deps \
+            --platform manylinux2014_x86_64 --platform manylinux_2_17_x86_64 --platform any \
             --python-version 3.12 --implementation py --abi none \
-            --dest wheels
-          ls -la wheels
+            --dest ../wheels
+          cp ../wheels-req.txt ../wheels/requirements.txt
+          ls -la ../wheels
       - uses: actions/upload-artifact@v7
         with:
-          name: ruff-${{ steps.ruff.outputs.version }}-wheel
-          path: wheels/*.whl
+          name: pipeline-wheels-ruff-${{ steps.ruff.outputs.version }}
+          path: wheels/
           if-no-files-found: error
           retention-days: 30

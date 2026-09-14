@@ -1,22 +1,39 @@
 # sevenreadings
 
-Offline, local-only Scripture study across seven readings: public-domain
-Bible translations (BSB, WEB, and the WEB Catholic Edition for the
-deuterocanon) read alongside Jewish literal, Jewish rationalist,
+Offline, local-only Scripture study across seven readings: Bible text in
+English, Hebrew and Greek read alongside Jewish literal, Jewish rationalist,
 Catholic, Orthodox, Protestant, Islamic and secular-academic commentary.
 
 Flutter/Dart. Targets Android, iOS, macOS, Windows, Linux, Web.
+Live web build: `https://<owner>.github.io/sevenreadings/`.
+
+**Working on this project? Start with [`AGENTS.md`](AGENTS.md)** (handoff for
+AI sessions and new contributors) and [`docs/workflow.md`](docs/workflow.md)
+(the day-to-day commands).
+
+## What's in it today
+
+Bibles: Berean Standard Bible, World English Bible, WEB Catholic Edition
+(deuterocanon), SBL Greek New Testament, Westminster Leningrad Codex (Hebrew),
+Swete's Septuagint. Commentary: Matthew Henry (Protestant). All public domain
+or CC BY / CC BY-SA; see `docs/licensing.md`. The other six commentary sources
+are documented stubs (`pipeline/sevenreadings_pipeline/sources/stubs.py`).
+
+Reader: verse-by-verse on phones, side-by-side columns on wide screens,
+translation toggles, book/chapter picker in Protestant, Catholic or Tanakh
+order, right-to-left Hebrew, original-numbering labels where a source numbers
+differently, readings sheet with collapsible entries.
 
 ## Layout
 
 ```
-.github/            CI (ci.yml), full matrix builds (build.yml),
-                    content releases (content.yml), app releases (release.yml)
+.github/            CI (ci.yml), full matrix builds (build.yml), content releases
+                    (content.yml), app releases (release.yml), offline tools (tools.yml)
 app/                Flutter app. UI only; no parsing, no schema.
-packages/sr_core/   Pure Dart: canon, verse references, versification. No Flutter.
+packages/sr_core/   Pure Dart: canon, verse references. No Flutter.
 packages/sr_data/   Drift schema + typed queries + per-platform DB opener.
 pipeline/           Python (uv). Ingests upstream sources → sevenreadings.sqlite
-docs/               ADRs, licensing matrix, schema notes.
+docs/               ADRs, licensing matrix, schema notes, workflow.
 tools/              Small scripts used by CI and developers.
 ```
 
@@ -30,73 +47,49 @@ and re-runs CI so the app is built and deployed with it. App builds download
 the pinned release, verify its SHA-256, and bundle it under
 `app/assets/content/`. Nothing large is ever committed, and nothing is manual.
 
-To pick up an upstream update: re-run `srp lock <source>` for the new
-checksum, commit `sources.toml`, push.
-
 The schema lives in exactly one place, `packages/sr_data/lib/src/schema/content.drift`.
-It is plain SQL: drift generates the Dart layer from it and the pipeline executes
-it verbatim. FTS5 indexes are added by the pipeline after loading.
+It is plain SQL: drift generates the Dart layer from it and the pipeline
+executes it verbatim. FTS5 indexes are added by the pipeline after loading.
+
+Every source is renumbered at ingest to one canonical verse-id scheme
+(ADR 0003); the build reports each verse that fails to line up with the
+reference translation, per book, so numbering tables are corrected from data.
 
 User data (notes, bookmarks, positions) lives in a separate database
 (`user.drift`) so content updates never touch it.
 
-## First-time setup
+## Setting up with a Flutter toolchain
 
 ```
-# 1. Toolchains: Flutter (stable), uv (https://docs.astral.sh/uv/)
-# 2. Generate platform folders (one time; safe to re-run, does not overwrite lib/)
-make bootstrap ORG=org.sevenreadings
-# 3. Build a tiny sample content DB from committed fixtures (no network)
-make content-sample
-# 4. Web only: fetch sqlite3.wasm and compile the drift worker
-make web-assets
-# 5. Run
+# Flutter (stable), uv (https://docs.astral.sh/uv/)
+make bootstrap ORG=org.sevenreadings   # one time: platform folders, deps, codegen
+make content-sample                    # tiny fixture DB, no network
+make web-assets                        # web only: sqlite3.wasm + drift worker
 cd app && flutter run
 ```
 
-To build real content locally: `make content VERSION=dev` (network required;
-unpinned upstreams print their checksum and stop).
-
-## Web app on GitHub Pages
-
-Every push to `main` that passes all CI jobs deploys the web build to GitHub
-Pages (`pages` job in `ci.yml`). Until a content release is pinned in
-`app/content.lock` the deployed app carries the fixture database; after that it
-ships the real one. One-time setup: repository Settings → Pages → Source:
-"GitHub Actions" (or `gh api -X POST repos/<owner>/<repo>/pages -f build_type=workflows`).
-Pages requires a public repository on the free plan.
-
-## Before the first real build
-
-- Pin an exact Flutter version in `.fvmrc` and `.github/actions/setup-flutter/action.yml`.
-- Verify every upstream URL/commit in `pipeline/sources.toml` and fill in `sha256`
-  values (`cd pipeline && uv run srp lock <source>`).
-- Decide per-source licensing; see `docs/licensing.md`. Sources with
-  `license_status = "blocked"` are skipped by the pipeline.
-- Android signing: add `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`,
-  `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` secrets and wire
-  `app/android/key.properties` per Flutter docs. Apple signing: add certificates
-  and drop `--no-codesign` in `build.yml`.
+Real content: `make content VERSION=dev` (network; unpinned upstreams print
+their checksum and stop). The maintainer's own setup is Termux without
+Flutter, which is why CI does all Flutter work; see `docs/workflow.md`.
 
 ## Not done yet (deliberately)
 
-- Six of seven commentary parsers are documented stubs (`pipeline/.../sources/stubs.py`).
-  Bibles are wired end to end.
-- No state management library, routing, search UI or notes UI. `ReaderScreen`
-  exists to prove the data path; build the real UI on top of `sr_data`.
-- `versification_map` is unused so far: Hebrew and Greek are renumbered at
-  ingest instead (see ADR 0003).
-- Platform folders are generated by `make bootstrap`; commit them and delete the
-  `flutter create` steps from the workflows.
+- Six of seven commentary parsers. Ibn Kathir is blocked on finding an English
+  text with a shippable license.
+- Search UI, notes and bookmarks (schema and `UserDb` exist).
+- Septuagint reorder tables for Exodus 36-40 and Proverbs 24-31.
+- Platform folders are generated by CI's `flutter create` step; once someone
+  runs `make bootstrap` locally, commit them and delete those steps.
 - Android/Apple signing, Play Asset Delivery, Flatpak.
+- Flutter version is `stable` in `.fvmrc` and the composite action; pin it.
 
 ## Decisions
 
 See `docs/adr/`. In short: content as artifact; drift + sqlite3 on all six
-targets; one canonical verse-id encoding with range-anchored commentary;
-everything bundled in the binary.
+targets; one canonical verse-id encoding with range-anchored commentary and
+ingest-time renumbering; everything bundled in the binary.
 
 ## License
 
 Application code: MIT (see `LICENSE`). Bundled texts carry their own licenses,
-recorded per source in `pipeline/sources/<id>/` and surfaced in the app.
+recorded per source in `pipeline/sources.toml` and `docs/licensing.md`.
