@@ -25,7 +25,8 @@ Reader: verse-by-verse on phones, side-by-side columns on wide screens,
 translation toggles, book/chapter picker in Protestant, Catholic or Tanakh
 order, right-to-left Hebrew, original-numbering labels where a source numbers
 differently, readings sheet with collapsible entries, full-text search over
-verses and readings.
+verses and readings, and an "About the texts" screen with every source's
+license and notice.
 
 ## Layout
 

@@ -1,6 +1,11 @@
-# matthew_henry
+# Matthew Henry's Commentary on the Whole Bible
 
-Attribution and license notice for the text shipped from this source.
-Filled in when the source is wired up; surfaced verbatim in the app's
-"About the texts" screen. Keep the upstream LICENSE file alongside this
-notice once the source is pinned.
+Matthew Henry, Commentary on the Whole Bible (1706-1721); public domain.
+
+Text shipped: the Christian Classics Ethereal Library's older HTML edition
+(ccel.org/h/henry/mhc2/, six volume ZIPs pinned by checksum in
+`sources.toml`), which states: "Public domain text. No rights reserved.
+May be distributed freely."
+
+Changes: the quoted KJV paragraphs are dropped (the reader has its own
+Bibles); section headings and the exposition are kept as Markdown.

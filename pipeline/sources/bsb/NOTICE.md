@@ -1,6 +1,13 @@
-# bsb
+# Berean Standard Bible (BSB)
 
-Attribution and license notice for the text shipped from this source.
-Filled in when the source is wired up; surfaced verbatim in the app's
-"About the texts" screen. Keep the upstream LICENSE file alongside this
-notice once the source is pinned.
+The Holy Bible, Berean Standard Bible, BSB. Produced in cooperation with
+Bible Hub, Discovery Bible, OpenBible.com and the Berean Bible Translation
+Committee.
+
+Dedicated to the public domain on 30 April 2023 (CC0). berean.bible/terms:
+"The Berean Bible and Majority Bible texts are officially dedicated to the
+public domain as of April 30, 2023. All uses are freely permitted."
+
+Text shipped: the USFM edition from eBible.org (`engbsb_usfm.zip`), pinned
+by checksum in `sources.toml`. Footnotes, headings and cross-references are
+not shipped.

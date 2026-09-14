@@ -33,7 +33,8 @@ Termux has no `/tmp`; write scratch output under `~/scratch`, never `/tmp`.
 - `deuterocanon.py` — Greek Daniel/Esther and Letter of Jeremiah handling for
   Catholic-canon editions.
 - `db.py` — creates the database from `packages/sr_data/lib/src/schema/content.drift`,
-  loads rows, builds FTS (`sql/fts.sql`), writes `manifest.json`.
+  loads rows, builds FTS (`sql/fts.sql`), stores the built sources' notices
+  in `meta`, writes `manifest.json`.
 - `registry.py` — maps `kind` to a class; also defines the fixture sources used
   by `--sample` builds (CI smoke builds never touch the network).
 
@@ -45,7 +46,10 @@ Termux has no `/tmp`; write scratch output under `~/scratch`, never `/tmp`.
    (commentary, inclusive verse-id range, Markdown body) records.
 3. Add fixtures under `tests/fixtures/`, a test, and a fixture entry in
    `registry.SAMPLE_SOURCES`.
-4. Add the `sources.toml` entry with `sha256 = "TODO"`; the maintainer runs
+4. Write `sources/<id>/NOTICE.md`: the underlying text's status, the
+   digitisation's license quoted with its URL, what we changed, and the
+   attribution the license requires. The build ships it (`meta.notices`).
+5. Add the `sources.toml` entry with `sha256 = "TODO"`; the maintainer runs
    `srp lock --write`, builds locally, reads the alignment report, then
    pushes (the loop is written out in `docs/workflow.md`). The content
    release, pin and deploy follow automatically.

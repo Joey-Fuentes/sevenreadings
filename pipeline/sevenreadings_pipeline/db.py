@@ -16,6 +16,7 @@ PIPELINE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = PIPELINE_DIR.parents[1]
 SCHEMA_PATH = REPO_ROOT / "packages" / "sr_data" / "lib" / "src" / "schema" / "content.drift"
 FTS_PATH = PIPELINE_DIR / "sql" / "fts.sql"
+NOTICES_DIR = PIPELINE_DIR.parent / "sources"  # <source id>/NOTICE.md, shown in the app
 
 # Must match ContentDb.contentSchemaVersion in packages/sr_data.
 SCHEMA_VERSION = 4
@@ -130,6 +131,18 @@ def add_parallels(conn: sqlite3.Connection, parallels: Iterable[Parallel]) -> in
     return len(rows)
 
 
+def notices(sources: list[str]) -> str:
+    """The attribution and license notices of the built sources, one Markdown
+    document, in build order. Every shipped text needs one: CC BY and CC BY-SA
+    sources require attribution and a license link in what we distribute."""
+    parts = []
+    for sid in sources:
+        path = NOTICES_DIR / sid / "NOTICE.md"
+        if path.exists():
+            parts.append(path.read_text(encoding="utf-8").strip())
+    return "\n\n".join(parts)
+
+
 def finalize(conn: sqlite3.Connection, path: Path, version: str, sources: list[str]) -> dict:
     built_at = datetime.now(UTC).isoformat(timespec="seconds")
     conn.executescript(FTS_PATH.read_text(encoding="utf-8"))
@@ -140,6 +153,7 @@ def finalize(conn: sqlite3.Connection, path: Path, version: str, sources: list[s
             ("schema_version", str(SCHEMA_VERSION)),
             ("built_at", built_at),
             ("sources", ",".join(sources)),
+            ("notices", notices(sources)),
         ],
     )
     # drift compares this to ContentDb.schemaVersion; without it the app would

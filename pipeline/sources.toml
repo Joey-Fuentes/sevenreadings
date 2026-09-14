@@ -55,8 +55,8 @@ sha256 = "aad542c2bfb2a3ab7869a9cf9057a7c823c63ba3b3b7deb2643cd2efa4e21112"
 glob = "*/id[0-9]*.html"   # chapter pages; confraternity/ is excluded by the parser
 versification = "vul"   # Vulgate numbering -> canonical, see versification.apply_vul
 reference = "web"
-license = "Public domain (Douay 1582-1610, Challoner revision 1749-52); transcription: see sources/douay/NOTICE.md"
-license_status = "review"
+license = "Public domain (Douay 1582-1610, Challoner revision 1749-52; transcription unlicensed, no new copyright: see NOTICE)"
+license_status = "clear"
 
 # ------------------------------------------------- Original languages
 
@@ -154,8 +154,8 @@ url = "https://gitlab.com/JohnBlood/haydock/-/archive/184c10385ba90f7127fc1c0ec6
 sha256 = "aad542c2bfb2a3ab7869a9cf9057a7c823c63ba3b3b7deb2643cd2efa4e21112"
 glob = "*/id[0-9]*.html"
 reference = "web"
-license = "Public domain (1859); transcription: see sources/haydock/NOTICE.md"
-license_status = "review"
+license = "Public domain (1859; transcription unlicensed, no new copyright: see NOTICE)"
+license_status = "clear"
 
 [chrysostom]
 kind = "hcf_database"

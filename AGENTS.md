@@ -17,20 +17,22 @@ Current content (see `pipeline/sources.toml` for pins and licenses):
 | id | what | status |
 |----|------|--------|
 | bsb, web, webc | English Bibles (BSB; WEB; WEB Catholic Edition with deuterocanon) | live |
-| douay | Douay-Rheims (Challoner), the text quoted on the Haydock pages; Vulgate numbering mapped at ingest (`apply_vul`) | pinned to GitLab commit 184c103; first build read, rules corrected; not yet released |
+| douay | Douay-Rheims (Challoner), the text quoted on the Haydock pages; Vulgate numbering mapped at ingest (`apply_vul`) | live; transcription unlicensed, treated as public domain (docs/licensing.md) |
 | sblgnt | SBL Greek New Testament (CC BY 4.0) | live |
-| byz | Byzantine Majority Text, Robinson-Pierpont 2018 (byztxt, public domain), Received-Text numbering | pinned to v3.3.2 commit, built: 7953 verses, 27 books; not yet released |
+| byz | Byzantine Majority Text, Robinson-Pierpont 2018 (byztxt, The Unlicense), Received-Text numbering | live |
 | wlc | Hebrew Bible, Westminster Leningrad Codex via OSHB (CC BY 4.0), Masoretic numbering mapped at ingest | live |
 | lxx | Septuagint, Swete's edition via nathans/lxx-swete (CC BY-SA 4.0), LXX numbering mapped at ingest | live, known gaps: Exodus 36-40 and Proverbs 24-31 reordered, Ecclesiastes missing upstream |
 | matthew_henry | Matthew Henry's Commentary, CCEL public-domain HTML edition | live (Protestant reading) |
-| haydock | Haydock's Catholic Bible Commentary (1859), JohnBlood GitLab transcription; notes anchored where the Douay verses land | same pin as douay; transcription license under review; not yet released |
-| rashi, ibn_ezra, chrysostom, ibn_kathir, icc | documented stubs in `pipeline/sevenreadings_pipeline/sources/stubs.py` | not wired; ibn_kathir blocked on licensing |
+| haydock | Haydock's Catholic Bible Commentary (1859), JohnBlood GitLab transcription; notes anchored where the Douay verses land | live (Catholic reading); same pin as douay |
+| rashi, ibn_ezra, chrysostom, ibn_kathir, icc | documented stubs in `pipeline/sevenreadings_pipeline/sources/stubs.py` | not wired; see the Planned table in `docs/licensing.md` for what each needs (chrysostom: switch upstream to CCEL; ibn_kathir: no permissive English exists) |
 
 App: verse-by-verse phone layout, side-by-side on wide screens, translation
 chips, book/chapter picker with Protestant/Catholic/Tanakh order, readings
 sheet with collapsible Markdown entries, full-text search (verses per
-translation, readings per source; a hit opens the chapter on that verse). No
-notes or bookmarks yet (the schema and `UserDb` exist for them).
+translation, readings per source; a hit opens the chapter on that verse),
+"About the texts" (book picker, last entry: licenses from the database and
+the notices the pipeline stores in `meta.notices`). No notes or bookmarks
+yet (the schema and `UserDb` exist for them).
 
 ## Setting up a session (AI side)
 
@@ -147,6 +149,11 @@ Rules that keep patches applying cleanly:
   build report; single-verse splits and joins inside a chapter are reported,
   not mapped. Notes cite the canonical verse and add `(Douay c:v)` when the
   numbering differs.
+- Every shipped source has `pipeline/sources/<id>/NOTICE.md`; the build
+  concatenates them into `meta.notices` and the app shows them. CC BY and
+  CC BY-SA sources (sblgnt, wlc, lxx) require that attribution in what we
+  distribute, so a new source without a NOTICE is a licensing bug, not a
+  cosmetic one. `docs/licensing.md` records the reasoning per source.
 - `htmltext.blocks` keeps bold only with `keep_bold=True` (Haydock's
   `Ver. N.` markers); Matthew Henry's output is unchanged by that.
 - FTS5 `remove_diacritics 2` does not fold Greek accents or Hebrew points in
@@ -162,10 +169,10 @@ Rules that keep patches applying cleanly:
 
 ## Where to go next
 
-In rough order of value: pin and build Haydock/Douay and Byzantine (the
-`lock -> build -> probe -> push` loop, then flip `license_status` once the
-transcription terms are confirmed), Chrysostom (NPNF), the Jewish
-commentaries once Sefaria's per-text licenses are settled, notes/bookmarks,
+In rough order of value: Chrysostom from CCEL's NPNF (public domain; not
+the HistoricalChristianFaith database, which states no license), the Jewish
+commentaries from Sefaria-Export filtered to versions whose `license` is
+public domain or CC BY, notes/bookmarks,
 scroll-to-verse in the wide layout, Exodus 36-40 and Proverbs 24-31 LXX
 tables, Play Asset Delivery if the AAB passes 200 MB. Each new source: verify
 the upstream and its license from the actual repository, write the parser

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sr_core/sr_core.dart';
 import 'package:sr_data/sr_data.dart';
 
+import '../about/about_screen.dart';
 import '../search/search_screen.dart';
 import 'markdown_text.dart';
 
@@ -116,9 +117,16 @@ class _ReaderScreenState extends State<ReaderScreen> {
           _tradition = t;
           return _loadOrder();
         },
+        onAbout: _about,
       ),
     );
     if (picked != null) _open(picked.$1, picked.$2);
+  }
+
+  void _about() {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute(builder: (_) => AboutScreen(db: widget.db)),
+    );
   }
 
   @override
@@ -231,19 +239,22 @@ class _ChapterData {
   final Map<String, List<ChapterVersesResult>> verses;
 }
 
-/// Two-step picker: tradition + book list, then a chapter grid.
+/// Two-step picker: tradition + book list, then a chapter grid. Also the
+/// way to the About screen, since the app bar has no room for another icon.
 class _BookPicker extends StatefulWidget {
   const _BookPicker({
     required this.order,
     required this.tradition,
     required this.current,
     required this.onTradition,
+    required this.onAbout,
   });
 
   final List<_BookInfo> order;
   final String tradition;
   final VerseRef current;
   final Future<List<_BookInfo>> Function(String tradition) onTradition;
+  final VoidCallback onAbout;
 
   @override
   State<_BookPicker> createState() => _BookPickerState();
@@ -330,6 +341,16 @@ class _BookPickerState extends State<_BookPicker> {
               Text('Also in this content', style: theme.textTheme.labelLarge),
               for (final b in extras) _bookTile(b),
             ],
+            const Divider(height: 24),
+            ListTile(
+              leading: const Icon(Icons.info_outline),
+              title: const Text('About the texts'),
+              subtitle: const Text('Sources, licenses and notices'),
+              onTap: () {
+                Navigator.pop(context);
+                widget.onAbout();
+              },
+            ),
           ],
         );
       },

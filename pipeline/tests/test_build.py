@@ -40,6 +40,12 @@ def test_sample_build(tmp_path):
     ).fetchall()
     assert len(rows) == 2 and "1:3" not in rows[0][0] + rows[1][0]
 
+    # Every built source's NOTICE.md travels with the content, for the About screen.
+    notices = conn.execute("SELECT value FROM meta WHERE name='notices'").fetchone()[0]
+    assert "# Byzantine Majority Text" in notices and "The Unlicense" in notices
+    assert "# Haydock's Catholic Bible Commentary" in notices
+    assert notices.index("# World English Bible (WEB)") < notices.index("# Byzantine")
+
     # FTS works and points back at real rows.
     hit = conn.execute(
         "SELECT v.verse_id FROM verses_fts JOIN verses v ON v.id = verses_fts.rowid"
