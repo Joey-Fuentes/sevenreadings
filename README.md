@@ -21,11 +21,16 @@ tools/              Small scripts used by CI and developers.
 
 ## How content works
 
-Content is a **build artifact, not source**. The pipeline turns pinned upstream
-texts into one SQLite file, which is published as a GitHub Release tagged
-`content-v<version>`. App builds download the version pinned in
-`app/content.lock`, verify its SHA-256, and bundle it under
-`app/assets/content/`. Nothing large is ever committed.
+Content is a **build artifact, not source**. Any push to `main` that touches
+`pipeline/` or the content schema runs the `Content release` workflow, which
+builds the SQLite file from the pinned upstreams, publishes it as a GitHub
+Release (`content-v<date>-<sha>`), commits the new pin to `app/content.lock`,
+and re-runs CI so the app is built and deployed with it. App builds download
+the pinned release, verify its SHA-256, and bundle it under
+`app/assets/content/`. Nothing large is ever committed, and nothing is manual.
+
+To pick up an upstream update: re-run `srp lock <source>` for the new
+checksum, commit `sources.toml`, push.
 
 The schema lives in exactly one place, `packages/sr_data/lib/src/schema/content.drift`.
 It is plain SQL: drift generates the Dart layer from it and the pipeline executes
@@ -48,8 +53,8 @@ make web-assets
 cd app && flutter run
 ```
 
-To build real content: `make content VERSION=0.1.0` (network required; the
-first run tells you which upstream checksums to fill in).
+To build real content locally: `make content VERSION=dev` (network required;
+unpinned upstreams print their checksum and stop).
 
 ## Web app on GitHub Pages
 

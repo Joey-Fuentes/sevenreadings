@@ -54,6 +54,12 @@ _DROP = frozenset(
 )
 
 
+def _is_acrostic_letter(text: str) -> bool:
+    """A lone all-caps word (ALEPH, BETH ...) marks an acrostic stanza, not a title."""
+    words = clean(text).split()
+    return len(words) == 1 and words[0].isupper()
+
+
 def clean(text: str) -> str:
     text = _NOTE.sub("", text)
     # Unwrap character markers repeatedly (they nest: \wj ... \w ...\w* ... \wj*).
@@ -65,15 +71,21 @@ def clean(text: str) -> str:
     return _WS.sub(" ", text).strip()
 
 
-def parse(lines: Iterable[str]) -> Iterator[Verse]:
+def parse(lines: Iterable[str], name: str = "<usfm>") -> Iterator[Verse]:
     book: int | None = None
     chapter = 0
     current: tuple[int, list[str]] | None = None  # (verse number, text parts)
+    seen: set[tuple[int, int]] = set()
+    verses_in_chapter = 0
 
     def flush() -> Iterator[Verse]:
         nonlocal current
         if current is not None and book is not None:
             num, parts = current
+            key = (chapter, num)
+            if key in seen:
+                raise ValueError(f"{name}: duplicate verse {chapter}:{num} in book {book}")
+            seen.add(key)
             text = clean(" ".join(parts))
             if text:
                 yield Verse(book, chapter, num, text)
@@ -95,20 +107,42 @@ def parse(lines: Iterable[str]) -> Iterator[Verse]:
                 b = BY_USFM.get(code)
                 book = b.id if b else None
                 chapter = 0
+                seen.clear()
             elif book is None:
                 continue  # non-canonical book (Apocrypha, front matter)
             elif marker == "c":
                 yield from flush()
                 chapter = int(rest.split()[0])
+                verses_in_chapter = 0
             elif marker == "v":
-                yield from flush()
                 head, _, text = rest.partition(" ")
+                m_num = re.match(r"\d+", head)
+                if m_num is None:  # malformed marker: keep the text, do not crash
+                    if current is not None:
+                        current[1].append(rest)
+                    continue
                 # "1-2" bridged verses take the first number; "1a" drops the suffix.
-                num = int(re.match(r"\d+", head).group(0))
-                current = (num, [text])
+                num = int(m_num.group(0))
+                if current is not None and current[0] == num:
+                    # Verse segments (\v 3a ... \v 3b) continue the same verse.
+                    current[1].append(text)
+                else:
+                    yield from flush()
+                    current = (num, [text])
+                    verses_in_chapter += 1
             elif marker == "d":
-                yield from flush()
-                current = (0, [rest])
+                # Before any verse: the psalm's superscription -> verse 0.
+                # After verses have started (Psalm 119's ALEPH, BETH ...): a
+                # stanza heading, dropped like every other heading.
+                if verses_in_chapter:
+                    continue
+                if _is_acrostic_letter(rest):
+                    continue  # Psalm 119 "ALEPH" before verse 1 is a heading too
+                if current is not None and current[0] == 0:
+                    current[1].append(rest)
+                else:
+                    yield from flush()
+                    current = (0, [rest])
             elif marker in _CONTINUE:
                 if current is not None and rest:
                     current[1].append(rest)

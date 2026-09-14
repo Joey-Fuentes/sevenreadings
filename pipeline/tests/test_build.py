@@ -29,7 +29,8 @@ def test_sample_build(tmp_path):
     assert conn.execute("PRAGMA user_version").fetchone()[0] == db.SCHEMA_VERSION
     assert conn.execute("SELECT COUNT(*) FROM books").fetchone()[0] == 66
     assert conn.execute("SELECT COUNT(*) FROM perspectives").fetchone()[0] == 7
-    assert conn.execute("SELECT COUNT(*) FROM verses WHERE translation_id='web'").fetchone()[0] == 7
+    web = conn.execute("SELECT COUNT(*) FROM verses WHERE translation_id='web'").fetchone()[0]
+    assert web == 10
 
     # Range anchoring: Gen 1:2 sees the chapter note and the 1:1-2 note, not 1:3.
     rows = conn.execute(

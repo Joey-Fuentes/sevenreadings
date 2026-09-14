@@ -4,6 +4,7 @@ on:
   pull_request:
   push:
     branches: [main]
+  workflow_dispatch: # used by content.yml after it pins a new release
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -60,7 +61,7 @@ jobs:
         with:
           # PRs stay hermetic. Pushes to main use the pinned content release
           # once one exists, so the Pages deployment below ships real content.
-          mode: ${{ github.event_name == 'push' && 'auto' || 'sample' }}
+          mode: ${{ github.event_name == 'pull_request' && 'sample' || 'auto' }}
           token: ${{ github.token }}
       - uses: ./.github/actions/setup-flutter
       - name: Bootstrap platform folders
@@ -81,14 +82,14 @@ jobs:
         working-directory: app
         run: flutter build linux --release
       - uses: actions/upload-pages-artifact@v3
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         with:
           path: app/build/web
 
   pages:
     name: Deploy web app to GitHub Pages
     # Only after every CI job passed on main. Never on PRs.
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     needs: [dart, pipeline, smoke]
     runs-on: ubuntu-latest
     permissions:
