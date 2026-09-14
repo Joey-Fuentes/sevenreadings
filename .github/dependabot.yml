@@ -1,7 +1,11 @@
 version: 2
 updates:
   - package-ecosystem: github-actions
-    directory: /
+    # Composite actions are only scanned when listed explicitly.
+    directories:
+      - /
+      - /.github/actions/content
+      - /.github/actions/setup-flutter
     schedule: { interval: weekly }
   - package-ecosystem: pub
     directory: /

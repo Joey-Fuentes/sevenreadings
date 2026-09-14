@@ -13,10 +13,12 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: astral-sh/setup-uv@v5
+    - uses: astral-sh/setup-uv@v7
       if: inputs.mode == 'sample'
       with:
         python-version: "3.12"
+        # No uv.lock is committed yet; key the cache on pyproject instead.
+        cache-dependency-glob: pipeline/pyproject.toml
     - name: Build sample content from fixtures
       if: inputs.mode == 'sample'
       shell: bash
