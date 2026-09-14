@@ -149,7 +149,7 @@ def apply_mt(
         merged.setdefault(verse_id(v.book, ch, n), []).append(
             Verse(v.book, ch, n, v.text, native)
         )
-    for vid, parts in merged.items():
+    for parts in merged.values():
         first = parts[0]
         if len(parts) == 1:
             yield first

@@ -5,6 +5,7 @@ from __future__ import annotations
 import tomllib
 from pathlib import Path
 
+from .sources.archive_bible import ArchiveBibleSource
 from .sources.base import Source
 from .sources.jsonl_commentary import JsonlCommentarySource
 from .sources.stubs import (
@@ -14,7 +15,6 @@ from .sources.stubs import (
     SefariaExportSource,
     TafsirApiSource,
 )
-from .sources.archive_bible import ArchiveBibleSource
 from .sources.usfm_bible import UsfmBibleSource
 
 SOURCES_TOML = Path(__file__).resolve().parents[1] / "sources.toml"
