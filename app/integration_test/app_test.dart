@@ -40,6 +40,12 @@ import 'package:sevenreadings/features/reader/reader_screen.dart';
 late final IntegrationTestWidgetsFlutterBinding binding;
 var surfaceConverted = false;
 
+/// Everything the app debugPrints during the run, delivered in the
+/// driver's report as `log` even when the test fails: on web the browser
+/// console is not forwarded, and on every target this is the app's own
+/// account of what happened (the narrator's breadcrumbs, for instance).
+final appLog = <String>[];
+
 /// Wraps the app so desktop screenshots can be rendered from it.
 final rootBoundaryKey = GlobalKey();
 
@@ -59,8 +65,15 @@ const noteText = 'Written by the integration test';
 void main() {
   binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   binding.framePolicy = LiveTestWidgetsFlutterBindingFramePolicy.fullyLive;
+  final printer = debugPrint;
+  debugPrint = (String? message, {int? wrapWidth}) {
+    if (message != null) appLog.add(message);
+    printer(message, wrapWidth: wrapWidth);
+  };
 
   testWidgets('first launch, the checklist, second launch', (tester) async {
+    addTearDown(() => report('log', appLog.join('\n')));
+
     // Launch, first content copy, Genesis 1 with the Bible chips.
     final ms = await launch(tester);
     report('first_launch_ms', ms);
