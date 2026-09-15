@@ -41,7 +41,13 @@ picker; stored in `UserDb`, never in content), and, in builds that may
 show it, "Support Seven Readings": a band under the title row of every
 app bar, always on screen, plus an entry at the top of About, opening the
 Stripe link (card, Apple Pay, Google Pay) with wording for a gift to an
-individual.
+individual. Narrator ("Listen" in the reader's top bar, and a headphones
+button on every reading in the sheet): the system voice reads the first
+English translation shown from the highlighted verse, or a reading
+paragraph by paragraph; a strip at the bottom has play/pause, stop and
+the speed (remembered in `UserDb.settings`); the verse being read is the
+highlighted one. Android, iOS, macOS, Windows and web through
+`flutter_tts`; Linux has no plugin and the strip says no voice.
 
 ## Setting up a session (AI side)
 
@@ -272,7 +278,7 @@ Rules that keep patches applying cleanly:
   The first `screenshots.yml` run (2026-09-15) `cd app`-ed, ran `flutter
   drive` from the repo root, found no target, and passed. Its `script` is
   one command, `bash tools/checklist.sh <device>`, and the script itself
-  fails unless nine screenshots and both timings came out of the run. A
+  fails unless ten screenshots and both timings came out of the run. A
   workflow that can pass without doing its work is a bug of the same kind
   as untested code.
 - `setState(() => _x = _load())` returns the Future to `setState`, which
@@ -350,7 +356,13 @@ None is hidden in a log; this list is the place to look.
   inside verse 1 in the Hebrew, LXX and Douay numbering; those texts show
   no Title row there. A text heuristic could split them; not done.
 - **Wide layout: no scroll-to-verse** — search hits highlight the row in
-  each column but do not scroll to it on screens over 720 px.
+  each column but do not scroll to it on screens over 720 px; the same
+  applies to the narrator's highlight there.
+- **No voice on Linux** — `flutter_tts` has no Linux implementation
+  (Android, iOS, macOS, Windows, web only), so the narrator's strip says
+  "No voice is available" there. The plan's N1 assumed speech-dispatcher;
+  that route does not exist in this plugin. N2 (sherpa-onnx with an open
+  Piper voice) would give Linux a voice and is the recorded way forward.
 - **Collapsed previews only collapse paragraphs** — a reading opens
   showing its first paragraph, but Rashi's and Haydock's notes have no
   paragraph breaks, so they open in full (seen in the emulator screenshots,

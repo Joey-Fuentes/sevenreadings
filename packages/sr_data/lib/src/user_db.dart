@@ -76,4 +76,12 @@ class UserDb extends _$UserDb {
 
   Future<void> deleteNote(int id) =>
       (delete(notes)..where((n) => n.id.equals(id))).go();
+
+  /// A setting by name (`narrator.speed`, ...), or null when unset.
+  Future<String?> setting(String name) => settingValue(name).getSingleOrNull();
+
+  Future<void> setSetting(String name, String value) =>
+      into(settings).insertOnConflictUpdate(
+        SettingsCompanion.insert(name: name, value: value),
+      );
 }

@@ -143,7 +143,7 @@ weekly, and on demand, not on every push.
 - **T1 and T2: done, 2026-09-15, proven on sample content.** Fifth run of
   `screenshots.yml` green: `app/integration_test/app_test.dart` walked the
   whole checklist on an API 34 Pixel 6 emulator and the `screenshots-android`
-  artifact holds the PNGs (eight then, nine since D1), `integration_response_data.json` and the
+  artifact holds the PNGs (eight then; nine since D1, ten since N1), `integration_response_data.json` and the
   device log. Measured: first launch to Genesis 1 with its verses, content
   copy included, 2922 ms; second launch 168 ms (the copy skipped, both
   databases reopened; the bookmark and note back). Sixth run, release
@@ -255,7 +255,7 @@ Spikes:
 ### State
 
 - **D1 (2026-09-15): done, proven on the emulator and under Xvfb** (both
-  green with nine screenshots; step 02 is the Support screen, the band is
+  green with nine screenshots; step 02 (03 since N1) is the Support screen, the band is
   in every later one). `app/lib/features/support/`: a band
   under the title row of every app bar, full width and centred, "Support
   Seven Readings" with a heart, on screen at all times (the maintainer's
@@ -358,6 +358,29 @@ Spikes:
   on N1.
 - **N3. Highlight sync** for N2 (chunk by verse, synthesize ahead).
 
+### State
+
+- **N1 (2026-09-15): in the tree, first run pending.** `app/lib/features/narrator/`:
+  `Narrator` (a `ChangeNotifier` over `flutter_tts`) reads one chunk at a
+  time — the verses of the chapter in the first English translation shown,
+  from the highlighted verse if any, or a reading paragraph by paragraph —
+  so the chunk being spoken is known on every platform, which is what the
+  per-verse highlight is driven by (no engine's word callbacks needed).
+  Pause stops the voice and resume restarts the chunk, the one contract
+  every engine honours. "Listen" is the first icon in the reader's top
+  bar; every reading in the sheet has a headphones button; `NarratorBar`
+  at the bottom has play/pause, stop, "Genesis 1 · verse 3 of 31" and the
+  speed (0.75-1.5×, remembered in `UserDb.settings`, the first use of that
+  table). Navigation stops the voice. When the platform has no voice the
+  strip says so and stays until Stop, so the state is testable: step 02 of
+  the checklist taps Listen, asserts the strip with the chapter, and
+  stops. Two facts found writing it: `flutter_tts` has no Linux
+  implementation (speech-dispatcher, as this section assumed, is not a
+  route it offers; recorded as a known gap, N2 is the way to a Linux
+  voice); and the plugin's speed scale differs by platform (mapped in
+  `Narrator._pluginRate`). By ear on the phone is the maintainer's part:
+  a real voice, the highlight following it, pause and resume, the speed.
+
 ## Order of everything
 
 1. T1-T2 (integration test, Android emulator screenshots): the foundation
@@ -365,7 +388,9 @@ Spikes:
 2. S3 (Flathub manifest, PWA) and D1 (donations screen, links only): free,
    ship on the free channels. D1 done 2026-09-15; S3 in progress (the
    platform folders and the domain are in; icon, PWA and Flatpak remain).
-3. N1 (narrator with system voices).
+3. N1 (narrator with system voices). In the tree 2026-09-15 (section 5,
+   State); item 2's PWA and Flatpak are paused at the maintainer's
+   direction and resume after this.
 4. L1 and L2 (chat feasibility, web and Linux) — decide from the numbers.
 5. T3-T4 (remaining targets' screenshots, the contact sheet).
 6. S1-S2 and D2-D3 as the maintainer opens accounts; S4 with the

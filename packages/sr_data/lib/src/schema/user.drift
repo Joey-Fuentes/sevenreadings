@@ -44,3 +44,5 @@ allNotes: SELECT * FROM notes ORDER BY updated_at DESC, id DESC;
 bookmarkForVerse: SELECT * FROM bookmarks WHERE verse_id = :verseId LIMIT 1;
 
 allBookmarks: SELECT * FROM bookmarks ORDER BY created_at DESC, id DESC;
+
+settingValue: SELECT value FROM settings WHERE name = :name;

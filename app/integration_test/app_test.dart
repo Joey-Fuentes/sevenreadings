@@ -34,6 +34,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:sevenreadings/app.dart';
 import 'package:sevenreadings/features/about/about_screen.dart';
+import 'package:sevenreadings/features/narrator/narrator_bar.dart';
 import 'package:sevenreadings/features/reader/reader_screen.dart';
 
 late final IntegrationTestWidgetsFlutterBinding binding;
@@ -69,19 +70,30 @@ void main() {
     expect(find.text('BSB'), findsWidgets);
     await screenshot(tester, '01-genesis-1');
 
+    // Listen: the narrator bar appears with the chapter and the first verse
+    // is the highlighted one, whether or not this device has a voice (the
+    // emulator and the Linux build may not; the bar then says so and
+    // stays until Stop).
+    await tester.tap(find.byTooltip('Listen'));
+    await waitFor(tester, find.byKey(narratorBarKey));
+    expect(find.textContaining('Genesis 1 \u00b7'), findsWidgets);
+    await screenshot(tester, '02-narrator');
+    await tester.tap(find.byTooltip('Stop'));
+    await waitGone(tester, find.byKey(narratorBarKey));
+
     // Support Seven Readings: the band under the title row, on every
     // screen of builds that may show outside payment links (all the
     // checklist's builds are direct ones, see support_links.dart).
     await tester.tap(find.text('Support Seven Readings'));
     await waitFor(tester, find.text('Support'));
     expect(find.textContaining('buy.stripe.com'), findsWidgets);
-    await screenshot(tester, '02-support');
+    await screenshot(tester, '03-support');
     await tester.pageBack();
     await waitFor(tester, find.textContaining('In the beginning'));
 
     // A verse's readings: the sheet opens on Genesis 1:1.
     await openReadings(tester);
-    await screenshot(tester, '03-readings-genesis-1-1');
+    await screenshot(tester, '04-readings-genesis-1-1');
 
     // A bookmark and a note, from the sheet's header. A device that ran
     // this before already has the bookmark; only add one when it is missing.
@@ -94,7 +106,7 @@ void main() {
     await tester.enterText(find.byType(TextField), noteText);
     await tester.tap(find.text('Save'));
     await waitFor(tester, find.text(noteText));
-    await screenshot(tester, '04-bookmark-and-note');
+    await screenshot(tester, '05-bookmark-and-note');
 
     // Every tradition is listed, with a reading or with "No reading"; the
     // Protestant reading on Genesis 1:1 is Matthew Henry in both contents.
@@ -113,7 +125,7 @@ void main() {
     await waitFor(tester, find.byType(TextField));
     await tester.enterText(find.byType(TextField), 'beginning God created');
     await waitFor(tester, find.textContaining('Genesis 1:1 \u00b7'));
-    await screenshot(tester, '05-search-verses');
+    await screenshot(tester, '06-search-verses');
     await tester.tap(find.text('Readings'));
     await tester.pump(const Duration(milliseconds: 300));
     await tester.tap(find.byType(DropdownButton<String?>));
@@ -123,7 +135,7 @@ void main() {
     await tester.enterText(find.byType(TextField), 'creation');
     final hit = find.textContaining('Matthew Henry \u00b7 Genesis');
     await waitFor(tester, hit);
-    await screenshot(tester, '06-search-readings');
+    await screenshot(tester, '07-search-readings');
     await tester.tap(hit.first);
     await waitFor(tester, find.byKey(readingsSheetKey));
     await tester.pump(const Duration(milliseconds: 500));
@@ -141,7 +153,7 @@ void main() {
     await waitFor(tester, find.text('Bookmarks'));
     expect(find.text('Genesis 1:1'), findsWidgets);
     expect(find.text(noteText), findsWidgets);
-    await screenshot(tester, '07-bookmarks-and-notes');
+    await screenshot(tester, '08-bookmarks-and-notes');
     await tester.pageBack();
     await waitFor(tester, find.byIcon(Icons.expand_more));
 
@@ -154,7 +166,7 @@ void main() {
     );
     await tester.tap(find.text('About the texts'));
     await waitFor(tester, find.text('Bibles'));
-    await screenshot(tester, '08-about-the-texts');
+    await screenshot(tester, '09-about-the-texts');
     await scrollTo(tester, find.text('Notices'), find.byKey(aboutListKey));
     await tester.pageBack();
     await waitFor(tester, find.byIcon(Icons.expand_more));
@@ -171,7 +183,7 @@ void main() {
     await openReadings(tester);
     await waitFor(tester, find.byTooltip('Remove bookmark'));
     expect(find.text(noteText), findsWidgets);
-    await screenshot(tester, '09-second-launch');
+    await screenshot(tester, '10-second-launch');
     await closeSheet(tester);
   });
 }
@@ -237,6 +249,21 @@ Future<void> scrollTo(WidgetTester tester, Finder finder, Finder view) async {
   }
   await Scrollable.ensureVisible(tester.element(finder.first));
   await tester.pump(const Duration(milliseconds: 300));
+}
+
+/// Pumps real frames until [finder] matches nothing; fails after [timeout].
+Future<void> waitGone(
+  WidgetTester tester,
+  Finder finder, {
+  Duration timeout = const Duration(seconds: 60),
+}) async {
+  final clock = Stopwatch()..start();
+  while (finder.evaluate().isNotEmpty) {
+    if (clock.elapsed > timeout) {
+      fail('Timed out after ${timeout.inSeconds}s waiting for $finder to go');
+    }
+    await tester.pump(const Duration(milliseconds: 100));
+  }
 }
 
 /// Pumps real frames until [finder] matches; fails after [timeout].

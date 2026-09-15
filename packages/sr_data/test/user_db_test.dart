@@ -30,6 +30,13 @@ void main() {
     expect((await db.allBookmarks().get()).length, 1);
   });
 
+  test('settings are upserted by name', () async {
+    expect(await db.setting('narrator.speed'), isNull);
+    await db.setSetting('narrator.speed', '1.25');
+    await db.setSetting('narrator.speed', '1.5');
+    expect(await db.setting('narrator.speed'), '1.5');
+  });
+
   test('notes attach to a verse and can be edited and deleted', () async {
     final v = const VerseRef(19, 23, 1).id;
     final id = await db.addNote(v, 'first thought');

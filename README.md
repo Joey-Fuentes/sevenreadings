@@ -30,8 +30,10 @@ translation toggles, book/chapter picker in Protestant, Catholic or Tanakh
 order, right-to-left Hebrew, original-numbering labels where a source numbers
 differently, readings sheet with collapsible entries, full-text search over
 verses and readings, bookmarks and notes per verse, an "About the texts"
-screen with every source's license and notice, and, outside the app
-stores, a "Support this project" screen (Stripe; card, Apple Pay, Google Pay).
+screen with every source's license and notice, a narrator that reads a
+chapter or a reading with the system voice (not on Linux yet), and,
+outside the app stores, a "Support this project" screen (Stripe; card,
+Apple Pay, Google Pay).
 
 ## Layout
 

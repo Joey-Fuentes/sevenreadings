@@ -3,6 +3,8 @@ import 'package:sr_core/sr_core.dart';
 import 'package:sr_data/sr_data.dart';
 
 import '../about/about_screen.dart';
+import '../narrator/narrator.dart';
+import '../narrator/narrator_bar.dart';
 import '../notes/notes_screen.dart';
 import '../search/search_screen.dart';
 import '../support/support_links.dart';
@@ -49,9 +51,84 @@ class _ReaderScreenState extends State<ReaderScreen> {
   /// Translations the reader has switched off. Empty = show everything.
   final Set<String> _hidden = {};
 
+  /// Reads the chapter (or a reading) aloud; the bar at the bottom shows
+  /// it, and the verse being read is the highlighted one.
+  late final Narrator _narrator = Narrator()..addListener(_narrated);
+  static const _speedSetting = 'narrator.speed';
+  String? _savedSpeed;
+  int? _narratedVerse;
+
   Future<_ChapterData> _init() async {
     await _loadOrder();
+    await _loadSpeed();
     return _load();
+  }
+
+  Future<void> _loadSpeed() async {
+    try {
+      final saved = await widget.user.setting(_speedSetting);
+      final speed = double.tryParse(saved ?? '');
+      if (speed != null && Narrator.speeds.contains(speed)) {
+        _savedSpeed = saved;
+        _narrator.speed = speed;
+      }
+    } catch (e) {
+      debugPrint('narrator speed not loaded: $e');
+    }
+  }
+
+  /// Follows the narrator: the verse it reads becomes the highlight, and
+  /// a changed speed is remembered.
+  void _narrated() {
+    final verse = _narrator.active ? _narrator.current?.verseId : null;
+    if (verse != _narratedVerse) {
+      _narratedVerse = verse;
+      if (verse != null && mounted) {
+        setState(() {
+          _highlight = verse;
+        });
+      }
+    }
+    final speed = '${_narrator.speed}';
+    if (speed != _savedSpeed) {
+      _savedSpeed = speed;
+      widget.user.setSetting(_speedSetting, speed).ignore();
+    }
+  }
+
+  @override
+  void dispose() {
+    _narrator.dispose();
+    super.dispose();
+  }
+
+  /// Reads this chapter aloud in the first English translation shown, from
+  /// the highlighted verse when there is one.
+  Future<void> _listen() async {
+    final data = await _data;
+    final shown = data.translations.where(
+      (t) => t.language == 'en' && !_hidden.contains(t.id),
+    );
+    for (final t in shown) {
+      final verses = data.verses[t.id] ?? const [];
+      if (verses.isEmpty) continue;
+      final chunks = [
+        for (final v in verses) NarratorChunk(v.body, verseId: v.verseId),
+      ];
+      var from = 0;
+      final highlight = _highlight;
+      if (highlight != null) {
+        final i = verses.indexWhere((v) => v.verseId == highlight);
+        if (i >= 0) from = i;
+      }
+      final title = '${_chapter.bookInfo.name} ${_chapter.chapter}';
+      await _narrator.read(title, chunks, from: from);
+      return;
+    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('No English text to read here.')),
+    );
   }
 
   Future<List<_BookInfo>> _loadOrder() async {
@@ -73,6 +150,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
   }
 
   void _open(int book, int chapter, {int? highlight}) {
+    _narrator.stop();
     setState(() {
       _chapter = VerseRef(book, chapter, 1);
       _highlight = highlight;
@@ -162,6 +240,11 @@ class _ReaderScreenState extends State<ReaderScreen> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.headphones),
+            tooltip: 'Listen',
+            onPressed: _listen,
+          ),
+          IconButton(
             icon: const Icon(Icons.search),
             tooltip: 'Search',
             onPressed: _search,
@@ -177,6 +260,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
         ],
         bottom: showsSupportLinks ? const SupportBar() : null,
       ),
+      bottomNavigationBar: NarratorBar(narrator: _narrator),
       body: FutureBuilder<_ChapterData>(
         future: _data,
         builder: (context, snapshot) {
@@ -248,6 +332,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
         builder: (_, controller) => _ReadingsSheet(
           db: widget.db,
           user: widget.user,
+          narrator: _narrator,
           verse: VerseRef.fromId(verseId),
           controller: controller,
         ),
@@ -638,9 +723,10 @@ class _TranslationColumn extends StatelessWidget {
 /// collapsed to its first paragraph. Henry's sections run to thousands of
 /// words; showing all of them at once buries the other readings.
 class _ReadingEntry extends StatefulWidget {
-  const _ReadingEntry({required this.reading});
+  const _ReadingEntry({required this.reading, required this.narrator});
 
   final ReadingsForVerseResult reading;
+  final Narrator narrator;
 
   @override
   State<_ReadingEntry> createState() => _ReadingEntryState();
@@ -656,14 +742,24 @@ class _ReadingEntryState extends State<_ReadingEntry> {
     final preview = firstParagraph(r.body);
     final truncated = preview.length < r.body.length;
     final shown = _expanded || !truncated ? r.body : preview;
+    final parts = [r.author, if (r.citation != null) r.citation!];
+    final label = parts.join(' \u00b7 ');
     return Padding(
       padding: const EdgeInsets.only(top: 6, bottom: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            [r.author, if (r.citation != null) r.citation!].join(' \u00b7 '),
-            style: theme.textTheme.labelMedium,
+          Row(
+            children: [
+              Expanded(
+                child: Text(label, style: theme.textTheme.labelMedium),
+              ),
+              _ListenButton(
+                narrator: widget.narrator,
+                title: label,
+                body: r.body,
+              ),
+            ],
           ),
           if (r.heading != null)
             Text(r.heading!, style: theme.textTheme.labelLarge),
@@ -683,16 +779,62 @@ class _ReadingEntryState extends State<_ReadingEntry> {
   }
 }
 
+/// Reads one reading aloud, paragraph by paragraph; a stop button while
+/// that reading is the one being read.
+class _ListenButton extends StatelessWidget {
+  const _ListenButton({
+    required this.narrator,
+    required this.title,
+    required this.body,
+  });
+
+  final Narrator narrator;
+  final String title;
+  final String body;
+
+  List<NarratorChunk> _chunks() {
+    final plain = body.replaceAll('*', '');
+    return [
+      for (final p in plain.split(RegExp(r'\n\s*\n')))
+        if (p.trim().isNotEmpty) NarratorChunk(p.trim()),
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: narrator,
+      builder: (context, _) {
+        final mine = narrator.active && narrator.title == title;
+        return IconButton(
+          icon: Icon(mine ? Icons.stop : Icons.headphones),
+          tooltip: mine ? 'Stop' : 'Listen to this reading',
+          visualDensity: VisualDensity.compact,
+          onPressed: () {
+            if (mine) {
+              narrator.stop();
+            } else {
+              narrator.read(title, _chunks());
+            }
+          },
+        );
+      },
+    );
+  }
+}
+
 class _ReadingsSheet extends StatefulWidget {
   const _ReadingsSheet({
     required this.db,
     required this.user,
+    required this.narrator,
     required this.verse,
     required this.controller,
   });
 
   final ContentDb db;
   final UserDb user;
+  final Narrator narrator;
   final VerseRef verse;
   final ScrollController controller;
 
@@ -865,7 +1007,7 @@ class _ReadingsSheetState extends State<_ReadingsSheet> {
             for (final p in data.perspectives) ...[
               Text(p.name, style: theme.textTheme.titleMedium),
               for (final r in grouped[p.id] ?? const [])
-                _ReadingEntry(reading: r),
+                _ReadingEntry(reading: r, narrator: widget.narrator),
               if (grouped[p.id] == null)
                 Padding(
                   padding: const EdgeInsets.only(top: 4, bottom: 12),
