@@ -27,7 +27,7 @@ jobs:
           mkdir -p release
           cp "$(find artifacts/android -name '*.apk' | head -n1)" release/sevenreadings-android.apk
           cp "$(find artifacts/android -name '*.aab' | head -n1)" release/sevenreadings-android.aab
-          cp artifacts/linux-x64/*.tar.gz artifacts/linux-arm64/*.tar.gz release/
+          cp artifacts/linux-x64/*.tar.gz release/
           cp artifacts/windows-x64/*.zip artifacts/macos/*.zip artifacts/ios-unsigned/*.zip release/
           (cd artifacts/web && zip -qr ../../release/sevenreadings-web.zip .)
           (cd release && sha256sum -- * > SHA256SUMS)

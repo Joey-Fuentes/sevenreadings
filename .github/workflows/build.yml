@@ -87,7 +87,8 @@ jobs:
       matrix:
         include:
           - { runner: ubuntu-latest, arch: x64 }
-          - { runner: ubuntu-24.04-arm, arch: arm64 }
+          # No arm64: Flutter publishes no Linux arm64 SDK, so that job can
+          # never resolve a toolchain (first full build, 2026-09-15).
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v7
