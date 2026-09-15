@@ -90,3 +90,11 @@ def test_write_pin_updates_every_entry_sharing_the_url():
     assert 'sha256 = "abc"   # keep me' in out
     assert 'sha256 = "old"' in out
     assert fetch.write_pin(toml, "https://x/none.zip", "abc")[1] == 0
+    listed = (
+        '[m]\nurls = [\n  "https://c/v1.xml",\n  "https://c/v2.xml",   # two\n]\n'
+        'sha256 = [\n  "TODO",\n  "TODO",\n]\nlicense = "x"\n'
+    )
+    out, n = fetch.write_pin(listed, "https://c/v2.xml", "beef")
+    assert n == 1 and out.count('"TODO"') == 1 and '  "beef",\n]' in out
+    out, n = fetch.write_pin(out, "https://c/v1.xml", "cafe")
+    assert n == 1 and '"cafe",\n  "beef"' in out and "# two" in out

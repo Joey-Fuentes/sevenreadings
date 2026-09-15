@@ -124,24 +124,33 @@ kind = "sefaria_export"
 perspective = "jewish_literal"
 author = "Rashi"
 title = "Rashi on Tanakh"
-repo = "https://github.com/Sefaria/Sefaria-Export"
-commit = "TODO"
-paths = ["json/Commentary/Tanakh/Rashi"]
-versification = "mt"
-license = "Hebrew: public domain. English: per-text on Sefaria; some CC-BY-NC"
-license_status = "review"
+# Sefaria's database export on Hugging Face, pinned by commit:
+#   https://huggingface.co/Sefaria/database_export/commits/main
+repo = "Sefaria/database_export"
+commit = "b4acd284c9659637039197a6ab42c0241366e37f"
+path = "json/Tanakh/Rishonim on Tanakh/Rashi"
+# Per book, the largest English version whose license is Public Domain, CC0,
+# CC BY or CC BY-SA is read, these titles first; NC versions are never read.
+prefer = [
+  "Pentateuch with Rashi's commentary by M. Rosenbaum and A.M. Silbermann, 1929-1934",
+  "Sefaria Community Translation",
+]
+reference = "web"
+license = "Hebrew: public domain. English: per version; only Public Domain, CC0, CC BY and CC BY-SA versions are shipped (the build lists them)"
+license_status = "clear"
 
 [ibn_ezra]
 kind = "sefaria_export"
 perspective = "jewish_rational"
 author = "Ibn Ezra"
 title = "Ibn Ezra on Tanakh"
-repo = "https://github.com/Sefaria/Sefaria-Export"
-commit = "TODO"
-paths = ["json/Commentary/Tanakh/Ibn_Ezra"]
-versification = "mt"
-license = "Hebrew: public domain. English: per-text on Sefaria; coverage partial"
-license_status = "review"
+repo = "Sefaria/database_export"
+commit = "b4acd284c9659637039197a6ab42c0241366e37f"
+path = "json/Tanakh/Rishonim on Tanakh/Ibn Ezra"
+prefer = ["Sefaria Community Translation"]
+reference = "web"
+license = "Hebrew: public domain. English: per version; only Public Domain, CC0, CC BY and CC BY-SA versions are shipped (the build lists them)"
+license_status = "clear"
 
 [haydock]
 kind = "haydock"
@@ -158,14 +167,28 @@ license = "Public domain (1859; transcription unlicensed, no new copyright: see 
 license_status = "clear"
 
 [chrysostom]
-kind = "hcf_database"
+kind = "ccel_thml"
 perspective = "orthodox"
 author = "St. John Chrysostom"
-title = "Homilies (NPNF series 1, vols. 9-14)"
-repo = "https://github.com/HistoricalChristianFaith/Commentaries-Database"
-commit = "TODO"
-license = "Public domain (Schaff, 1888-1890); verify database license"
-license_status = "review"
+title = "Homilies on the New Testament (NPNF series 1, vols. 10-14)"
+# CCEL's ThML editions of Schaff's Nicene and Post-Nicene Fathers; each file
+# declares DC.Rights "Public Domain". `srp lock --write chrysostom` fills the list.
+urls = [
+  "https://www.ccel.org/ccel/s/schaff/npnf110.xml",
+  "https://www.ccel.org/ccel/s/schaff/npnf111.xml",
+  "https://www.ccel.org/ccel/s/schaff/npnf112.xml",
+  "https://www.ccel.org/ccel/s/schaff/npnf113.xml",
+  "https://www.ccel.org/ccel/s/schaff/npnf114.xml",
+]
+sha256 = [
+  "e110c98b1f444147bf7baf79e46e56ae6c6a1f0b2983e6fc52f2356fac7f858f",
+  "46072a7fefb80b4b7ea68544b46c13fc1785bd29d99834fd2f867f8aa5e14f08",
+  "b8b345e060625cdf495e888322d88e922f66e686863e818a978204c5f564a4dd",
+  "d62c7c82b262c738739090ffaf5473aa5a76dbadf62ebee0dccac8c4a7db4762",
+  "b130406978fbceb7bcd0774b0e8b09905f35a020a2300c1baf02f314a2d5a70a",
+]
+license = "Public domain (Oxford translations 1839-52, Schaff's revision 1886-90; CCEL ThML declares DC.Rights Public Domain, see NOTICE)"
+license_status = "clear"
 
 [matthew_henry]
 kind = "ccel_mhc"

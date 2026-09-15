@@ -185,6 +185,33 @@ def _renumber(
         yield Verse(first.book, first.chapter, first.verse, text, natives)
 
 
+def shift_mt(book: int, chapter: int, verse: int) -> tuple[int, int, int]:
+    """Masoretic (book, chapter, verse) -> canonical by the rule table alone
+    (no psalm-title offsets: those come from data, see translation_trace)."""
+    return _shift(book, chapter, verse)
+
+
+def translation_trace(conn: sqlite3.Connection, tid: str) -> Trace:
+    """(book, source chapter, source verse) -> canonical id for every verse a
+    loaded translation stored, read back from its `native_ref` labels. Lets
+    a commentary in the same numbering (Rashi in Masoretic) follow exactly
+    where that translation's text landed. Empty when `tid` is not loaded."""
+    out: Trace = {}
+    rows = conn.execute(
+        "SELECT verse_id, native_ref FROM verses WHERE translation_id=?", (tid,)
+    ).fetchall()
+    for vid, native in rows:
+        b, c, v = decode(vid)
+        if not native:
+            out[(b, c, v)] = vid
+            continue
+        for part in native.split(", "):
+            head, _, tail = part.partition(":")
+            if head.isdigit() and tail.isdigit():  # "3:2"; "DanGr 3:91" is another book
+                out[(b, int(head), int(tail))] = vid
+    return out
+
+
 def apply_mt(
     verses: Iterable[Verse],
     conn: sqlite3.Connection,

@@ -42,7 +42,11 @@ python -m sevenreadings_pipeline.cli probe --db dist/sevenreadings.sqlite --tran
 
 Step 2 without `--write` only prints the hash; the old way was
 `sed -i '/<unique part of the url>/{n;s/TODO/<hash>/}' sources.toml`.
-Entries that share one archive (douay and haydock) need one `lock --write`.
+Entries that share one archive (douay and haydock) need one `lock --write`;
+entries with a `urls = [...]` list (matthew_henry, chrysostom) get every
+element written by one `lock --write`. Sources pinned by `commit` with no
+url (rashi, ibn_ezra: Hugging Face) have nothing to lock; the commit is the
+pin. Newer: https://huggingface.co/Sefaria/database_export/commits/main.
 
 **A build with an unpinned source stops at that source and leaves a partial
 database.** Everything that followed it in `--only` is missing, and `probe`

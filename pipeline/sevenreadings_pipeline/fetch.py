@@ -68,13 +68,14 @@ def zip_members(path: Path, suffix: str) -> Iterator[tuple[str, io.TextIOWrapper
 
 
 def write_pin(toml_text: str, url: str, sha256: str) -> tuple[str, int]:
-    """Set `sha256 = "..."` on every line that directly follows `url = "<url>"`
-    in sources.toml text. Returns (new text, number of entries updated); the
-    file's comments and layout are untouched. `urls = [...]` lists are not
-    handled: paste those by hand."""
+    """Set the sha256 that belongs to `url` in sources.toml text: the
+    `sha256 = "..."` line directly under `url = "<url>"`, or the matching
+    element of a `sha256 = [...]` list under a `urls = [...]` list. Returns
+    (new text, number of entries updated); comments and layout are kept."""
     lines = toml_text.split("\n")
     n = 0
     url_line = re.compile(r'^\s*url\s*=\s*"([^"]*)"\s*(#.*)?$')
+    quoted = re.compile(r'"([^"]*)"')
     for i, line in enumerate(lines[:-1]):
         m = url_line.match(line)
         if m and m.group(1) == url and lines[i + 1].lstrip().startswith("sha256 ="):
@@ -85,4 +86,39 @@ def write_pin(toml_text: str, url: str, sha256: str) -> tuple[str, int]:
                 comment = "   #" + comment
             lines[i + 1] = f'{prefix}= "{sha256}"{comment}'
             n += 1
+    # List form: urls = [ ... ] followed (in the same table) by sha256 = [ ... ].
+    i = 0
+    while i < len(lines):
+        if re.match(r"^\s*urls\s*=\s*\[", lines[i]):
+            urls: list[str] = []
+            j = i
+            while j < len(lines):
+                urls.extend(quoted.findall(lines[j].split("#")[0]))
+                if "]" in lines[j].split("#")[0]:
+                    break
+                j += 1
+            if url in urls:
+                index = urls.index(url)
+                k = j + 1
+                while k < len(lines) and not re.match(r"^\s*sha256\s*=\s*\[", lines[k]):
+                    if lines[k].startswith("["):
+                        break  # next table: no list to write
+                    k += 1
+                if k < len(lines) and re.match(r"^\s*sha256\s*=\s*\[", lines[k]):
+                    seen = 0
+                    while k < len(lines):
+                        head, sep, comment = lines[k].partition("#")
+                        parts = quoted.findall(head)
+                        for value in parts:
+                            if seen == index:
+                                head = head.replace(f'"{value}"', f'"{sha256}"', 1)
+                                n += 1
+                            seen += 1
+                        lines[k] = head + sep + comment
+                        if "]" in head or seen > index:
+                            break
+                        k += 1
+            i = j + 1
+        else:
+            i += 1
     return "\n".join(lines), n

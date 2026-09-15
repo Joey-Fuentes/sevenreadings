@@ -8,14 +8,11 @@ from pathlib import Path
 from .sources.archive_bible import ArchiveBibleSource
 from .sources.base import Source
 from .sources.ccel_mhc import CcelMhcSource
+from .sources.ccel_thml import CcelThmlSource
 from .sources.haydock import DouayRheimsSource, HaydockSource
 from .sources.jsonl_commentary import JsonlCommentarySource
-from .sources.stubs import (
-    HcfDatabaseSource,
-    IccSource,
-    SefariaExportSource,
-    TafsirApiSource,
-)
+from .sources.sefaria import SefariaExportSource
+from .sources.stubs import IccSource, TafsirApiSource
 from .sources.swete_lxx import SweteLxxSource
 from .sources.usfm_bible import UsfmBibleSource
 
@@ -30,7 +27,7 @@ KINDS: dict[str, type[Source]] = {
     "jsonl": JsonlCommentarySource,
     "sefaria_export": SefariaExportSource,
     "haydock": HaydockSource,
-    "hcf_database": HcfDatabaseSource,
+    "ccel_thml": CcelThmlSource,
     "tafsir_api": TafsirApiSource,
     "icc": IccSource,
 }
@@ -142,6 +139,27 @@ SAMPLE_SOURCES: dict[str, dict] = {
         "license": "Public domain",
         "license_status": "clear",
         "url": "fixture",
+    },
+    "chrysostom": {
+        "kind": "ccel_thml",
+        "perspective": "orthodox",
+        "author": "St. John Chrysostom",
+        "title": "Homilies on the New Testament (NPNF 1/10-14)",
+        "license": "Public domain",
+        "license_status": "clear",
+        "url": "fixture",
+    },
+    "rashi": {
+        "kind": "sefaria_export",
+        "perspective": "jewish_literal",
+        "author": "Rashi",
+        "title": "Rashi on Tanakh",
+        "license": "Public domain / CC0 versions only",
+        "license_status": "clear",
+        "url": "fixture",
+        "path": "fixture",
+        "prefer": ["Sefaria Community Translation"],
+        "reference": "web",
     },
     "sample": {
         "kind": "jsonl",

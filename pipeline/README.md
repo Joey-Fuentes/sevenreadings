@@ -22,8 +22,10 @@ Termux has no `/tmp`; write scratch output under `~/scratch`, never `/tmp`.
   `usfm_bible` (eBible zips), `archive_bible` (GitHub archives: SBLGNT text,
   OSHB OSIS, Byzantine Majority Text CSV), `swete_lxx` (Swete token files),
   `haydock` (Haydock's commentary and the Douay-Rheims text from the same
-  pages), `ccel_mhc` (Matthew Henry), `jsonl_commentary` (generic normalised
-  commentary), `stubs` (documented plans for the unwired commentaries).
+  pages), `ccel_mhc` (Matthew Henry), `ccel_thml` (Chrysostom from CCEL's
+  ThML volumes), `sefaria` (Rashi, Ibn Ezra from Sefaria's export, chosen by
+  recorded license), `jsonl_commentary` (generic normalised commentary),
+  `stubs` (documented plans for the unwired commentaries).
 - `refs.py` — canon (books 1-75), verse-id encoding, reference parsing, book
   orders per tradition. Mirrors `packages/sr_core`.
 - `versification.py` — Masoretic, Septuagint and Vulgate renumbering to
@@ -67,6 +69,11 @@ Termux has no `/tmp`; write scratch output under `~/scratch`, never `/tmp`.
 - `index lists N pages; M archived pages not in the index were skipped` /
   `page titles disagree with the index` — Haydock: the site index is
   trusted; both lines are informational unless the numbers move.
+- `rashi:   Gen: <version> [<license>] <n>` — Sefaria: the version chosen
+  per book and its recorded license; `no English version with an allowed
+  license` lists the books that got nothing.
+- `Masoretic numbering mapped through the WLC's ingest` — the intended
+  case; `by the Hebrew rule table only` means wlc was not in the build.
 - `chapter pages without Ver. markers` / `chapter pages without Bible text`
   / `notes on verses missing from the Douay text` — Haydock pages the
   parser could not read fully; paste one raw page (see `docs/workflow.md`,

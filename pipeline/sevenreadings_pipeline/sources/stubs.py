@@ -4,8 +4,8 @@ mapping plan so the next person (or model) can implement it without research.
 Implementing one means: fetch the pinned upstream, parse it into `Entry`
 records with canonical verse-id ranges, call db.add_source + db.add_entries.
 Use refs.parse_ref for references and the versification_map table when the
-upstream numbers verses differently (rashi, ibn_ezra: Masoretic). See
-sources/haydock.py for a worked example of anchoring notes through a
+upstream numbers verses differently. See sources/haydock.py and
+sources/sefaria.py for worked examples of anchoring notes through a
 translation that shares the upstream's numbering.
 """
 
@@ -20,28 +20,6 @@ class NotWired(Source):
 
     def build(self, ctx: BuildContext) -> None:
         raise NotImplementedError(f"{self.id} is not wired yet.\n{self.plan}")
-
-
-class SefariaExportSource(NotWired):
-    plan = """
-    Upstream: Sefaria-Export, json/Commentary/Tanakh/<Author>/<Book>/{Hebrew,English}/*.json
-    Shape: nested arrays text[chapter][verse][comment_index] (Masoretic numbering),
-    plus per-file metadata with the license of that specific text.
-    Plan: one Entry per (chapter, verse) joining comments with blank lines;
-    map (book, chapter, verse) through versification_map scheme='mt';
-    read the license field per file and refuse files whose license is not on the
-    allow-list in sources.toml.
-    """
-
-
-class HcfDatabaseSource(NotWired):
-    plan = """
-    Upstream: HistoricalChristianFaith/Commentaries-Database (SQLite / JSON dumps).
-    Shape: rows with father_name, source_title, book, location_start, location_end, txt.
-    Plan: filter by father (Chrysostom) or source (Matthew Henry); location_* are
-    already ranges; map book names via refs.BY_NAME; body is plain text -> Markdown.
-    Chrysostom entries carry the homily as citation.
-    """
 
 
 class TafsirApiSource(NotWired):

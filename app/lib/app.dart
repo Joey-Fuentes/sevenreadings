@@ -13,6 +13,7 @@ class SevenReadingsApp extends StatefulWidget {
 
 class _SevenReadingsAppState extends State<SevenReadingsApp> {
   late final Future<ContentDb> _content = loadContentDb();
+  late final UserDb _user = UserDb.open();
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +46,7 @@ class _SevenReadingsAppState extends State<SevenReadingsApp> {
               body: Center(child: CircularProgressIndicator()),
             );
           }
-          return ReaderScreen(db: snapshot.data!);
+          return ReaderScreen(db: snapshot.data!, user: _user);
         },
       ),
     );

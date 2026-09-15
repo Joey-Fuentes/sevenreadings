@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ThML PUBLIC
+    "-//CCEL/DTD Theological Markup Language//EN"
+    "http://www.ccel.org/dtd/ThML10.dtd">
+<!-- Copyright Christian Classics Ethereal Library -->
+<ThML>
+<ThML.head>
+<generalInfo>
+  <description>With over twenty volumes, the <i>Nicene and Post-Nicene Fathers</i> is a momentous achievement. (This staff description is CCEL's and is never shipped.)<br /><br />Tim Perrine<br />CCEL Staff Writer</description>
+</generalInfo>
+<printSourceInfo>
+  <published>New York: Christian Literature Publishing Co., 1886</published>
+</printSourceInfo>
+<electronicEdInfo>
+  <publisherID>ccel</publisherID>
+  <bookID>npnf110</bookID>
+  <DC>
+    <DC.Title>NPNF1-10. St. Chrysostom: Homilies on the Gospel of Saint Matthew</DC.Title>
+    <DC.Creator sub="Author" scheme="short-form">St. Chrysostom</DC.Creator>
+    <DC.Rights>Public Domain</DC.Rights>
+  </DC>
+</electronicEdInfo>
+<style type="text/css">
+p.c13	{ text-indent:.25in }
+</style>
+</ThML.head>
+<ThML.body>
+
+<div1 title="Preface to the American Edition." n="ii" progress="0.14%" prev="i" next="iii" id="ii">
+<pb n="iii" href="/ccel/schaff/npnf110/Page_iii.html" id="ii-Page_iii" />
+<p class="c12" id="ii-p3"><span class="c11" id="ii-p3.1">This</span> volume, according to the
+previous announcement of the publishers, contains a reprint of the Oxford edition of the Homilies
+of St. Chrysostom on the gospel of St. Matthew. It is a preface and must never become an entry.</p>
+</div1>
+
+<div1 title="The Homilies of St. John Chrysostom." n="iii" progress="0.27%" prev="ii" next="iii.i" id="iii">
+
+<div2 title="Title Page." n="i" progress="0.27%" prev="iii" next="iii.ii" id="iii.i">
+<p class="c24" id="iii.i-p1"><span class="c23" id="iii.i-p1.1">the homilies</span></p>
+<p class="c24" id="iii.i-p6"><span class="c26" id="iii.i-p6.1">gospel of st. matthew.</span></p>
+</div2>
+
+<div2 type="Homily" n="I" title="Homily 1" shorttitle="Homily I" progress="1.28%" prev="iii.iii.II_1" next="iii.v" id="iii.iv">
+<pb n="1" href="/ccel/schaff/npnf110/Page_1.html" id="iii.iv-Page_1" />
+<p class="c24" id="iii.iv-p1"><span class="c26" id="iii.iv-p1.1">Homilies of St. John
+Chrysostom,</span></p>
+<p class="c44" id="iii.iv-p6"><span class="c9" id="iii.iv-p6.1">Homily I.</span></p>
+<p class="c12" id="iii.iv-p7"><span class="c11" id="iii.iv-p7.1">It</span> were indeed meet for us not
+at all to require<note n="15" id="iii.iv-p7.2"><p class="endnote" id="iii.iv-p8">[<span lang="EL" class="Greek">μηδὲ δεῖσθαι</span>, “not even to
+need,” as below in sec. 2.—R.]</p></note>the aid of the written Word, but to exhibit a life so pure, that the
+grace of the Spirit should be instead of books to our souls, and that as these are inscribed with ink,
+even so should our hearts be with the Spirit. But, since we have utterly put away from us this grace,
+come, let us at any rate embrace the second best course.</p>
+<p class="c13" id="iii.iv-p9">For that the former was better, God hath made manifest, both by His words,
+and by His doings. Since unto Noah, and unto Abraham, and unto his offspring, and unto Job, and unto
+Moses too, He discoursed not by writings, but Himself by Himself, finding their mind pure.</p>
+</div2>
+
+<div2 type="Homily" title="Matthew I. 1." n="II" shorttitle="Homily II" progress="2.64%" prev="iii.iv" next="iii.vi" id="iii.v">
+<scripCom type="Sermon" passage="Matt. 1:1" id="iii.v-p0.1" parsed="|Matt|1|1|0|0" osisRef="Bible:Matt.1.1" />
+<p class="c24" id="iii.v-p1"><span class="c9" id="iii.v-p1.1">Homily II.</span></p>
+<p class="c47" id="iii.v-p2"><span class="c1" id="iii.v-p2.1"><scripRef passage="Matt. I. 1" id="iii.v-p2.2" parsed="|Matt|1|1|0|0" osisRef="Bible:Matt.1.1">Matt. I. 1</scripRef>.</span></p>
+<p class="c48" id="iii.v-p3">“The book of the generation of Jesus Christ, the
+Son of David, the Son of Abraham.”</p>
+<p class="c12" id="iii.v-p4"><span class="c11" id="iii.v-p4.1">Do</span> ye indeed remember the
+charge, which we lately made you, entreating you to hearken unto all the things that are said with all
+silence, and mystical quietness? For<note n="72" id="iii.v-p4.2"><p class="endnote" id="iii.v-p5">[<span lang="EL" class="Greek">καὶ γὰρ</span>;
+but there is some variation in the readings.—R.]</p></note>we are to-day to set foot within the holy vestibule, wherefore I have
+also put you in mind of the charge.</p>
+<pb n="9" href="/ccel/schaff/npnf110/Page_9.html" id="iii.v-Page_9" />
+<p class="c13" id="iii.v-p18">2. But what is this vestibule? “The book of the
+generation of Jesus Christ, Son of David, Son of Abraham.” Stay, seek not to learn all at once,
+but gently and by little and little, for it is in the vestibule that thou art standing, by the very
+porch, as the Prophet <i>Esaias</i> hath told thee.</p>
+</div2>
+
+<div2 type="Homily" title="Matthew I. 1." n="III" shorttitle="Homily III" progress="3.9%" prev="iii.v" next="iii.vii" id="iii.vi">
+<scripCom type="Sermon" passage="Matt. 1:1" id="iii.vi-p0.1" parsed="|Matt|1|1|0|0" osisRef="Bible:Matt.1.1" />
+<p class="c24" id="iii.vi-p1"><span class="c9" id="iii.vi-p1.1">Homily III.</span></p>
+<p class="c13" id="iii.vi-p4">Behold a third discourse on the same first verse of the genealogy, which
+the preacher takes up again because his hearers asked for the difficulties to be resolved one by
+one, and this discourse runs on until the seventeenth verse begins the next.</p>
+</div2>
+
+<div2 type="Homily" title="Matthew I. 17." n="IV" shorttitle="Homily IV" progress="5.1%" prev="iii.vi" next="iii.viii" id="iii.vii">
+<scripCom type="Sermon" passage="Matt. 1:17" id="iii.vii-p0.1" parsed="|Matt|1|17|0|0" osisRef="Bible:Matt.1.17" />
+<p class="c24" id="iii.vii-p1"><span class="c9" id="iii.vii-p1.1">Homily IV.</span></p>
+<p class="c13" id="iii.vii-p4">The fourth homily begins at the seventeenth verse, where the evangelist
+sums the generations into three parts of fourteen, and the preacher asks wherefore he hath not in the
+third division maintained the number, which question he had raised in the first discourse.</p>
+</div2>
+
+<div2 title="Matthew II. 1, 2." n="V" shorttitle="Homily V" progress="6.3%" prev="iii.vii" next="iii.ix" id="iii.viii">
+<p class="c24" id="iii.viii-p1"><span class="c9" id="iii.viii-p1.1">Homily V.</span></p>
+<p class="c13" id="iii.viii-p4">The fifth homily has no scripCom element at all, as none in the thirteenth
+volume do, and its passage is known only from the title of the division: the second chapter, verses one
+and two, where the wise men come from the east to Jerusalem.</p>
+</div2>
+
+</div1>
+</ThML.body>
+</ThML>

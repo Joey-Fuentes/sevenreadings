@@ -24,15 +24,18 @@ Current content (see `pipeline/sources.toml` for pins and licenses):
 | lxx | Septuagint, Swete's edition via nathans/lxx-swete (CC BY-SA 4.0), LXX numbering mapped at ingest | live, known gaps: Exodus 36-40 and Proverbs 24-31 reordered, Ecclesiastes missing upstream |
 | matthew_henry | Matthew Henry's Commentary, CCEL public-domain HTML edition | live (Protestant reading) |
 | haydock | Haydock's Catholic Bible Commentary (1859), JohnBlood GitLab transcription; notes anchored where the Douay verses land | live (Catholic reading); same pin as douay |
-| rashi, ibn_ezra, chrysostom, ibn_kathir, icc | documented stubs in `pipeline/sevenreadings_pipeline/sources/stubs.py` | not wired; see the Planned table in `docs/licensing.md` for what each needs (chrysostom: switch upstream to CCEL; ibn_kathir: no permissive English exists) |
+| chrysostom | Chrysostom's NT homilies, CCEL ThML editions of NPNF 1/10-14 (files declare DC.Rights Public Domain); each homily anchored to its passage up to the next homily's | wired (Orthodox reading); needs `srp lock --write chrysostom`, then a build read |
+| rashi, ibn_ezra | Sefaria's database export on Hugging Face, pinned by commit; per book the largest English version whose recorded license is PD/CC0/CC BY/CC BY-SA, NC never read; Masoretic numbering followed through the WLC's ingest | wired (Jewish readings); needs a build with wlc in it, then the per-book version list read |
+| ibn_kathir, icc | documented stubs in `pipeline/sevenreadings_pipeline/sources/stubs.py` | not wired; ibn_kathir has no permissive English translation; icc is public-domain OCR work |
 
 App: verse-by-verse phone layout, side-by-side on wide screens, translation
 chips, book/chapter picker with Protestant/Catholic/Tanakh order, readings
 sheet with collapsible Markdown entries, full-text search (verses per
 translation, readings per source; a hit opens the chapter on that verse),
 "About the texts" (book picker, last entry: licenses from the database and
-the notices the pipeline stores in `meta.notices`). No notes or bookmarks
-yet (the schema and `UserDb` exist for them).
+the notices the pipeline stores in `meta.notices`), bookmarks and notes per
+verse (readings sheet header; listed under "Bookmarks & notes" in the book
+picker; stored in `UserDb`, never in content).
 
 ## Setting up a session (AI side)
 
@@ -149,6 +152,20 @@ Rules that keep patches applying cleanly:
   build report; single-verse splits and joins inside a chapter are reported,
   not mapped. Notes cite the canonical verse and add `(Douay c:v)` when the
   numbering differs.
+- Sefaria versions: never hardcode a version title as "the" text. Sefaria
+  records a license per version; `sources/sefaria.py` reads them all and
+  picks by the allow-list, and the build prints the pick per book. If a
+  version's license changes upstream, the next build changes the pick and
+  says so. Hugging Face URLs for the export are long: `web_fetch` refuses
+  them over 250 characters, so inspect through the tree pages instead.
+- CCEL's site policy is non-commercial for "CCEL works"; the ThML files
+  themselves declare DC.Rights Public Domain and we ship only the
+  public-domain text from them (not the staff description in the header).
+  `sources/chrysostom/NOTICE.md` records that reasoning.
+- Commentaries in another numbering follow a translation that was renumbered
+  from data: Haydock through the Douay's `trace`, Rashi and Ibn Ezra through
+  `versification.translation_trace(conn, "wlc")`. Build them with that
+  translation in `--only`, or the build says it fell back to the rule table.
 - Every shipped source has `pipeline/sources/<id>/NOTICE.md`; the build
   concatenates them into `meta.notices` and the app shows them. CC BY and
   CC BY-SA sources (sblgnt, wlc, lxx) require that attribution in what we
@@ -169,10 +186,10 @@ Rules that keep patches applying cleanly:
 
 ## Where to go next
 
-In rough order of value: Chrysostom from CCEL's NPNF (public domain; not
-the HistoricalChristianFaith database, which states no license), the Jewish
-commentaries from Sefaria-Export filtered to versions whose `license` is
-public domain or CC BY, notes/bookmarks,
+In rough order of value: pin and build Chrysostom, Rashi and Ibn Ezra (the
+loop in `docs/workflow.md`; read the per-book version list for the Jewish
+ones), Hebrew-only fallback for Ibn Ezra books without a usable English
+version (a decision, not code), ICC one volume at a time,
 scroll-to-verse in the wide layout, Exodus 36-40 and Proverbs 24-31 LXX
 tables, Play Asset Delivery if the AAB passes 200 MB. Each new source: verify
 the upstream and its license from the actual repository, write the parser

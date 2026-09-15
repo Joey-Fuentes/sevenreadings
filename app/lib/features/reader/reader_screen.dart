@@ -3,6 +3,7 @@ import 'package:sr_core/sr_core.dart';
 import 'package:sr_data/sr_data.dart';
 
 import '../about/about_screen.dart';
+import '../notes/notes_screen.dart';
 import '../search/search_screen.dart';
 import 'markdown_text.dart';
 
@@ -11,9 +12,10 @@ import 'markdown_text.dart';
 /// book order from the `book_orders` table; search opens a chapter on the
 /// verse that was hit.
 class ReaderScreen extends StatefulWidget {
-  const ReaderScreen({super.key, required this.db});
+  const ReaderScreen({super.key, required this.db, required this.user});
 
   final ContentDb db;
+  final UserDb user;
 
   @override
   State<ReaderScreen> createState() => _ReaderScreenState();
@@ -75,6 +77,18 @@ class _ReaderScreenState extends State<ReaderScreen> {
     final target = await Navigator.of(context).push<SearchTarget>(
       MaterialPageRoute(builder: (_) => SearchScreen(db: widget.db)),
     );
+    _goTo(target);
+  }
+
+  Future<void> _notes() async {
+    final target = await Navigator.of(context).push<SearchTarget>(
+      MaterialPageRoute(builder: (_) => NotesScreen(user: widget.user)),
+    );
+    _goTo(target);
+  }
+
+  /// Open the chapter of a search, bookmark or note hit on its verse.
+  void _goTo(SearchTarget? target) {
     if (target == null || !mounted) return;
     final ref = VerseRef.fromId(target.verseId);
     _open(ref.book, ref.chapter, highlight: target.verseId);
@@ -118,6 +132,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
           return _loadOrder();
         },
         onAbout: _about,
+        onNotes: _notes,
       ),
     );
     if (picked != null) _open(picked.$1, picked.$2);
@@ -224,6 +239,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
         initialChildSize: 0.6,
         builder: (_, controller) => _ReadingsSheet(
           db: widget.db,
+          user: widget.user,
           verse: VerseRef.fromId(verseId),
           controller: controller,
         ),
@@ -248,6 +264,7 @@ class _BookPicker extends StatefulWidget {
     required this.current,
     required this.onTradition,
     required this.onAbout,
+    required this.onNotes,
   });
 
   final List<_BookInfo> order;
@@ -255,6 +272,7 @@ class _BookPicker extends StatefulWidget {
   final VerseRef current;
   final Future<List<_BookInfo>> Function(String tradition) onTradition;
   final VoidCallback onAbout;
+  final VoidCallback onNotes;
 
   @override
   State<_BookPicker> createState() => _BookPickerState();
@@ -342,6 +360,14 @@ class _BookPickerState extends State<_BookPicker> {
               for (final b in extras) _bookTile(b),
             ],
             const Divider(height: 24),
+            ListTile(
+              leading: const Icon(Icons.bookmarks_outlined),
+              title: const Text('Bookmarks & notes'),
+              onTap: () {
+                Navigator.pop(context);
+                widget.onNotes();
+              },
+            ),
             ListTile(
               leading: const Icon(Icons.info_outline),
               title: const Text('About the texts'),
@@ -646,47 +672,129 @@ class _ReadingEntryState extends State<_ReadingEntry> {
   }
 }
 
-class _ReadingsSheet extends StatelessWidget {
+class _ReadingsSheet extends StatefulWidget {
   const _ReadingsSheet({
     required this.db,
+    required this.user,
     required this.verse,
     required this.controller,
   });
 
   final ContentDb db;
+  final UserDb user;
   final VerseRef verse;
   final ScrollController controller;
 
-  Future<(List<Perspective>, List<ReadingsForVerseResult>)> _load() async {
-    final perspectives = await db.allPerspectives().get();
-    final readings = await db.readingsForVerse(verse.id).get();
-    return (perspectives, readings);
+  @override
+  State<_ReadingsSheet> createState() => _ReadingsSheetState();
+}
+
+class _SheetData {
+  const _SheetData(this.perspectives, this.readings, this.notes, this.marked);
+
+  final List<Perspective> perspectives;
+  final List<ReadingsForVerseResult> readings;
+  final List<Note> notes;
+  final bool marked;
+}
+
+class _ReadingsSheetState extends State<_ReadingsSheet> {
+  late Future<_SheetData> _data = _load();
+
+  Future<_SheetData> _load() async {
+    final id = widget.verse.id;
+    final perspectives = await widget.db.allPerspectives().get();
+    final readings = await widget.db.readingsForVerse(id).get();
+    final notes = await widget.user.notesForVerse(id).get();
+    final mark = await widget.user.bookmarkForVerse(id).getSingleOrNull();
+    return _SheetData(perspectives, readings, notes, mark != null);
+  }
+
+  void _refresh() => setState(() => _data = _load());
+
+  Future<void> _toggleBookmark() async {
+    await widget.user.toggleBookmark(widget.verse.id);
+    _refresh();
+  }
+
+  Future<void> _addNote() async {
+    final text = await noteDialog(context);
+    if (text == null || text.isEmpty) return;
+    await widget.user.addNote(widget.verse.id, text);
+    _refresh();
+  }
+
+  Future<void> _editNote(Note note) async {
+    final text = await noteDialog(context, initial: note.body);
+    if (text == null) return;
+    if (text.isEmpty) {
+      await widget.user.deleteNote(note.id);
+    } else {
+      await widget.user.updateNote(note.id, text);
+    }
+    _refresh();
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return FutureBuilder(
-      future: _load(),
+    return FutureBuilder<_SheetData>(
+      future: _data,
       builder: (context, snapshot) {
         final data = snapshot.data;
         if (data == null) {
           return const Center(child: CircularProgressIndicator());
         }
-        final (perspectives, readings) = data;
+        final grouped = <String, List<ReadingsForVerseResult>>{};
+        for (final r in data.readings) {
+          grouped.putIfAbsent(r.perspectiveId, () => []).add(r);
+        }
         return ListView(
-          controller: controller,
+          controller: widget.controller,
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
           children: [
-            Text(verse.label, style: theme.textTheme.titleLarge),
-            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.verse.label,
+                    style: theme.textTheme.titleLarge,
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    data.marked ? Icons.bookmark : Icons.bookmark_border,
+                  ),
+                  tooltip: data.marked ? 'Remove bookmark' : 'Bookmark',
+                  onPressed: _toggleBookmark,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.note_add_outlined),
+                  tooltip: 'Add a note',
+                  onPressed: _addNote,
+                ),
+              ],
+            ),
+            if (data.notes.isNotEmpty) ...[
+              Text('Your notes', style: theme.textTheme.titleMedium),
+              for (final n in data.notes)
+                InkWell(
+                  onTap: () => _editNote(n),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Text(n.body, style: theme.textTheme.bodyMedium),
+                  ),
+                ),
+              const SizedBox(height: 8),
+            ],
+            const SizedBox(height: 4),
             // "3 of 7 available" is the normal case: every perspective is
             // listed, and absent ones say so instead of disappearing.
-            for (final p in perspectives) ...[
+            for (final p in data.perspectives) ...[
               Text(p.name, style: theme.textTheme.titleMedium),
-              for (final r in readings.where((r) => r.perspectiveId == p.id))
+              for (final r in grouped[p.id] ?? const [])
                 _ReadingEntry(reading: r),
-              if (!readings.any((r) => r.perspectiveId == p.id))
+              if (grouped[p.id] == null)
                 Padding(
                   padding: const EdgeInsets.only(top: 4, bottom: 12),
                   child: Text(
