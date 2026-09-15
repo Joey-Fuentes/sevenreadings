@@ -214,6 +214,34 @@ Rules that keep patches applying cleanly:
   not start workflows on their own.
 
 
+
+## Targets: built is not the same as working
+
+`build.yml` builds all six targets on demand and weekly; `release.yml`
+publishes them on a `v*` tag. That is the whole of what exists. State as
+of 2026-09-15:
+
+| target | CI builds it | signed | run by a person | needs |
+|--------|--------------|--------|-----------------|-------|
+| Web | every push (smoke) and Pages deploy | n/a | yes, daily, on Pages | — |
+| Linux x64, arm64 | every push (smoke); tar.gz on demand | n/a | no | a person to run the tarball once; then Flatpak if wanted |
+| Android | on demand/weekly: APK + AAB | debug key | no | measure the AAB against the 200 MB cap (ADR 0004, Play Asset Delivery if over); a signing key (`app/android/key.properties`, never committed); one install on a phone to prove the asset-to-file copy on first launch |
+| Windows | on demand/weekly: zip | no | no | a person to run it once; code signing is optional (SmartScreen warns without it) |
+| macOS | on demand/weekly: zip | no | no | Developer ID certificate and notarization in the workflow (the comment in build.yml marks the spot); a person to run it once |
+| iOS | on demand/weekly: `--no-codesign` .app | no | no | Apple developer account, provisioning, App Store or TestFlight; cannot be installed as built |
+
+What "run by a person" checks, per target: the app opens, the content
+database copies out of the bundle on first launch (native targets) or
+imports into browser storage (web), Genesis 1 shows the Bibles, a verse
+shows readings, search works, a bookmark survives a restart.
+
+First step, before any of the above: read the weekly canary.
+`gh run list --workflow=build.yml --limit 5` shows whether the six jobs
+pass today; a red one gets its log zip uploaded. Nothing in this table can
+be done from the AI's side except the workflow changes (signing steps
+once certificates exist, and reading logs). Accounts, certificates and
+devices are the maintainer's.
+
 ## Known gaps (recorded, not scheduled)
 
 Everything below is deferred on purpose, with its state as of 2026-09-15.
