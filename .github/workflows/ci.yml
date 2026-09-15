@@ -73,10 +73,10 @@ jobs:
         # The site is served at https://sevenreadings.org/ (Pages custom
         # domain), so the base is the root. Without the custom domain it
         # would need --base-href "/<repo>/".
-        run: flutter build web --release --base-href "/"
+        run: flutter build web --release --base-href "/" --dart-define=SR_DISTRIBUTION=web
       - name: Build linux
         working-directory: app
-        run: flutter build linux --release
+        run: flutter build linux --release --dart-define=SR_DISTRIBUTION=direct
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         with:

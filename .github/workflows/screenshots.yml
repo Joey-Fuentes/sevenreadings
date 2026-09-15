@@ -58,7 +58,7 @@ jobs:
           # One command: the runner executes every line of `script` in its
           # own shell. The script builds the debug APK, installs it, runs
           # the test, keeps screenshots, timings and the device log, and
-          # fails unless eight screenshots and both timings came out.
+          # fails unless nine screenshots and both timings came out.
           script: bash tools/checklist.sh emulator-5554
       - uses: actions/upload-artifact@v7
         if: always()

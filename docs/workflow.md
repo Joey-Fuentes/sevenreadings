@@ -129,7 +129,7 @@ flutter drive --driver=test_driver/integration_test.dart \
 timings to `app/build/integration_response_data.json`; `flutter test` runs
 the same assertions but drops the screenshots, because nothing on the host
 receives them. `bash tools/checklist.sh <device>` is the drive plus the
-check that eight screenshots and both timings came out (under
+check that nine screenshots and both timings came out (under
 `xvfb-run -a -s "-screen 0 1280x800x24"` for a headless Linux run). The
 maintainer has no Flutter locally, so in practice this runs in CI, below.
 
@@ -139,7 +139,7 @@ maintainer has no Flutter locally, so in practice this runs in CI, below.
 an Android emulator (API 34, Pixel 6; about nine minutes: boot 40 s, debug
 APK 4 min, the test 27 s) and on the Linux build under Xvfb, with the
 pinned release content, on demand, every Monday, and on every `v*` tag.
-Not on pushes. A job is green only if eight screenshots and both launch
+Not on pushes. A job is green only if nine screenshots and both launch
 timings came out of its run; the script checks and says so.
 
 ```
@@ -150,7 +150,7 @@ gh run download -n screenshots-android -D ~/storage/downloads/screenshots-androi
 gh run download -n screenshots-linux -D ~/storage/downloads/screenshots-linux
 ```
 
-Each artifact holds the eight PNGs and `integration_response_data.json`
+Each artifact holds the nine PNGs and `integration_response_data.json`
 (`first_launch_ms` with the content copy, `second_launch_ms` without, and
 `view`, the window size in dp, which says whether the phone or the
 side-by-side layout was exercised); the Android one adds `logcat.txt`. A

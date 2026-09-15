@@ -3,7 +3,7 @@
 # device through `flutter drive`, which writes app/screenshots/*.png and
 # app/build/integration_response_data.json via
 # app/test_driver/integration_test.dart, then checks that the run produced
-# what it should. Exits non-zero if the test failed, or if fewer than eight
+# what it should. Exits non-zero if the test failed, or if fewer than nine
 # screenshots or either launch timing came out of it: a job that passes
 # having run nothing is a bug (2026-09-15, the first run).
 #
@@ -33,6 +33,6 @@ echo "screenshots: $n"
 report=build/integration_response_data.json
 if [ -f "$report" ]; then cat "$report"; else echo "no report written"; fi
 if [ "$status" -ne 0 ]; then exit "$status"; fi
-[ "$n" -eq 8 ] || { echo "expected 8 screenshots, found $n"; exit 1; }
+[ "$n" -eq 9 ] || { echo "expected 9 screenshots, found $n"; exit 1; }
 jq -e '.first_launch_ms and .second_launch_ms' "$report" > /dev/null \
   || { echo "launch timings missing from $report"; exit 1; }

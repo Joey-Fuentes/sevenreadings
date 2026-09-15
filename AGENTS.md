@@ -37,7 +37,9 @@ translation, readings per source; a hit opens the chapter on that verse),
 "About the texts" (book picker, last entry: licenses from the database and
 the notices the pipeline stores in `meta.notices`), bookmarks and notes per
 verse (readings sheet header; listed under "Bookmarks & notes" in the book
-picker; stored in `UserDb`, never in content).
+picker; stored in `UserDb`, never in content), and, in builds that may
+show it, "Support this project" at the top of About: the Stripe link
+(card, Apple Pay, Google Pay), with wording for a gift to an individual.
 
 ## Setting up a session (AI side)
 
@@ -159,6 +161,13 @@ Rules that keep patches applying cleanly:
   default would have been `org.sevenreadings.sevenreadings`); the Android
   and iOS ids are permanent after the first store upload. The Dart package
   stays `sevenreadings`.
+- Every build carries `--dart-define=SR_DISTRIBUTION=<direct|web|flathub|
+  play|appstore|msstore>` (default `direct`; `app/lib/features/support/
+  support_links.dart`). Store builds never show the Support screen's
+  outside payment links: Apple and Google require in-app purchases for
+  tips and reject links out. The workflows set it per artifact (the APK is
+  `direct`, the AAB `play`, iOS `appstore`); a new artifact needs its
+  value chosen, and a store submission must be built with its store's.
 - Verse ids: `book*1_000_000 + chapter*1_000 + verse`; verse 0 = chapter-level
   material (titles, introductions); 999 = chapter end. Books 1-66 Protestant
   order, 67-75 deuterocanon. Ids never change; display order lives in
@@ -258,7 +267,7 @@ Rules that keep patches applying cleanly:
   The first `screenshots.yml` run (2026-09-15) `cd app`-ed, ran `flutter
   drive` from the repo root, found no target, and passed. Its `script` is
   one command, `bash tools/checklist.sh <device>`, and the script itself
-  fails unless eight screenshots and both timings came out of the run. A
+  fails unless nine screenshots and both timings came out of the run. A
   workflow that can pass without doing its work is a bug of the same kind
   as untested code.
 - `setState(() => _x = _load())` returns the Future to `setState`, which

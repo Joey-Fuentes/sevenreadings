@@ -145,6 +145,15 @@ void main() {
     await tester.tap(find.text('About the texts'));
     await waitFor(tester, find.text('Bibles'));
     await screenshot(tester, '07-about-the-texts');
+
+    // Support this project: the links, in builds that show them (every
+    // build the checklist runs is a direct one, see support_links.dart).
+    await tester.tap(find.text('Support this project'));
+    await waitFor(tester, find.text('Support Seven Readings'));
+    expect(find.textContaining('buy.stripe.com'), findsWidgets);
+    await screenshot(tester, '08-support');
+    await tester.pageBack();
+    await waitFor(tester, find.text('Bibles'));
     await scrollTo(tester, find.text('Notices'), find.byKey(aboutListKey));
     await tester.pageBack();
     await waitFor(tester, find.byIcon(Icons.expand_more));
@@ -161,7 +170,7 @@ void main() {
     await openReadings(tester);
     await waitFor(tester, find.byTooltip('Remove bookmark'));
     expect(find.text(noteText), findsWidgets);
-    await screenshot(tester, '08-second-launch');
+    await screenshot(tester, '09-second-launch');
     await closeSheet(tester);
   });
 }

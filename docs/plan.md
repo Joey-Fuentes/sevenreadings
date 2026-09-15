@@ -139,7 +139,7 @@ weekly, and on demand, not on every push.
 - **T1 and T2: done, 2026-09-15, proven on sample content.** Fifth run of
   `screenshots.yml` green: `app/integration_test/app_test.dart` walked the
   whole checklist on an API 34 Pixel 6 emulator and the `screenshots-android`
-  artifact holds the eight PNGs, `integration_response_data.json` and the
+  artifact holds the PNGs (eight then, nine since D1), `integration_response_data.json` and the
   device log. Measured: first launch to Genesis 1 with its verses, content
   copy included, 2922 ms; second launch 168 ms (the copy skipped, both
   databases reopened; the bookmark and note back). Sixth run, release
@@ -247,6 +247,29 @@ Spikes:
   individual means where the maintainer lives is not something this
   project can answer; it is written down as a question the maintainer must
   settle before D2/D3 go live.
+
+### State
+
+- **D1 (2026-09-15): in the tree.** `app/lib/features/support/`: a
+  Support screen reached from the top of About, one link for now, a Stripe
+  Payment Link (customer chooses the amount; card, Apple Pay and Google Pay
+  on Stripe's hosted page), opened with `url_launcher` and shown as text
+  too. The build flag `SR_DISTRIBUTION` (see `AGENTS.md`) hides the entry
+  in `play`, `appstore` and `msstore` builds, where tips must be in-app
+  purchases (D2, D3); every workflow sets the flag per artifact and the
+  checklist runs are `direct`, so the emulator and Linux screenshots show
+  the screen (step 08). The Stripe "buy button" embed and its publishable
+  key are for an HTML page, not the app; they can go on a landing page.
+- **D4, the fact as of 2026-09-15:** the maintainer intends a nonprofit
+  but none is formed, so the recipient is an individual: gifts are that
+  person's income where they live, donors deduct nothing, and the app's
+  wording says "gift" and "support", never "donation" or anything
+  suggesting a deduction. When a nonprofit exists and Apple and Google
+  have approved it, the Stripe link may go into the store builds too
+  (Apple's nonprofit fundraising rule) at Stripe's fee instead of the
+  stores' 15-30 %; until then the store path is D2/D3. What forming one
+  means where the maintainer lives is still the question this project
+  cannot answer.
 
 ## 4. Local LLM chat
 

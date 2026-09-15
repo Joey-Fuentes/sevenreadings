@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:sr_data/sr_data.dart';
 
 import '../reader/markdown_text.dart';
+import '../support/support_links.dart';
+import '../support/support_screen.dart';
 
 /// The screen's list, for the integration test to scroll to the notices.
 const Key aboutListKey = Key('about-list');
@@ -83,6 +85,16 @@ class AboutScreen extends StatelessWidget {
                 'give the terms and the attribution each requires.',
                 style: theme.textTheme.bodyMedium,
               ),
+              if (showsSupportLinks)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.favorite_outline),
+                  title: const Text('Support this project'),
+                  subtitle: const Text('Free, no ads; a gift keeps it so'),
+                  onTap: () => Navigator.of(context).push<void>(
+                    MaterialPageRoute(builder: (_) => const SupportScreen()),
+                  ),
+                ),
               const SizedBox(height: 16),
               Text('Bibles', style: theme.textTheme.titleMedium),
               for (final t in data.translations)
