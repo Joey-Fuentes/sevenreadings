@@ -225,7 +225,7 @@ weekly cron had never fired). Results and state:
 |--------|--------------------|--------|-----------------|-------|
 | Web | yes; every push (smoke) and Pages deploy | n/a | yes, daily, on Pages | — |
 | Linux x64 | yes, tar.gz 80 MB; every push (smoke) | n/a | no | a person to run the tarball once; then Flatpak if wanted. Linux arm64 was dropped: Flutter publishes no arm64 Linux SDK |
-| Android | yes: APK 126.5 MB, AAB 125.4 MB — under Play's 200 MB cap, so no Play Asset Delivery at this content size (ADR 0004) | debug key | no | a signing key (`app/android/key.properties`, never committed); one install on a phone to prove the asset-to-file copy on first launch |
+| Android | yes: APK 126.5 MB, AAB 125.4 MB — under Play's 200 MB cap, so no Play Asset Delivery at this content size (ADR 0004) | debug key | yes (2026-09-15: the APK installed on the maintainer's phone; first-launch copy, readings, search, a bookmark surviving restart all worked) | a signing key (`app/android/key.properties`, never committed); Play account for the store |
 | Windows | yes, zip 82 MB | no | no | a person to run it once; code signing is optional (SmartScreen warns without it) |
 | macOS | yes, .app 214.6 MB, zip 89 MB | no | no | Developer ID certificate and notarization in the workflow (the comment in build.yml marks the spot); a person to run it once |
 | iOS | yes, `--no-codesign` .app 185.7 MB | no | no | Apple developer account, provisioning, App Store or TestFlight; cannot be installed as built |
@@ -239,8 +239,10 @@ shows readings, search works, a bookmark survives a restart.
 pass; a red one gets its log zip uploaded. Nothing in this table can be
 done from the AI's side except the workflow changes (signing steps once
 certificates exist, and reading logs). Accounts, certificates and devices
-are the maintainer's. The next real step is a person installing the APK
-and the Linux tarball and going through the first-launch checks above.
+are the maintainer's. The plan for stores, automated per-target testing
+with screenshots, donations, a local LLM chat and a narrator is
+`docs/plan.md`, as spikes with acceptance and abandon conditions; it is the
+roadmap for everything app-side from here.
 
 ## Known gaps (recorded, not scheduled)
 
@@ -287,6 +289,9 @@ None is hidden in a log; this list is the place to look.
   not on code; the Qur'an pairings are the Islamic reading meanwhile.
 
 ## Where to go next
+
+App-side: `docs/plan.md`, in the order at its end (integration test and
+Android emulator screenshots first). Content-side, below.
 
 In rough order of value: extend the Qur'an pairings (the file is the whole
 of the Islamic reading's coverage); more ICC volumes (Plummer's Luke 1896,

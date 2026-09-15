@@ -8,8 +8,9 @@ Flutter/Dart. Targets Android, iOS, macOS, Windows, Linux, Web.
 Live web build: `https://<owner>.github.io/sevenreadings/`.
 
 **Working on this project? Start with [`AGENTS.md`](AGENTS.md)** (handoff for
-AI sessions and new contributors) and [`docs/workflow.md`](docs/workflow.md)
-(the day-to-day commands).
+AI sessions and new contributors), [`docs/workflow.md`](docs/workflow.md)
+(the day-to-day commands) and [`docs/plan.md`](docs/plan.md) (stores,
+per-target testing, donations, local chat, narrator — as spikes).
 
 ## What's in it today
 
