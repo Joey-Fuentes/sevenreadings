@@ -26,8 +26,9 @@ class _NotesScreenState extends State<NotesScreen> {
   late Future<_Items> _items = _load();
 
   Future<_Items> _load() async {
-    final bookmarks = await widget.user.allBookmarks().get();
-    final notes = await widget.user.allNotes().get();
+    const timeout = Duration(seconds: 4);
+    final bookmarks = await widget.user.allBookmarks().get().timeout(timeout);
+    final notes = await widget.user.allNotes().get().timeout(timeout);
     return _Items(bookmarks, notes);
   }
 

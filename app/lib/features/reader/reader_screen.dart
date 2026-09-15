@@ -690,13 +690,27 @@ class _ReadingsSheet extends StatefulWidget {
 }
 
 class _SheetData {
-  const _SheetData(this.perspectives, this.readings, this.notes, this.marked);
+  const _SheetData(
+    this.perspectives,
+    this.readings,
+    this.notes,
+    this.marked,
+    this.userError,
+  );
 
   final List<Perspective> perspectives;
   final List<ReadingsForVerseResult> readings;
   final List<Note> notes;
   final bool marked;
+
+  /// Why notes and bookmarks are unavailable, if they are. The readings
+  /// never wait on the user database: it is optional here.
+  final String? userError;
 }
+
+/// How long the readings sheet waits for the user database before showing
+/// the readings without notes.
+const _userDbTimeout = Duration(seconds: 4);
 
 class _ReadingsSheetState extends State<_ReadingsSheet> {
   late Future<_SheetData> _data = _load();
@@ -705,34 +719,54 @@ class _ReadingsSheetState extends State<_ReadingsSheet> {
     final id = widget.verse.id;
     final perspectives = await widget.db.allPerspectives().get();
     final readings = await widget.db.readingsForVerse(id).get();
-    final notes = await widget.user.notesForVerse(id).get();
-    final mark = await widget.user.bookmarkForVerse(id).getSingleOrNull();
-    return _SheetData(perspectives, readings, notes, mark != null);
+    var notes = const <Note>[];
+    var marked = false;
+    String? userError;
+    try {
+      notes = await widget.user.notesForVerse(id).get().timeout(_userDbTimeout);
+      final mark = await widget.user
+          .bookmarkForVerse(id)
+          .getSingleOrNull()
+          .timeout(_userDbTimeout);
+      marked = mark != null;
+    } catch (e) {
+      userError = '$e';
+      debugPrint('user database unavailable: $e');
+    }
+    return _SheetData(perspectives, readings, notes, marked, userError);
   }
 
   void _refresh() => setState(() => _data = _load());
 
-  Future<void> _toggleBookmark() async {
-    await widget.user.toggleBookmark(widget.verse.id);
+  Future<void> _guard(Future<void> Function() action) async {
+    try {
+      await action().timeout(_userDbTimeout);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not save: $e')),
+      );
+    }
     _refresh();
   }
+
+  Future<void> _toggleBookmark() =>
+      _guard(() => widget.user.toggleBookmark(widget.verse.id));
 
   Future<void> _addNote() async {
     final text = await noteDialog(context);
     if (text == null || text.isEmpty) return;
-    await widget.user.addNote(widget.verse.id, text);
-    _refresh();
+    await _guard(() => widget.user.addNote(widget.verse.id, text));
   }
 
   Future<void> _editNote(Note note) async {
     final text = await noteDialog(context, initial: note.body);
     if (text == null) return;
     if (text.isEmpty) {
-      await widget.user.deleteNote(note.id);
+      await _guard(() => widget.user.deleteNote(note.id));
     } else {
-      await widget.user.updateNote(note.id, text);
+      await _guard(() => widget.user.updateNote(note.id, text));
     }
-    _refresh();
   }
 
   @override
@@ -741,6 +775,17 @@ class _ReadingsSheetState extends State<_ReadingsSheet> {
     return FutureBuilder<_SheetData>(
       future: _data,
       builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return ListView(
+            controller: widget.controller,
+            padding: const EdgeInsets.all(16),
+            children: [
+              Text(widget.verse.label, style: theme.textTheme.titleLarge),
+              const SizedBox(height: 12),
+              Text('Could not load readings: ${snapshot.error}'),
+            ],
+          );
+        }
         final data = snapshot.data;
         if (data == null) {
           return const Center(child: CircularProgressIndicator());
@@ -775,6 +820,14 @@ class _ReadingsSheetState extends State<_ReadingsSheet> {
                 ),
               ],
             ),
+            if (data.userError != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  'Notes and bookmarks unavailable: ${data.userError}',
+                  style: theme.textTheme.bodySmall,
+                ),
+              ),
             if (data.notes.isNotEmpty) ...[
               Text('Your notes', style: theme.textTheme.titleMedium),
               for (final n in data.notes)
