@@ -149,8 +149,10 @@ Rules that keep patches applying cleanly:
 
 ## Conventions and traps (learned the hard way)
 
-- Identity, decided 2026-09-15: the domain is sevenreadings.org
-  (sevenreadings.com redirects to it) and the application id is
+- Identity, decided 2026-09-15: the domain is sevenreadings.org, the site
+  https://sevenreadings.org/ on GitHub Pages (sevenreadings.com redirects
+  to it; the display name in stores and manifests is "Seven Readings",
+  the brand and package name `sevenreadings`), and the application id is
   `org.sevenreadings.SevenReadings` on every platform: Android application
   id, iOS and macOS bundle id, Linux `APPLICATION_ID`, the Flatpak id.
   `bootstrap.yml` writes it into the generated platform folders (Flutter's

@@ -1,12 +1,13 @@
 {
-    "name": "sevenreadings",
-    "short_name": "sevenreadings",
-    "start_url": ".",
+    "name": "Seven Readings",
+    "short_name": "Seven Readings",
+    "start_url": "./",
+    "scope": "./",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#FFF8F5",
+    "theme_color": "#5B4636",
+    "description": "Offline Scripture study across seven readings.",
+    "orientation": "any",
     "prefer_related_applications": false,
     "icons": [
         {

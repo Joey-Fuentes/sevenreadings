@@ -5,7 +5,7 @@ English, Hebrew and Greek read alongside Jewish literal, Jewish rationalist,
 Catholic, Orthodox, Protestant, Islamic and secular-academic commentary.
 
 Flutter/Dart. Targets Android, iOS, macOS, Windows, Linux, Web.
-Live web build: `https://<owner>.github.io/sevenreadings/`.
+Live web build: https://sevenreadings.org/ (sevenreadings.com redirects there).
 
 **Working on this project? Start with [`AGENTS.md`](AGENTS.md)** (handoff for
 AI sessions and new contributors), [`docs/workflow.md`](docs/workflow.md)

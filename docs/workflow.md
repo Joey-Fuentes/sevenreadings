@@ -104,7 +104,11 @@ CI = `ci.yml` (analyze, tests, ruff, web + Linux smoke build, Pages deploy on
 `main` when everything passes). `build.yml` builds all six targets on demand
 or weekly. `release.yml` publishes app binaries on a `v*` tag.
 
-Site: `https://<owner>.github.io/sevenreadings/`. Hard-refresh after a deploy.
+Site: https://sevenreadings.org/ — the Pages custom domain (Settings >
+Pages), DNS at the registrar (four A and four AAAA records on the apex to
+GitHub Pages' addresses, `www` a CNAME to `joey-fuentes.github.io`),
+`app/web/CNAME` in the build, `--base-href "/"` in ci.yml; sevenreadings.com
+is a registrar-level 301 to it. Hard-refresh after a deploy.
 
 ## The first-launch checklist on a device
 
