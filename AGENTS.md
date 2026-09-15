@@ -38,8 +38,10 @@ translation, readings per source; a hit opens the chapter on that verse),
 the notices the pipeline stores in `meta.notices`), bookmarks and notes per
 verse (readings sheet header; listed under "Bookmarks & notes" in the book
 picker; stored in `UserDb`, never in content), and, in builds that may
-show it, "Support this project" at the top of About: the Stripe link
-(card, Apple Pay, Google Pay), with wording for a gift to an individual.
+show it, "Support Seven Readings": a band under the title row of every
+app bar, always on screen, plus an entry at the top of About, opening the
+Stripe link (card, Apple Pay, Google Pay) with wording for a gift to an
+individual.
 
 ## Setting up a session (AI side)
 

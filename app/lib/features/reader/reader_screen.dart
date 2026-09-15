@@ -5,6 +5,8 @@ import 'package:sr_data/sr_data.dart';
 import '../about/about_screen.dart';
 import '../notes/notes_screen.dart';
 import '../search/search_screen.dart';
+import '../support/support_links.dart';
+import '../support/support_screen.dart';
 import 'markdown_text.dart';
 
 /// The readings sheet's list and the book picker's list, for the integration
@@ -173,6 +175,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
             onPressed: () => _step(1),
           ),
         ],
+        bottom: showsSupportLinks ? const SupportBar() : null,
       ),
       body: FutureBuilder<_ChapterData>(
         future: _data,

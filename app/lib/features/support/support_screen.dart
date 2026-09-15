@@ -4,10 +4,49 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'support_links.dart';
 
-/// "Support this project", reached from About in builds that may show
-/// outside payment links (see [showsSupportLinks]). Each link opens in the
-/// browser; the address is shown too, so it can be copied when no browser
-/// opens.
+/// The band under the title row of every app bar, in builds that may show
+/// outside payment links (see [showsSupportLinks]): full width, centred,
+/// on screen at all times. The most visible thing in the app, by design.
+class SupportBar extends StatelessWidget implements PreferredSizeWidget {
+  const SupportBar({super.key});
+
+  static const double height = 44;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(height);
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final color = theme.colorScheme.onTertiaryContainer;
+    return Material(
+      color: theme.colorScheme.tertiaryContainer,
+      child: InkWell(
+        onTap: () => Navigator.of(context).push<void>(
+          MaterialPageRoute(builder: (_) => const SupportScreen()),
+        ),
+        child: SizedBox(
+          height: height,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.favorite, color: color),
+              const SizedBox(width: 8),
+              Text(
+                'Support Seven Readings',
+                style: theme.textTheme.titleSmall?.copyWith(color: color),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The links, reached from the [SupportBar] and from About in builds that
+/// may show outside payment links. Each link opens in the browser; the
+/// address is shown too, so it can be copied when no browser opens.
 class SupportScreen extends StatelessWidget {
   const SupportScreen({super.key});
 
@@ -26,7 +65,7 @@ class SupportScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Support Seven Readings')),
+      appBar: AppBar(title: const Text('Support')),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
         children: [

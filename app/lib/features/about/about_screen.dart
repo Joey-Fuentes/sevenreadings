@@ -64,7 +64,10 @@ class AboutScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('About the texts')),
+      appBar: AppBar(
+        title: const Text('About the texts'),
+        bottom: showsSupportLinks ? const SupportBar() : null,
+      ),
       body: FutureBuilder<_About>(
         future: _load(),
         builder: (context, snapshot) {

@@ -250,15 +250,18 @@ Spikes:
 
 ### State
 
-- **D1 (2026-09-15): in the tree.** `app/lib/features/support/`: a
-  Support screen reached from the top of About, one link for now, a Stripe
+- **D1 (2026-09-15): in the tree.** `app/lib/features/support/`: a band
+  under the title row of every app bar, full width and centred, "Support
+  Seven Readings" with a heart, on screen at all times (the maintainer's
+  ask: the most obvious thing in the app), plus an entry at the top of
+  About; both open the Support screen: one link for now, a Stripe
   Payment Link (customer chooses the amount; card, Apple Pay and Google Pay
   on Stripe's hosted page), opened with `url_launcher` and shown as text
   too. The build flag `SR_DISTRIBUTION` (see `AGENTS.md`) hides the entry
   in `play`, `appstore` and `msstore` builds, where tips must be in-app
   purchases (D2, D3); every workflow sets the flag per artifact and the
-  checklist runs are `direct`, so the emulator and Linux screenshots show
-  the screen (step 08). The Stripe "buy button" embed and its publishable
+  checklist runs are `direct`, so the band is in every screenshot and
+  step 02 is the screen itself. The Stripe "buy button" embed and its publishable
   key are for an HTML page, not the app; they can go on a landing page.
 - **D4, the fact as of 2026-09-15:** the maintainer intends a nonprofit
   but none is formed, so the recipient is an individual: gifts are that
