@@ -118,6 +118,12 @@ def add_entries(conn: sqlite3.Connection, entries: Iterable[Entry]) -> int:
     return n
 
 
+def add_entry(conn: sqlite3.Connection, e: Entry) -> int:
+    """Insert one entry and return its id (for rows that refer to it)."""
+    add_entries(conn, [e])
+    return int(conn.execute("SELECT last_insert_rowid()").fetchone()[0])
+
+
 def add_parallels(conn: sqlite3.Connection, parallels: Iterable[Parallel]) -> int:
     rows = [
         (p.source_id, p.start_verse_id, p.end_verse_id, p.external_ref, p.entry_id, p.note)

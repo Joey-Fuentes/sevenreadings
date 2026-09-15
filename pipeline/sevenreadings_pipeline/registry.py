@@ -12,6 +12,7 @@ from .sources.ccel_thml import CcelThmlSource
 from .sources.haydock import DouayRheimsSource, HaydockSource
 from .sources.ia_hocr import IccSource
 from .sources.jsonl_commentary import JsonlCommentarySource
+from .sources.quran import QuranParallelsSource
 from .sources.sefaria import SefariaExportSource
 from .sources.stubs import TafsirApiSource
 from .sources.swete_lxx import SweteLxxSource
@@ -29,6 +30,7 @@ KINDS: dict[str, type[Source]] = {
     "sefaria_export": SefariaExportSource,
     "haydock": HaydockSource,
     "ccel_thml": CcelThmlSource,
+    "quran_parallels": QuranParallelsSource,
     "tafsir_api": TafsirApiSource,
     "icc": IccSource,
 }
@@ -172,6 +174,15 @@ SAMPLE_SOURCES: dict[str, dict] = {
         "url": "fixture",
         "books": ["Rom"],
         "authors": ["W. Sanday and A. C. Headlam"],
+    },
+    "quran": {
+        "kind": "quran_parallels",
+        "perspective": "islamic",
+        "author": "The Qur'an",
+        "title": "Qur'anic parallels, Pickthall's translation (1930)",
+        "license": "Public domain",
+        "license_status": "clear",
+        "url": "fixture",
     },
     "sample": {
         "kind": "jsonl",

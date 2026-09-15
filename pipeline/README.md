@@ -25,6 +25,8 @@ Termux has no `/tmp`; write scratch output under `~/scratch`, never `/tmp`.
   pages), `ccel_mhc` (Matthew Henry), `ccel_thml` (Chrysostom from CCEL's
   ThML volumes), `sefaria` (Rashi, Ibn Ezra from Sefaria's export, chosen by
   recorded license), `ia_hocr` (the ICC from the Internet Archive's hOCR),
+  `quran` (Pickthall's Qur'an at the Bible passages paired in
+  `data/quran_parallels.tsv`),
   `jsonl_commentary` (generic normalised commentary), `stubs` (the plan for
   Ibn Kathir).
 - `refs.py` — canon (books 1-75), verse-id encoding, reference parsing, book
@@ -70,6 +72,9 @@ Termux has no `/tmp`; write scratch output under `~/scratch`, never `/tmp`.
 - `index lists N pages; M archived pages not in the index were skipped` /
   `page titles disagree with the index` — Haydock: the site index is
   trusted; both lines are informational unless the numbers move.
+- `quran: N entries, M parallels` and `passages not found in the text` — a
+  listed passage means a reference in `data/quran_parallels.tsv` is wrong
+  (or the text lacks a verse); fix the file.
 - `icc: Rom (...): N notes from P pages; S pages without a chapter head
   skipped, K kept without one; notes per chapter: 1:32, 2:29, ...` — the
   skipped pages are the introduction and indexes; "kept without one" are

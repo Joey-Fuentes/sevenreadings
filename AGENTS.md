@@ -27,7 +27,8 @@ Current content (see `pipeline/sources.toml` for pins and licenses):
 | chrysostom | Chrysostom's NT homilies, CCEL ThML editions of NPNF 1/10-14 (files declare DC.Rights Public Domain); each homily anchored to its passage up to the next homily's | wired (Orthodox reading); needs `srp lock --write chrysostom`, then a build read |
 | rashi, ibn_ezra | Sefaria's database export on Hugging Face, pinned by commit; per book the largest English version whose recorded license is PD/CC0/CC BY/CC BY-SA, NC never read; Masoretic numbering followed through the WLC's ingest | wired (Jewish readings); needs a build with wlc in it, then the per-book version list read |
 | icc | International Critical Commentary, pre-1929 volumes, from the Internet Archive's hOCR (`_hocr.html`); chapter from each page's running head, notes split at bold verse numbers, sections at "I. 1-7." headings | wired (Academic reading), one volume so far (Sanday-Headlam, Romans); OCR unproofread by design; needs `srp lock --write icc`, then a build read |
-| ibn_kathir | documented stub in `pipeline/sevenreadings_pipeline/sources/stubs.py` | not wired: no permissive English translation; the Arabic (Arabic Wikisource, CC BY-SA) plus machine translation is possible but needs the Bible-Qur'an `parallels` data first |
+| quran | Pickthall's Qur'an (1930, public domain) from Project Gutenberg #16955, shown at the Bible passages it parallels; the pairings are `pipeline/data/quran_parallels.tsv` (project data, CC0), one entry and one `parallels` row per pairing | wired (Islamic reading); needs `srp lock --write quran`, then a build read (the log lists passages not found) |
+| ibn_kathir | documented stub in `pipeline/sevenreadings_pipeline/sources/stubs.py` | not wired: no permissive English translation; the Arabic (Arabic Wikisource, CC BY-SA) plus machine translation is possible and would sit beside the Qur'an entries |
 
 App: verse-by-verse phone layout, side-by-side on wide screens, translation
 chips, book/chapter picker with Protestant/Catholic/Tanakh order, readings
@@ -167,6 +168,12 @@ Rules that keep patches applying cleanly:
   from data: Haydock through the Douay's `trace`, Rashi and Ibn Ezra through
   `versification.translation_trace(conn, "wlc")`. Build them with that
   translation in `--only`, or the build says it fell back to the rule table.
+- The Islamic reading is the Qur'an, not a commentary: a Bible passage gets
+  the Qur'an passage that retells or answers it. Coverage is exactly the
+  pairings in `pipeline/data/quran_parallels.tsv`; a verse with no pairing
+  shows "No reading". Add pairings there, one line each, with the basis in
+  the note when it is exegetical rather than textual. `refs.parse_ref`
+  handles the Bible side ("Gen 44:18-45:15"); the Qur'an side is "s:a-b".
 - ICC volumes: add one per `urls`/`sha256`/`books`/`authors` entry, prefer
   the Toronto scans (`...uoft`), and read the build line for the volume:
   `notes per chapter` should be dense and the "kept without one" count small.
@@ -199,12 +206,13 @@ Rules that keep patches applying cleanly:
 
 ## Where to go next
 
-In rough order of value: pin and build the ICC's first volume, then add
-volumes (Driver's Deuteronomy 1895, Plummer's Luke 1896, Skinner's Genesis
-1910, Briggs's Psalms 1906-07 — Psalms needs MT numbering through the
-WLC trace like Rashi), Hebrew-only fallback for Ibn Ezra books without a
-usable English version (a decision, not code), Ibn Kathir once the
-parallels data exists,
+In rough order of value: pin and build the Qur'an parallels, then extend
+them (the file is the whole of the Islamic reading's coverage); more ICC
+volumes (Plummer's Luke 1896, Skinner's Genesis 1910, Driver's Deuteronomy
+1895, Briggs's Psalms 1906-07 — Psalms needs MT numbering through the WLC
+trace like Rashi); Hebrew-only fallback for Ibn Ezra books without a
+usable English version (a decision, not code); a tafsir beside the
+Qur'an entries if an open English one appears,
 scroll-to-verse in the wide layout, Exodus 36-40 and Proverbs 24-31 LXX
 tables, Play Asset Delivery if the AAB passes 200 MB. Each new source: verify
 the upstream and its license from the actual repository, write the parser

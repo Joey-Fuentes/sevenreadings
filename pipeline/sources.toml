@@ -215,6 +215,20 @@ sha256 = [
 license = "Public domain (text 1706-1721; CCEL edition: no rights reserved)"
 license_status = "clear"
 
+[quran]
+kind = "quran_parallels"
+perspective = "islamic"
+author = "The Qur'an"
+title = "Qur'anic parallels, Pickthall's translation (1930)"
+# Project Gutenberg eBook #16955, three translations interleaved; the P: lines
+# (Pickthall) are read. `srp lock --write quran` fills the hash.
+url = "https://www.gutenberg.org/cache/epub/16955/pg16955.txt"
+sha256 = "3b96fa3ad318ab9d91db53b25100d5169fafe3a1ecb993e7c36ffff55bf9d8bc"
+parallels = "data/quran_parallels.tsv"
+reference = "web"
+license = "Public domain (Pickthall 1930, Knopf, New York, unrenewed; translator d. 1936); parallels: project data, CC0"
+license_status = "clear"
+
 [ibn_kathir]
 kind = "tafsir_api"
 perspective = "islamic"

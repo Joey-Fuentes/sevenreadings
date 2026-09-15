@@ -1,0 +1,201 @@
+# Bible passage <TAB> Qur'an passage(s), ";"-separated <TAB> note
+# The Qur'an retells or answers these Bible passages. A line pairs a Bible
+# range with the Qur'an passages that treat the same figure, event or
+# teaching; the note names the parallel in a few words. Where the pairing
+# rests on Muslim exegesis rather than on the text, the note says so.
+# References use the app's OSIS book codes and standard Qur'an numbering.
+# Project data, CC0.
+
+# -- Creation, Adam and Eve, Cain and Abel -----------------------------------
+Gen 1:1-2:3	41:9-12; 7:54; 50:38	Creation of the heavens and the earth in six days
+Gen 1:1-2	21:30-33; 41:11	The heavens and the earth as one, then parted; the sky as smoke
+Gen 1:3	36:82; 2:117	Creation by the word: Be, and it is
+Gen 1:26-28	2:30-33	The vicegerent on earth; Adam taught the names
+Gen 2:7	15:26-44; 38:71-85; 32:7-9	Man formed from clay, given of God's spirit; the angels commanded to bow, Iblis refuses
+Gen 2:15-17	2:35; 7:19; 20:117-119	Adam and his wife in the Garden; the forbidden tree
+Gen 2:21-24	4:1; 7:189; 39:6	Humankind created from a single soul and its mate
+Gen 3:1-7	7:20-22; 20:120-121; 2:36	The tempter, the tree, the leaves of the Garden
+Gen 3:8-24	7:23-27; 2:37-39; 20:122-123	Adam's repentance and the descent to earth
+Gen 3:19	20:55	From the earth created, to it returned, from it brought forth again
+Gen 4:1-16	5:27-31	Cain and Abel: the two sacrifices, the murder, the raven
+Gen 4:8-10	5:32	Whoever kills one soul, it is as if he killed all mankind
+Gen 5:21-24	19:56-57; 21:85	Enoch (Idris), raised to a high station
+
+# -- Noah -------------------------------------------------------------------
+Gen 6:5-22	11:25-49; 71:1-28; 7:59-64	Noah's preaching, the mockers, the building of the ark
+Gen 7:1-24	11:36-44; 23:27-29; 54:9-16; 26:117-121	The flood: the oven gushes, the ark floats, the disbelievers drown
+Gen 7:7	11:42-47	Noah's son who would not board, and Noah's plea for him (a son the Bible does not mention)
+Gen 8:1-19	11:44; 23:28-29	The waters abate and the ark comes to rest on Mount Judi
+Gen 9:28-29	29:14-15	Noah among his people a thousand years less fifty
+
+# -- Abraham, Lot, Ishmael, Isaac -------------------------------------------
+Gen 11:27-32	21:51-71; 6:74-83; 19:41-50; 37:83-99	Abraham and his father's idols; the stars, the moon, the sun; the fire he was cast into
+Gen 12:1-9	21:71; 29:26; 2:124	Abraham delivered to the land; tried with commands and made a leader of mankind
+Gen 15:1-6	2:260; 3:67-68; 4:125	Abraham's faith: the birds brought back to life; Abraham neither Jew nor Christian; God's friend
+Gen 16:1-16	14:35-41; 19:54-55	Hagar and Ishmael settled by the House in a valley without cultivation; Ishmael a messenger and prophet
+Gen 17:15-22	11:69-73; 51:24-30; 15:51-56; 37:112-113	Isaac promised to Abraham and Sarah in their old age
+Gen 18:1-15	11:69-73; 51:24-30; 15:51-56	The guests, the roasted calf, and Sarah's laughter
+Gen 18:16-33	11:74-76; 29:31-32	Abraham pleads for Lot's people
+Gen 19:1-29	11:77-83; 15:57-77; 7:80-84; 26:160-175; 27:54-58; 29:28-35; 54:33-39; 51:31-37	Lot and the destruction of his city
+Gen 19:26	11:81; 66:10	Lot's wife, left behind
+Gen 21:1-7	11:71-72; 37:112	The birth of Isaac
+Gen 21:8-21	14:37; 2:125-129	Hagar and Ishmael in the wilderness; Abraham and Ishmael raise the House
+Gen 22:1-19	37:99-111	The sacrifice of Abraham's son (unnamed here; Muslim tradition reads Ishmael)
+Gen 25:12-18	19:54-55; 2:133	Ishmael's line; Ishmael among the fathers named at Jacob's death
+Gen 49:1-33	2:132-133	Jacob's last words to his sons
+
+# -- Joseph (Surah 12) ------------------------------------------------------
+Gen 37:5-11	12:4-6	Joseph's dream of the sun, moon and eleven stars
+Gen 37:12-28	12:7-20	The brothers' plot, the pit, the caravan, the sale
+Gen 37:29-36	12:16-18; 12:21	The bloodied shirt and Jacob's grief; the Egyptian who buys Joseph
+Gen 39:1-6	12:21-22	Joseph in the Egyptian's house
+Gen 39:7-20	12:23-35	The master's wife; the shirt torn from behind; the women of the city; prison
+Gen 40:1-23	12:36-42	The two prisoners' dreams
+Gen 41:1-36	12:43-49	The king's dream of seven fat and seven lean cows
+Gen 41:37-57	12:50-57	Joseph cleared and set over the storehouses of the land
+Gen 42:1-38	12:58-66	The brothers' first journey; the demand for the youngest brother
+Gen 43:1-34	12:67-69	The second journey with Benjamin
+Gen 44:1-17	12:70-79	The king's cup in Benjamin's saddlebag
+Gen 44:18-45:15	12:80-93	The brothers' return; Jacob's grief and his eyes; Joseph makes himself known
+Gen 45:16-46:30	12:94-101	Jacob's sight restored by the shirt; the family comes to Egypt; the dream fulfilled
+
+# -- Job --------------------------------------------------------------------
+Job 1:1-2:13	38:41-44; 21:83-84	Job's affliction and his cry to God
+Job 42:10-17	21:84; 38:43	Job's family and fortune restored
+
+# -- Moses and the Exodus ---------------------------------------------------
+Exod 1:8-22	28:1-6; 7:127	Pharaoh's oppression: the sons slain, the daughters spared
+Exod 2:1-10	28:7-13; 20:37-40	Moses in the chest on the river; his sister; his mother restored to him
+Exod 2:11-15	28:14-21; 26:18-21	Moses kills the Egyptian and flees
+Exod 2:16-22	28:22-28	The well of Midian, the two daughters, the marriage
+Exod 3:1-4:17	20:9-36; 28:29-35; 27:7-14; 26:10-17; 79:15-19	The fire at the mountain; the call; the rod and the hand; Aaron as spokesman
+Exod 3:14	20:14	I, even I, am God; there is no god but Me
+Exod 5:1-6:1	26:16-33; 20:42-56; 7:103-106; 43:46-56	Moses and Aaron before Pharaoh
+Exod 7:8-13	7:109-126; 20:57-76; 26:34-51; 10:79-82	The magicians' contest and their belief
+Exod 7:14-11:10	7:130-136; 17:101-102; 43:48-50	The plagues: drought, flood, locusts, lice, frogs and blood
+Exod 12:31-13:22	26:52-60; 20:77; 44:23-24	The departure by night; Pharaoh's pursuit
+Exod 14:1-31	26:61-68; 20:77-79; 10:90-92; 2:50; 7:136; 44:24-31	The sea parted; Pharaoh drowned, his body preserved as a sign
+Exod 16:1-36	2:57; 7:160; 20:80-81	Manna and quails; the shading cloud
+Exod 17:1-7	2:60; 7:160	Water from the rock: twelve springs for twelve tribes
+Exod 18:1-27	7:85-93	Jethro, whom tradition identifies with the prophet Shu'ayb, preaching to Midian
+Exod 19:1-25	2:63; 4:154; 7:171	The covenant at the mountain raised above them
+Exod 20:1-17	17:22-39; 6:151-153	Commandments: no other god, honour parents, no killing, no adultery, no theft, just measure
+Exod 20:4-6	7:138-140	The people ask for a god like the idols they see
+Exod 20:8-11	16:124; 2:65-66; 7:163-166	The Sabbath, and the town that broke it
+Exod 21:23-25	5:45	Life for life, eye for eye; and forgiveness as atonement
+Exod 24:12-18	7:142-145; 2:51	Forty nights on the mountain; the tablets
+Exod 25:10-22	2:248	The Ark, bearing peace and relics of the house of Moses and Aaron
+Exod 32:1-35	20:83-98; 7:148-156; 2:51-54; 2:92-93	The golden calf, the Samiri, Moses' return and anger
+Exod 32:19-24	7:150; 20:92-94	Moses seizes Aaron by the head and beard
+Exod 33:18-23	7:143	Moses asks to see God; the mountain crumbles
+Lev 11:1-47	6:146; 5:3; 2:173; 16:118	Foods forbidden to the Children of Israel
+Lev 19:18	4:36; 2:177	Kindness to parents, kin, orphans, the needy, the neighbour, the wayfarer
+Num 11:4-9	2:61	Weary of one food: the demand for herbs, cucumbers, lentils and onions
+Num 13:1-14:38	5:20-26	Fear of the giants; the holy land forbidden forty years
+Num 15:32-36	7:163-166; 4:154	The Sabbath-breakers
+Num 16:1-35	28:76-82; 29:39; 40:24	Korah, his treasures, and the earth that swallowed him
+Num 19:1-10	2:67-73	The cow to be sacrificed; the questions about it; the dead restored
+Num 22:1-24:25	7:175-176	The man given God's revelations who threw them off (whom tradition identifies with Balaam)
+Deut 6:4-5	112:1-4; 2:163	Say: He is God, the One
+Deut 18:15-19	7:157; 61:6	The prophet to come, as Muslim exegesis reads these verses
+Deut 30:11-14	50:16	Nearer to him than his jugular vein
+
+# -- Saul, David, Solomon, the prophets -------------------------------------
+Judg 7:4-7	2:249	The river test, told of Saul's army
+1Sam 6:1-15	2:248	The Ark returns as the sign of the king
+1Sam 8:4-22	2:246-247	The people ask for a king; Saul appointed
+1Sam 17:32-54	2:250-251	David slays Goliath
+2Sam 12:1-15	38:21-25	The two litigants and the ewes; David's repentance
+Ps 51:1-4	38:24-25	David's penitence and God's forgiveness
+Ps 8:4-6	17:70; 95:4	The children of Adam honoured; man created in the best stature
+Ps 19:1-6	3:190-191	The creation of the heavens and the earth as signs
+Ps 33:6-9	36:82	He says to it: Be, and it is
+Ps 37:29	21:105	Written in the Psalms: the righteous shall inherit the earth
+Ps 90:4	22:47; 32:5	A day with God as a thousand years
+Ps 104:1-9	78:6-16; 16:3-18	The earth spread, the mountains as pegs, the rain and the fruits
+Ps 115:4-8	7:191-198	Idols that neither hear nor see nor help
+Ps 139:13-16	23:12-14; 39:6	Formed stage by stage in the womb
+Ps 148:1-14	17:44; 24:41; 57:1	All creation praises God
+Ps 150:1-6	34:10; 21:79	The mountains and the birds praising with David
+Prov 1:8-9	31:12-19	Luqman's counsel to his son
+Prov 6:6-8	27:18-19	Solomon and the ant
+Prov 11:1	83:1-6	Woe to those who give short measure
+Eccl 1:2-11	57:20; 3:185; 29:64	The life of this world as play and pastime
+Eccl 12:7	2:156	We belong to God, and to Him we return
+Isa 1:11-17	22:37	Neither flesh nor blood reaches God, but devotion
+Isa 7:14	3:47; 19:20-21; 21:91	The virgin conception of Jesus
+Isa 40:18-25	42:11	Nothing is like Him
+Isa 41:8	4:125	Abraham taken as God's friend
+Isa 44:9-20	21:52-67; 37:91-96	The idol-makers; Abraham breaks the idols
+Isa 45:5-7	2:255	The Throne verse: there is no god but He
+Job 10:8-12	23:12-14	Fashioned from clay, then a drop, then a clot
+Job 19:25-27	75:3-4	The very fingers restored
+Job 38:4-7	18:51	No one witnessed the creation of the heavens and the earth
+1Kgs 3:5-15	21:78-79; 27:15	Solomon's judgement and knowledge
+1Kgs 4:29-34	27:16-19; 34:12	Solomon taught the speech of birds; the wind and the jinn at his command
+1Kgs 5:1-8:66	34:12-13; 21:81-82; 38:36-38	The builders of Solomon's works
+1Kgs 10:1-13	27:22-44	The hoopoe, the Queen of Sheba, the throne, the glass floor
+1Kgs 11:1-13	38:34-35; 2:102	Solomon tried, and what was falsely attributed to him
+1Kgs 11:41-43	34:14	Solomon's death known only by the worm and the staff
+1Kgs 18:16-40	37:123-132	Elijah against Baal
+2Kgs 2:1-14	6:86; 38:48	Elisha among the prophets
+2Kgs 25:8-12	17:4-8	The two corruptions of the Children of Israel and the entering of the sanctuary
+Ezra 7:1-10	9:30	The saying that Ezra was the son of God
+Ezek 37:1-14	2:243; 36:78-79	The dead raised: the thousands who died and lived again; who will revive rotted bones
+Jonah 1:1-4:11	37:139-148; 21:87-88; 68:48-50; 10:98	Jonah, the fish, and the city that believed
+Amos 8:4-6	83:1-6	Fraud in weights and measures
+
+# -- Zechariah, John, Mary, Jesus -------------------------------------------
+Luke 1:5-25	3:38-41; 19:2-11; 21:89-90	Zechariah's prayer for a son; the sign of three days' silence
+Luke 1:26-38	3:42-48; 19:16-21; 3:35-37	The annunciation to Mary; Mary's dedication in the temple and Zechariah's guardianship
+Luke 1:57-66	19:7; 19:12-15	The birth and naming of John
+Luke 2:1-20	19:22-26; 23:50	The birth of Jesus beneath the palm
+Luke 2:21-40	19:27-33	The infant Jesus speaks in his mother's defence
+Matt 1:18-25	3:47; 19:20-21; 21:91; 66:12; 3:59	Born of a virgin; Jesus likened to Adam
+Matt 3:1-12	3:39; 19:12-15	John, confirming a Word from God
+Matt 5:3-12	25:63-76	The servants of the Merciful
+Matt 5:17-20	3:50; 5:46	Jesus confirming the Torah
+Matt 5:31-32	2:229-232	Divorce and its limits
+Matt 5:38-42	5:45; 42:40-43	Retaliation, and the reward of forgiving
+Matt 6:1-4	2:271; 2:264	Alms given secretly, and alms spoiled by reproach
+Matt 6:5-15	1:1-7	The Opening: the prayer of the Muslim
+Matt 6:16-18	2:183-185	Fasting prescribed, as it was prescribed for those before
+Matt 6:19-21	9:34-35; 3:14	Hoarded gold and silver
+Matt 6:25-34	29:60	How many a creature carries not its own provision
+Matt 7:7-11	2:186; 40:60	Ask, and I answer the suppliant
+Matt 7:24-27	9:109	A house founded on God, or on the edge of a crumbling bank
+Matt 10:29-31	6:59	Not a leaf falls but He knows it
+Matt 11:2-6	3:49; 5:110	The blind healed, the leper cleansed, the dead raised
+Matt 13:1-9	48:29	The seed that sends forth its shoot, a likeness given in the Gospel
+Matt 16:13-17	5:72-75	The Messiah, son of Mary, no other than a messenger
+Matt 19:3-9	2:229-232	Divorce
+Matt 19:23-26	7:40	The camel through the needle's eye
+Matt 22:34-40	2:177; 4:36	Righteousness: belief and giving
+Matt 23:1-12	2:44; 62:5; 9:31	Enjoining right and forgetting oneself; rabbis and monks taken as lords
+Matt 23:29-39	2:61; 2:87; 2:91; 3:181; 5:70	The prophets slain
+Matt 24:1-2	17:4-8	The sanctuary entered and laid waste
+Matt 24:36	7:187; 31:34; 79:42-44	None knows the Hour but God
+Matt 25:31-46	99:6-8; 3:30; 18:49	Every deed weighed and shown
+Matt 26:17-30	5:112-115	The table sent down from heaven at the disciples' request
+Matt 27:32-56	4:157-158; 3:54-55; 5:117	They did not kill him nor crucify him; God raised him to Himself
+Mark 4:26-32	48:29	The seed and the shoot
+Luke 12:16-21	18:32-43	The man with two gardens
+Luke 16:19-31	7:44-50	The people of the Garden and the people of the Fire call to one another
+John 1:1-18	3:45; 4:171	Jesus, a Word from God
+John 6:1-15	5:112-115	Bread from heaven for the disciples
+John 6:66-71	3:52-53; 61:14; 5:111	The disciples who said: we are God's helpers
+John 10:30	5:72-73; 4:171	Say not Three; God is One
+John 11:1-44	3:49; 5:110	The dead raised by God's leave
+John 14:15-17	61:6	The one to come after Jesus, as Muslim exegesis reads the promise
+John 19:16-30	4:157-158	The crucifixion denied; it was made to appear so
+Acts 1:6-11	4:158; 3:55; 43:61; 4:159	Jesus raised to God; his return as a sign of the Hour
+Rom 4:1-12	3:67-68; 16:120-123; 2:135	Abraham the upright, neither Jew nor Christian
+1Cor 15:35-58	22:5-7; 36:77-83; 75:3-4; 50:3-11	The resurrection of the body
+Gal 3:6-9	3:67-68; 3:95	Those nearest to Abraham are those who follow him
+Jas 2:21-23	4:125; 2:124	Abraham's trial; Abraham God's friend
+2Pet 3:8	22:47; 32:5	A day as a thousand years
+1John 4:7-12	85:14	He is the Forgiving, the Loving
+Rev 1:8	57:3	The First and the Last, the Outward and the Inward
+Rev 20:7-10	18:94-99; 21:96-97	Gog and Magog
+Rev 20:11-15	18:49; 17:13-14; 69:19-31; 84:7-12	The book of deeds opened
+Rev 21:1-4	14:48; 21:104; 39:67-70	The earth changed, the heavens rolled up

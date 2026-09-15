@@ -45,13 +45,14 @@ written into its NOTICE so it is not re-argued.
 | rashi | Rashi on Tanakh | Hebrew: public domain | Sefaria export (Hugging Face, commit-pinned). Per book the largest English version whose Sefaria-recorded license is Public Domain / CC0 / CC BY / CC BY-SA; the Rosenbaum-Silbermann 1929-34 translation is recorded by Sefaria as Public Domain, the Community Translation as CC0; NC and copyrighted versions are never read | clear |
 | ibn_ezra | Ibn Ezra on Tanakh | Hebrew: public domain | As Rashi. Strickman-Silver (1988-2004) and any NC version never read; English coverage partial, the build lists it | clear |
 | matthew_henry | Matthew Henry's Commentary (1706-21) | Public domain | CCEL HTML edition: "Public domain text. No rights reserved. May be distributed freely." | clear |
+| quran | The Qur'an in Pickthall's translation (1930), at the Bible passages it parallels | Public domain: Knopf, New York, 1930, unrenewed (Project Gutenberg #16955); translator d. 1936 | Gutenberg plain text, only the Pickthall lines read. The pairings are project data, CC0 | clear |
 | icc | International Critical Commentary, volumes published before 1929 | Public domain (US by date; elsewhere authors d. before 1956) | Internet Archive hOCR of public-domain scans; the Archive asserts no rights and mechanical OCR has no originality. Unproofread, shipped labelled as OCR | clear |
 
 ## Planned
 
 | Source | Underlying text | Digitisation | Status and what stands in the way |
 |--------|-----------------|--------------|-----------------------------------|
-| ibn_kathir | Arabic: public domain; Arabic Wikisource's digitisation is CC BY-SA (acceptable, as for Swete) | No open-licensed English exists (the common English is the copyrighted Darussalam abridgement). A machine translation of the CC BY-SA Arabic would ship CC BY-SA, labelled as machine translation. Independently of licensing, the app needs Bible-to-Qur'an `parallels` data before a Qur'an commentary can appear at a Bible verse | blocked on the parallels data and the translation decision |
+| ibn_kathir | Arabic: public domain; Arabic Wikisource's digitisation is CC BY-SA (acceptable, as for Swete) | No open-licensed English exists (the common English is the copyrighted Darussalam abridgement). A machine translation of the CC BY-SA Arabic would ship CC BY-SA, labelled as machine translation. The `parallels` data it would hang on now exists (`pipeline/data/quran_parallels.tsv`) | blocked on the translation decision; the Islamic reading is the Qur'an itself meanwhile |
 
 ## Open questions and whom to ask
 
