@@ -170,6 +170,9 @@ Rules that keep patches applying cleanly:
   tips and reject links out. The workflows set it per artifact (the APK is
   `direct`, the AAB `play`, iOS `appstore`); a new artifact needs its
   value chosen, and a store submission must be built with its store's.
+- The icon is `tools/icons.py` (seven ribbons on brown); every icon file
+  in the tree is its output and CI checks they match (`--check`). Change
+  the drawing there and regenerate; never edit a PNG by hand.
 - Verse ids: `book*1_000_000 + chapter*1_000 + verse`; verse 0 = chapter-level
   material (titles, introductions); 999 = chapter end. Books 1-66 Protestant
   order, 67-75 deuterocanon. Ids never change; display order lives in

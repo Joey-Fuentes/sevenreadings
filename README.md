@@ -45,7 +45,8 @@ packages/sr_data/   Drift schema + typed queries + per-platform DB opener.
 pipeline/           Python (uv). Ingests upstream sources → sevenreadings.sqlite
 docs/               ADRs, licensing matrix, schema notes, workflow.
 tools/              Small scripts used by CI and developers (web assets, the
-                    checklist run on a device).
+                    checklist run on a device, the icon generator).
+packaging/          The icon as SVG and PNGs (and, later, the Flatpak manifest).
 ```
 
 ## How content works

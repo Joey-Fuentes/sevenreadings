@@ -1,0 +1,282 @@
+#!/usr/bin/env python3
+"""The app icon, as code: seven ribbons on brown.
+
+Seven bookmark ribbons hang from the top edge, one per reading, in the
+warm-to-cool order the readings sheet lists them, on the app's brown
+(the Material seed colour of the theme). Nothing else: it has to read at
+16 px and at 1024 px, and it must be ours (docs/plan.md, "Before any of
+it"). This script is the source; every icon file in the tree is its
+output.
+
+    pip install pillow            # the only dependency
+    python tools/icons.py         # regenerate every icon in place
+    python tools/icons.py --check # exit 1 if any committed icon differs
+
+Outputs (all relative to the repository root):
+  app/android/.../mipmap-*/ic_launcher.png           legacy launcher icons
+  app/android/.../drawable/ic_launcher_foreground.xml adaptive foreground
+  app/android/.../mipmap-anydpi-v26/ic_launcher.xml   adaptive icon
+  app/android/.../values/ic_launcher_background.xml   adaptive background
+  app/ios/Runner/Assets.xcassets/AppIcon.appiconset/  every entry listed
+                                                      in its Contents.json
+  app/macos/Runner/Assets.xcassets/AppIcon.appiconset/ likewise
+  app/windows/runner/resources/app_icon.ico           16-256 px
+  app/web/icons/Icon-*.png, app/web/favicon.png       PWA and favicon
+  packaging/icon/org.sevenreadings.SevenReadings.svg  scalable (Flatpak)
+  packaging/icon/org.sevenreadings.SevenReadings-*.png hicolor sizes
+"""
+
+from __future__ import annotations
+
+import io
+import json
+import sys
+from pathlib import Path
+
+from PIL import Image, ImageChops, ImageDraw
+
+ROOT = Path(__file__).resolve().parents[1]
+APP = ROOT / "app"
+
+BROWN = (0x5B, 0x46, 0x36)
+RIBBONS = [
+    (0xF4, 0xE7, 0xCE),  # parchment
+    (0xE1, 0xC2, 0x7A),  # gold
+    (0xC9, 0x8A, 0x3E),  # amber
+    (0xB2, 0x57, 0x3B),  # rust
+    (0x8C, 0x4A, 0x3C),  # deep rust
+    (0x7B, 0x8A, 0x5C),  # olive
+    (0x5F, 0x8A, 0x8B),  # teal
+]
+# Ribbon lengths as a fraction of the canvas, from the top edge.
+LENGTHS = [0.56, 0.66, 0.74, 0.62, 0.70, 0.52, 0.60]
+CANVAS = 1024.0
+RIBBON_W = 72.0
+GAP = 28.0
+NOTCH = 40.0
+CORNER = 0.22  # of the side, for rounded-square variants
+SUPERSAMPLE = 4
+
+
+def ribbon_polygons(scale: float = 1.0) -> list[list[tuple[float, float]]]:
+    """Seven polygons in 1024-space; `scale` shrinks the block about the
+    centre (adaptive and maskable icons keep the safe zone)."""
+    n = len(RIBBONS)
+    width = n * RIBBON_W + (n - 1) * GAP
+    x0 = (CANVAS - width) / 2
+    top = CANVAS * 0.14
+    out = []
+    for i, length in enumerate(LENGTHS):
+        x = x0 + i * (RIBBON_W + GAP)
+        bottom = top + CANVAS * length
+        poly = [
+            (x, top),
+            (x + RIBBON_W, top),
+            (x + RIBBON_W, bottom),
+            (x + RIBBON_W / 2, bottom - NOTCH),
+            (x, bottom),
+        ]
+        c = CANVAS / 2
+        out.append([(c + (px - c) * scale, c + (py - c) * scale) for px, py in poly])
+    return out
+
+
+def render(
+    size: int,
+    *,
+    rounded: bool,
+    opaque: bool,
+    scale: float = 1.0,
+    margin: float = 0.0,
+) -> Image.Image:
+    """One PNG. `rounded`: rounded square (else full square); `opaque`:
+    no alpha at all (iOS); `margin`: transparent inset as a fraction of
+    the side (macOS style); `scale`: ribbon block scale."""
+    s = size * SUPERSAMPLE
+    img = Image.new("RGBA", (s, s), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(img)
+    inset = s * margin
+    box = (inset, inset, s - inset - 1, s - inset - 1)
+    side = s - 2 * inset
+    if rounded:
+        draw.rounded_rectangle(box, radius=side * CORNER, fill=BROWN + (255,))
+    else:
+        draw.rectangle(box, fill=BROWN + (255,))
+    k = side / CANVAS
+    for colour, poly in zip(RIBBONS, ribbon_polygons(scale), strict=True):
+        pts = [(inset + x * k, inset + y * k) for x, y in poly]
+        draw.polygon(pts, fill=colour + (255,))
+    img = img.resize((size, size), Image.LANCZOS)
+    if opaque:
+        flat = Image.new("RGB", (size, size), BROWN)
+        flat.paste(img, mask=img.getchannel("A"))
+        return flat
+    return img
+
+
+def render_foreground(size: int, scale: float) -> Image.Image:
+    """Ribbons only, transparent elsewhere (Android adaptive foreground)."""
+    s = size * SUPERSAMPLE
+    img = Image.new("RGBA", (s, s), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(img)
+    k = s / CANVAS
+    for colour, poly in zip(RIBBONS, ribbon_polygons(scale), strict=True):
+        draw.polygon([(x * k, y * k) for x, y in poly], fill=colour + (255,))
+    return img.resize((size, size), Image.LANCZOS)
+
+
+def hex_(c: tuple[int, int, int]) -> str:
+    return f"#{c[0]:02x}{c[1]:02x}{c[2]:02x}"
+
+
+def svg(rounded: bool = True) -> str:
+    parts = [
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">',
+        "  <!-- Seven Readings: seven ribbons on brown. Generated by",
+        "       tools/icons.py; edit that, not this. -->",
+    ]
+    r = int(CANVAS * CORNER) if rounded else 0
+    parts.append(f'  <rect width="1024" height="1024" rx="{r}" fill="{hex_(BROWN)}"/>')
+    for colour, poly in zip(RIBBONS, ribbon_polygons(), strict=True):
+        points = " ".join(f"{x:.0f},{y:.0f}" for x, y in poly)
+        parts.append(f'  <polygon points="{points}" fill="{hex_(colour)}"/>')
+    parts.append("</svg>")
+    return "\n".join(parts) + "\n"
+
+
+def vector_drawable(scale: float) -> str:
+    """Android adaptive foreground: a 108 dp viewport, ribbons inside the
+    66 dp safe zone."""
+    k = 108 / CANVAS
+    lines = [
+        '<?xml version="1.0" encoding="utf-8"?>',
+        "<!-- Seven Readings: the ribbons of the app icon, adaptive foreground.",
+        "     Generated by tools/icons.py; edit that, not this. -->",
+        '<vector xmlns:android="http://schemas.android.com/apk/res/android"',
+        '    android:width="108dp"',
+        '    android:height="108dp"',
+        '    android:viewportWidth="108"',
+        '    android:viewportHeight="108">',
+    ]
+    for colour, poly in zip(RIBBONS, ribbon_polygons(scale), strict=True):
+        d = " ".join(
+            ("M" if i == 0 else "L") + f"{x * k:.2f},{y * k:.2f}" for i, (x, y) in enumerate(poly)
+        )
+        lines.append(f'  <path android:fillColor="{hex_(colour)}" android:pathData="{d} Z"/>')
+    lines.append("</vector>")
+    return "\n".join(lines) + "\n"
+
+
+def png_bytes(img: Image.Image) -> bytes:
+    buf = io.BytesIO()
+    img.save(buf, format="PNG", optimize=True)
+    return buf.getvalue()
+
+
+def ico_bytes() -> bytes:
+    sizes = [16, 24, 32, 48, 64, 128, 256]
+    base = render(256, rounded=True, opaque=False)
+    buf = io.BytesIO()
+    base.save(buf, format="ICO", sizes=[(s, s) for s in sizes])
+    return buf.getvalue()
+
+
+def outputs() -> dict[Path, bytes]:
+    """Every file this script owns, with its content."""
+    out: dict[Path, bytes] = {}
+    res = APP / "android/app/src/main/res"
+    densities = {"mdpi": 48, "hdpi": 72, "xhdpi": 96, "xxhdpi": 144, "xxxhdpi": 192}
+    for folder, size in densities.items():
+        out[res / f"mipmap-{folder}/ic_launcher.png"] = png_bytes(
+            render(size, rounded=True, opaque=False)
+        )
+    out[res / "drawable/ic_launcher_foreground.xml"] = vector_drawable(0.72).encode()
+    out[res / "mipmap-anydpi-v26/ic_launcher.xml"] = (
+        b'<?xml version="1.0" encoding="utf-8"?>\n'
+        b"<!-- Generated by tools/icons.py; edit that, not this. -->\n"
+        b'<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\n'
+        b'  <background android:drawable="@color/ic_launcher_background"/>\n'
+        b'  <foreground android:drawable="@drawable/ic_launcher_foreground"/>\n'
+        b"</adaptive-icon>\n"
+    )
+    out[res / "values/ic_launcher_background.xml"] = (
+        '<?xml version="1.0" encoding="utf-8"?>\n'
+        "<!-- Generated by tools/icons.py; edit that, not this. -->\n"
+        "<resources>\n"
+        f'  <color name="ic_launcher_background">{hex_(BROWN)}</color>\n'
+        "</resources>\n"
+    ).encode()
+
+    ios = APP / "ios/Runner/Assets.xcassets/AppIcon.appiconset"
+    for entry in json.loads((ios / "Contents.json").read_text())["images"]:
+        pt = float(entry["size"].split("x")[0])
+        px = round(pt * int(entry["scale"].rstrip("x")))
+        out[ios / entry["filename"]] = png_bytes(render(px, rounded=False, opaque=True))
+
+    mac = APP / "macos/Runner/Assets.xcassets/AppIcon.appiconset"
+    for entry in json.loads((mac / "Contents.json").read_text())["images"]:
+        pt = float(entry["size"].split("x")[0])
+        px = round(pt * int(entry["scale"].rstrip("x")))
+        # macOS icons sit in a transparent margin, rounded, Big Sur style.
+        out[mac / entry["filename"]] = png_bytes(
+            render(px, rounded=True, opaque=False, margin=0.09)
+        )
+
+    out[APP / "windows/runner/resources/app_icon.ico"] = ico_bytes()
+
+    web = APP / "web"
+    for size in (192, 512):
+        out[web / f"icons/Icon-{size}.png"] = png_bytes(render(size, rounded=True, opaque=False))
+        out[web / f"icons/Icon-maskable-{size}.png"] = png_bytes(
+            render(size, rounded=False, opaque=True, scale=0.78)
+        )
+    out[web / "favicon.png"] = png_bytes(render(64, rounded=True, opaque=False))
+
+    pkg = ROOT / "packaging/icon"
+    out[pkg / "org.sevenreadings.SevenReadings.svg"] = svg().encode()
+    for size in (64, 128, 256, 512):
+        out[pkg / f"org.sevenreadings.SevenReadings-{size}.png"] = png_bytes(
+            render(size, rounded=True, opaque=False)
+        )
+    return out
+
+
+def same_image(a: bytes, b: bytes) -> bool:
+    """Pixel-equal within a small tolerance, so a Pillow upgrade that
+    rounds antialiasing differently is not a failure."""
+    try:
+        ia = Image.open(io.BytesIO(a)).convert("RGBA")
+        ib = Image.open(io.BytesIO(b)).convert("RGBA")
+    except Exception:  # noqa: BLE001 - not an image: compare bytes
+        return a == b
+    if ia.size != ib.size:
+        return False
+    extrema = ImageChops.difference(ia, ib).getextrema()
+    return all(hi <= 8 for _, hi in extrema)
+
+
+def main(argv: list[str]) -> int:
+    check = "--check" in argv
+    wanted = outputs()
+    stale: list[Path] = []
+    for path, data in wanted.items():
+        current = path.read_bytes() if path.exists() else None
+        if check:
+            if current is None or not (
+                same_image(current, data) if path.suffix == ".png" else current == data
+            ):
+                stale.append(path)
+        else:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(data)
+    if check:
+        for path in stale:
+            print(f"out of date: {path.relative_to(ROOT)}")
+        print(f"{len(wanted) - len(stale)} icons current, {len(stale)} stale")
+        return 1 if stale else 0
+    print(f"wrote {len(wanted)} icon files")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

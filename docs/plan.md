@@ -73,9 +73,13 @@ build. `bootstrap.yml` (run once, by hand) creates all six, sets the
 application id `org.sevenreadings.SevenReadings` (see `AGENTS.md`,
 "Identity") and commits them; the create steps are gone since. Nothing in the
 tree is an app icon either; every target ships Flutter's placeholder,
-which neither Flathub nor the stores accept. An original icon, generated
-into the sizes each platform wants, is part of S3, and its design is the
-maintainer's call.
+which neither Flathub nor the stores accept. Since 2026-09-15 there is
+one: `tools/icons.py` draws seven bookmark ribbons on the app's brown and
+writes every platform's icon set from that (Android legacy and adaptive,
+iOS, macOS, Windows `.ico`, PWA and favicon, SVG and PNGs under
+`packaging/icon/` for Linux and Flatpak); CI fails if a committed icon
+drifts from the script. A first draft for the maintainer to keep or
+replace: a different design is a change to one function in that script.
 
 ### Spikes
 

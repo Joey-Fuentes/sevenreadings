@@ -51,6 +51,8 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run pytest -q
+      - name: Icons match tools/icons.py
+        run: uv run --with pillow python ../tools/icons.py --check
 
   smoke:
     name: Smoke build (web + linux)
