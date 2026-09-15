@@ -154,6 +154,21 @@ weekly, and on demand, not on every push.
   process after the first is unmounted and `SevenReadingsApp.dispose`
   has closed both databases, not a process restart. Triggers: on demand,
   Mondays at 06:00 UTC, every `v*` tag; never on plain pushes.
+- **T3, Linux (2026-09-15): in the tree, first run pending.** A `linux`
+  job in `screenshots.yml` runs the same test on the Linux build under
+  Xvfb (1280x800, software GL) and uploads `screenshots-linux`. Same
+  checklist, same driver; two differences. The desktop window is 1280x720
+  dp, so the reader shows the side-by-side columns, a different code path
+  from the phone layout the emulator exercises, and the test records the
+  view size it saw (`view` in the report). And desktop has no
+  integration_test screenshot plugin (as far as the docs say; the first
+  run proves it), so the test renders the app from a `RepaintBoundary`
+  at its root to PNG and puts the bytes on the same report list the
+  driver already writes; Android, iOS and web keep the plugin. The guard
+  moved into `tools/checklist.sh`, which every target's job calls with
+  its device id. Windows (a desktop session on the runner), macOS, the
+  iOS simulator and web (chromedriver) are one job each from here; each
+  is a first run, not a copy, until it has passed.
 
 ## 3. Donations
 

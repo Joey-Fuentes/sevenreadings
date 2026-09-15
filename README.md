@@ -44,7 +44,7 @@ packages/sr_data/   Drift schema + typed queries + per-platform DB opener.
 pipeline/           Python (uv). Ingests upstream sources → sevenreadings.sqlite
 docs/               ADRs, licensing matrix, schema notes, workflow.
 tools/              Small scripts used by CI and developers (web assets, the
-                    emulator checklist).
+                    checklist run on a device).
 ```
 
 ## How content works

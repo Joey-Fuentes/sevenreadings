@@ -18,6 +18,13 @@
 // between tests, so the second launch lives in the same test, after the
 // first app is unmounted the way the binding would unmount it. Lists are
 // lazy, so anything below the fold is scrolled to before it is expected.
+//
+// Screenshots: Android, iOS and web go through the integration_test
+// plugin (proven on the Android emulator). Desktop has no such plugin, so
+// there the app is rendered from a RepaintBoundary at its root and the
+// bytes are handed to the same driver through the same report list.
+import 'dart:ui' as ui;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -28,6 +35,9 @@ import 'package:sevenreadings/features/reader/reader_screen.dart';
 
 late final IntegrationTestWidgetsFlutterBinding binding;
 var surfaceConverted = false;
+
+/// Wraps the app so desktop screenshots can be rendered from it.
+final rootBoundaryKey = GlobalKey();
 
 /// The seven readings as the sheet lists them (pipeline db.py PERSPECTIVES).
 const perspectives = [
@@ -50,6 +60,8 @@ void main() {
     // Launch, first content copy, Genesis 1 with the Bible chips.
     final ms = await launch(tester);
     report('first_launch_ms', ms);
+    final size = tester.view.physicalSize / tester.view.devicePixelRatio;
+    report('view', '${size.width.round()}x${size.height.round()} dp');
     expect(find.text('WEB'), findsWidgets);
     expect(find.text('BSB'), findsWidgets);
     await screenshot(tester, '01-genesis-1');
@@ -171,7 +183,9 @@ Future<int> launch(WidgetTester tester) async {
   // the real keyboard in charge, so register it when it is not.
   if (!binding.testTextInput.isRegistered) binding.testTextInput.register();
   final clock = Stopwatch()..start();
-  await tester.pumpWidget(const SevenReadingsApp());
+  await tester.pumpWidget(
+    RepaintBoundary(key: rootBoundaryKey, child: const SevenReadingsApp()),
+  );
   await waitFor(
     tester,
     find.text('Genesis 1'),
@@ -219,20 +233,50 @@ Future<void> waitFor(
   }
 }
 
-/// Captures the Flutter surface under [name]. Android needs the surface
-/// converted to an image once before the first capture.
-Future<void> screenshot(WidgetTester tester, String name) async {
-  final android = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
-  if (android && !surfaceConverted) {
-    await binding.convertFlutterSurfaceToImage();
-    surfaceConverted = true;
-  }
-  await tester.pump(const Duration(milliseconds: 500));
-  await binding.takeScreenshot(name);
+/// Whether the integration_test plugin captures screenshots here (Android,
+/// iOS, web); elsewhere the test renders them itself.
+bool get pluginScreenshots {
+  if (kIsWeb) return true;
+  final p = defaultTargetPlatform;
+  return p == TargetPlatform.android || p == TargetPlatform.iOS;
 }
 
-void report(String key, int ms) {
+/// Captures the screen under [name]. Android needs the surface converted
+/// to an image once before the first capture.
+Future<void> screenshot(WidgetTester tester, String name) async {
+  await tester.pump(const Duration(milliseconds: 500));
+  if (pluginScreenshots) {
+    final android = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+    if (android && !surfaceConverted) {
+      await binding.convertFlutterSurfaceToImage();
+      surfaceConverted = true;
+    }
+    await binding.takeScreenshot(name);
+    return;
+  }
+  final bytes = await renderRoot(tester);
+  final report = binding.reportData ??= <String, dynamic>{};
+  final shots = (report['screenshots'] ??= <dynamic>[]) as List<dynamic>;
+  shots.add(<String, dynamic>{'screenshotName': name, 'bytes': bytes});
+}
+
+/// The app as PNG bytes, from the RepaintBoundary around it. Modal sheets,
+/// dialogs and menus live in the app's own overlay, so they are included.
+Future<List<int>> renderRoot(WidgetTester tester) async {
+  final context = rootBoundaryKey.currentContext!;
+  final boundary = context.findRenderObject()! as RenderRepaintBoundary;
+  for (var i = 0; i < 5 && boundary.debugNeedsPaint; i++) {
+    await tester.pump();
+  }
+  final ratio = tester.view.devicePixelRatio;
+  final image = await boundary.toImage(pixelRatio: ratio);
+  final data = await image.toByteData(format: ui.ImageByteFormat.png);
+  image.dispose();
+  return data!.buffer.asUint8List();
+}
+
+void report(String key, Object value) {
   binding.reportData ??= <String, dynamic>{};
-  binding.reportData![key] = ms;
-  debugPrint('checklist: $key = $ms');
+  binding.reportData![key] = value;
+  debugPrint('checklist: $key = $value');
 }

@@ -1,11 +1,12 @@
 name: Screenshots
 
-# Runs the first-launch checklist (app/integration_test/app_test.dart) on a
-# phone-shaped Android emulator and keeps what it saw: the screenshots, the
-# launch timings and the device log, as the `screenshots-android` artifact.
-# On demand, weekly (after the build canary), and on every release tag; not
-# on every push, because an emulator job takes 15-25 minutes. Other targets
-# are docs/plan.md T3; the contact sheet on Pages is T4.
+# Runs the first-launch checklist (app/integration_test/app_test.dart) on
+# every target that can run it headless, and keeps what each saw: the
+# screenshots, the launch timings and (Android) the device log, as one
+# `screenshots-<target>` artifact per job. On demand, weekly (after the
+# build canary), and on every release tag; not on every push, because the
+# emulator job takes about nine minutes. Remaining targets are docs/plan.md
+# T3; the contact sheet on Pages is T4.
 
 on:
   workflow_dispatch:
@@ -59,20 +60,9 @@ jobs:
           emulator-boot-timeout: 900
           # One command: the runner executes every line of `script` in its
           # own shell. The script builds the debug APK, installs it, runs
-          # the test, and keeps screenshots, timings and the device log.
-          script: bash tools/emulator-checklist.sh emulator-5554
-      - name: What the run produced
-        # A green job means eight screenshots and both launch timings exist;
-        # the first run (2026-09-15) passed while running nothing.
-        if: always()
-        run: |
-          set -eu
-          n=$(ls app/screenshots/*.png 2>/dev/null | wc -l)
-          echo "screenshots: $n"
-          report=app/build/integration_response_data.json
-          if [ -f "$report" ]; then cat "$report"; else echo "no report written"; fi
-          test "$n" -eq 8
-          jq -e '.first_launch_ms and .second_launch_ms' "$report" > /dev/null
+          # the test, keeps screenshots, timings and the device log, and
+          # fails unless eight screenshots and both timings came out.
+          script: bash tools/checklist.sh emulator-5554
       - uses: actions/upload-artifact@v7
         if: always()
         with:
@@ -81,5 +71,39 @@ jobs:
             app/screenshots/
             app/build/integration_response_data.json
             app/build/logcat.txt
+          if-no-files-found: error
+          retention-days: 30
+
+  linux:
+    name: Linux desktop (Xvfb)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/content
+        with:
+          mode: ${{ env.CONTENT_MODE }}
+          token: ${{ github.token }}
+      - name: Linux build deps and a virtual display
+        run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev xvfb libgl1-mesa-dri
+      - uses: ./.github/actions/setup-flutter
+      - name: Bootstrap (no-op once platform folders are committed)
+        working-directory: app
+        run: flutter create --org org.sevenreadings --project-name sevenreadings --platforms=linux .
+      - name: Run the checklist under Xvfb
+        # The desktop window is 1280x720, so this exercises the side-by-side
+        # reader layout; the emulator exercises the phone one. Screenshots
+        # are rendered by the test itself (no integration_test plugin on
+        # desktop) and written by the same driver.
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+        run: xvfb-run -a -s "-screen 0 1280x800x24" bash tools/checklist.sh linux
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: screenshots-linux
+          path: |
+            app/screenshots/
+            app/build/integration_response_data.json
           if-no-files-found: error
           retention-days: 30

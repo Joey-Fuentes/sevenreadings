@@ -82,10 +82,10 @@ have. The sandbox filesystem may reset between conversations; keep the copy in
   so the pre-3.7 formatter applies), check every line is ≤ 80 columns, and
   let CI be the judge. When CI fails, the maintainer uploads the run's log zip.
 - **The integration test** (`app/integration_test/app_test.dart`): CI's
-  `dart` job formats and analyzes it; only `screenshots.yml` runs it (on an
-  Android emulator; `docs/workflow.md`, "The checklist in CI"). Its
-  `screenshots-android` artifact is the evidence: PNGs, launch timings,
-  logcat. What the test asserts was checked against the sample database
+  `dart` job formats and analyzes it; only `screenshots.yml` runs it (an
+  Android emulator, the Linux build under Xvfb; `docs/workflow.md`, "The
+  checklist in CI"). Its `screenshots-<target>` artifacts are the
+  evidence: PNGs, launch timings, the view size, logcat on Android. What the test asserts was checked against the sample database
   and a full offline build of the content (`pipeline/.cache` has every
   upstream but one Ibn Ezra listing; build with `--only` and everything
   except `ibn_ezra` to reproduce), so a red run is a runtime problem, not a
@@ -232,10 +232,10 @@ Rules that keep patches applying cleanly:
   in a separate shell: `cd`, variables, `set -e` all end with the line.
   The first `screenshots.yml` run (2026-09-15) `cd app`-ed, ran `flutter
   drive` from the repo root, found no target, and passed. Its `script` is
-  one command, `bash tools/emulator-checklist.sh`, and a step afterwards
-  fails the job unless the screenshots and timings exist. A workflow that
-  can pass without doing its work is a bug of the same kind as untested
-  code.
+  one command, `bash tools/checklist.sh <device>`, and the script itself
+  fails unless eight screenshots and both timings came out of the run. A
+  workflow that can pass without doing its work is a bug of the same kind
+  as untested code.
 - `setState(() => _x = _load())` returns the Future to `setState`, which
   asserts in debug builds only; the phone's release APK ran it for days,
   the emulator test failed on it at the first bookmark. Write the block
@@ -256,7 +256,7 @@ weekly cron had never fired). Results and state:
 | target | built (2026-09-15) | signed | run by a person | needs |
 |--------|--------------------|--------|-----------------|-------|
 | Web | yes; every push (smoke) and Pages deploy | n/a | yes, daily, on Pages | — |
-| Linux x64 | yes, tar.gz 80 MB; every push (smoke) | n/a | no | a person to run the tarball once; then Flatpak if wanted. Linux arm64 was dropped: Flutter publishes no arm64 Linux SDK |
+| Linux x64 | yes, tar.gz 80 MB; every push (smoke) | n/a | no; the checklist runs under Xvfb in `screenshots.yml` (written 2026-09-15, first run pending) | a person to run the tarball once; then Flatpak if wanted. Linux arm64 was dropped: Flutter publishes no arm64 Linux SDK |
 | Android | yes: APK 126.5 MB, AAB 125.4 MB — under Play's 200 MB cap, so no Play Asset Delivery at this content size (ADR 0004) | debug key | yes (2026-09-15: the APK installed on the maintainer's phone; first-launch copy, readings, search, a bookmark surviving restart all worked). The same checklist is `app/integration_test/app_test.dart`, run on an emulator by `screenshots.yml`: green 2026-09-15 on sample and on release content; release: first launch 5.0 s (the 167 MB copy included, debug build), second 0.16 s, eight screenshots | a signing key (`app/android/key.properties`, never committed); Play account for the store |
 | Windows | yes, zip 82 MB | no | no | a person to run it once; code signing is optional (SmartScreen warns without it) |
 | macOS | yes, .app 214.6 MB, zip 89 MB | no | no | Developer ID certificate and notarization in the workflow (the comment in build.yml marks the spot); a person to run it once |

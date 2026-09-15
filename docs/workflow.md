@@ -118,32 +118,36 @@ flutter drive --driver=test_driver/integration_test.dart \
 `flutter drive` writes `app/screenshots/*.png` (gitignored) and the launch
 timings to `app/build/integration_response_data.json`; `flutter test` runs
 the same assertions but drops the screenshots, because nothing on the host
-receives them. The maintainer has no Flutter locally, so in practice this
-runs in CI, below.
+receives them. `bash tools/checklist.sh <device>` is the drive plus the
+check that eight screenshots and both timings came out (under
+`xvfb-run -a -s "-screen 0 1280x800x24"` for a headless Linux run). The
+maintainer has no Flutter locally, so in practice this runs in CI, below.
 
 ## The checklist in CI (screenshots.yml)
 
-`screenshots.yml` runs the same `flutter drive` (`tools/emulator-checklist.sh`)
-on an Android emulator (API 34, Pixel 6) with the pinned release content,
-on demand, every Monday, and on every `v*` tag. Not on pushes: it takes
-about nine minutes (emulator boot 40 s, debug APK build 4 min, the test
-25 s). The job is green only if eight screenshots and both launch timings
-came out of the run; it says so in its "What the run produced" step.
+`screenshots.yml` runs the same `flutter drive` (`tools/checklist.sh`) on
+an Android emulator (API 34, Pixel 6; about nine minutes: boot 40 s, debug
+APK 4 min, the test 27 s) and on the Linux build under Xvfb, with the
+pinned release content, on demand, every Monday, and on every `v*` tag.
+Not on pushes. A job is green only if eight screenshots and both launch
+timings came out of its run; the script checks and says so.
 
 ```
 gh workflow run screenshots.yml                       # release content
 gh workflow run screenshots.yml -f content=sample     # fixture content, faster
 gh run watch
-gh run download -n screenshots-android -D ~/storage/downloads/screenshots
+gh run download -n screenshots-android -D ~/storage/downloads/screenshots-android
+gh run download -n screenshots-linux -D ~/storage/downloads/screenshots-linux
 ```
 
-The artifact holds the eight PNGs, `integration_response_data.json` (the
-two launch times in milliseconds, `first_launch_ms` with the content copy,
-`second_launch_ms` without) and `logcat.txt`. A red run gets its log zip
-uploaded to the AI like any other; the screenshots and logcat travel with
-it, since they are written before the failure is reported. When a run has
-passed, its numbers go into `docs/plan.md` (section 2, State) and anything
-it found into `AGENTS.md`.
+Each artifact holds the eight PNGs and `integration_response_data.json`
+(`first_launch_ms` with the content copy, `second_launch_ms` without, and
+`view`, the window size in dp, which says whether the phone or the
+side-by-side layout was exercised); the Android one adds `logcat.txt`. A
+red run gets its log zip uploaded to the AI like any other; the
+screenshots travel with it, since they are written before the failure is
+reported. When a run has passed, its numbers go into `docs/plan.md`
+(section 2, State) and anything it found into `AGENTS.md`.
 
 ## Dependabot
 
