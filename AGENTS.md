@@ -257,7 +257,7 @@ weekly cron had never fired). Results and state:
 |--------|--------------------|--------|-----------------|-------|
 | Web | yes; every push (smoke) and Pages deploy | n/a | yes, daily, on Pages | — |
 | Linux x64 | yes, tar.gz 80 MB; every push (smoke) | n/a | no | a person to run the tarball once; then Flatpak if wanted. Linux arm64 was dropped: Flutter publishes no arm64 Linux SDK |
-| Android | yes: APK 126.5 MB, AAB 125.4 MB — under Play's 200 MB cap, so no Play Asset Delivery at this content size (ADR 0004) | debug key | yes (2026-09-15: the APK installed on the maintainer's phone; first-launch copy, readings, search, a bookmark surviving restart all worked). The same checklist is `app/integration_test/app_test.dart`, run on an emulator by `screenshots.yml`: green 2026-09-15 on sample content, first launch 2.9 s, second 0.17 s, eight screenshots; a release-content run is next | a signing key (`app/android/key.properties`, never committed); Play account for the store |
+| Android | yes: APK 126.5 MB, AAB 125.4 MB — under Play's 200 MB cap, so no Play Asset Delivery at this content size (ADR 0004) | debug key | yes (2026-09-15: the APK installed on the maintainer's phone; first-launch copy, readings, search, a bookmark surviving restart all worked). The same checklist is `app/integration_test/app_test.dart`, run on an emulator by `screenshots.yml`: green 2026-09-15 on sample and on release content; release: first launch 5.0 s (the 167 MB copy included, debug build), second 0.16 s, eight screenshots | a signing key (`app/android/key.properties`, never committed); Play account for the store |
 | Windows | yes, zip 82 MB | no | no | a person to run it once; code signing is optional (SmartScreen warns without it) |
 | macOS | yes, .app 214.6 MB, zip 89 MB | no | no | Developer ID certificate and notarization in the workflow (the comment in build.yml marks the spot); a person to run it once |
 | iOS | yes, `--no-codesign` .app 185.7 MB | no | no | Apple developer account, provisioning, App Store or TestFlight; cannot be installed as built |
@@ -312,6 +312,11 @@ None is hidden in a log; this list is the place to look.
   no Title row there. A text heuristic could split them; not done.
 - **Wide layout: no scroll-to-verse** — search hits highlight the row in
   each column but do not scroll to it on screens over 720 px.
+- **Collapsed previews only collapse paragraphs** — a reading opens
+  showing its first paragraph, but Rashi's and Haydock's notes have no
+  paragraph breaks, so they open in full (seen in the emulator screenshots,
+  2026-09-15). A character cap on the preview, cut at a sentence end,
+  would fix it; not done.
 - **Greek search needs accents** — FTS5 `remove_diacritics 2` does not fold
   polytonic Greek in the SQLite builds tested; `λόγος` finds John 1:1,
   `λογος` does not. A custom tokenizer or a stripped shadow column would fix
@@ -327,9 +332,8 @@ None is hidden in a log; this list is the place to look.
 ## Where to go next
 
 App-side: `docs/plan.md`, in the order at its end. Item 1 (the integration
-test and the Android emulator job) is done on sample content; run it once
-with `-f content=release`, record the first-launch time in the plan, then
-item 2 (S3: Flathub manifest and PWA; D1: the donations screen with links).
+test and the Android emulator job) is done and measured; next is item 2
+(S3: Flathub manifest and PWA; D1: the donations screen with links).
 Content-side, below.
 
 In rough order of value: extend the Qur'an pairings (the file is the whole

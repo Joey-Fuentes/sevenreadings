@@ -129,10 +129,13 @@ weekly, and on demand, not on every push.
   artifact holds the eight PNGs, `integration_response_data.json` and the
   device log. Measured: first launch to Genesis 1 with its verses, content
   copy included, 2922 ms; second launch 168 ms (the copy skipped, both
-  databases reopened; the bookmark and note back). The job takes 8-9
-  minutes: emulator boot 40 s, debug APK build about 4 minutes, the test
-  25 s. Still to measure: the same with `-f content=release`, which gives
-  the real first-launch copy time and the real texts in the screenshots.
+  databases reopened; the bookmark and note back). Sixth run, release
+  content (the pinned 167 MB database): first launch 4999 ms, second
+  157 ms; the screenshots show the real texts, and the search rankings
+  match what the offline build predicted. The job takes 8-9 minutes:
+  emulator boot 40 s, debug APK build about 4 minutes, the test 27 s.
+  Debug build, so the copy on a release build will be somewhat faster;
+  the number to beat is five seconds with a spinner.
 - What the runs found on the way, all fixed in the tree: two debug-only
   assertions in the app that the release APK on the phone never showed
   (`setState` with an arrow returning the reload Future, in the readings
@@ -286,8 +289,7 @@ Spikes:
 ## Order of everything
 
 1. T1-T2 (integration test, Android emulator screenshots): the foundation
-   every other item is checked against. Done 2026-09-15 (section 2, State);
-   one release-content run still owed for the real numbers.
+   every other item is checked against. Done 2026-09-15 (section 2, State).
 2. S3 (Flathub manifest, PWA) and D1 (donations screen, links only): free,
    ship on the free channels.
 3. N1 (narrator with system voices).
