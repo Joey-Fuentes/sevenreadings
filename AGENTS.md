@@ -93,8 +93,8 @@ have. The sandbox filesystem may reset between conversations; keep the copy in
   let CI be the judge. When CI fails, the maintainer uploads the run's log zip.
 - **The integration test** (`app/integration_test/app_test.dart`): CI's
   `dart` job formats and analyzes it; only `screenshots.yml` runs it (an
-  Android emulator, the Linux build under Xvfb; `docs/workflow.md`, "The
-  checklist in CI"). Its `screenshots-<target>` artifacts are the
+  Android emulator, the Linux build under Xvfb, headless Chrome;
+  `docs/workflow.md`, "The checklist in CI"). Its `screenshots-<target>` artifacts are the
   evidence: PNGs, launch timings, the view size, logcat on Android. What the test asserts was checked against the sample database
   and a full offline build of the content (`pipeline/.cache` has every
   upstream but one Ibn Ezra listing; build with `--only` and everything
@@ -385,11 +385,10 @@ None is hidden in a log; this list is the place to look.
 App-side: `docs/plan.md`, in the order at its end. Item 1 (the integration
 test and the Android emulator job) is done and measured, T3 has Linux,
 D1 (the Support band and screen) and the icon are done, N1 (the
-narrator) is done by state; next is the rest of S3: the PWA (our own
-service worker, a loading message, a `web` job with the offline check,
-the screenshots published on the site), then the Flatpak manifest with a
-`flatpak-builder` job and a launch smoke on the sandboxed app.
-Content-side, below.
+narrator) is done by state, the PWA with its `web` job and the screenshots
+page (T4) are in the tree pending their first run; next is the Flatpak
+manifest with a `flatpak-builder` job and a launch smoke on the sandboxed
+app, then plan item 4. Content-side, below.
 
 In rough order of value: extend the Qur'an pairings (the file is the whole
 of the Islamic reading's coverage); more ICC volumes (Plummer's Luke 1896,

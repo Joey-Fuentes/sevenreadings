@@ -32,16 +32,29 @@
 
   <title>Seven Readings</title>
   <link rel="manifest" href="manifest.json">
+  <style>
+    body { margin: 0; background: #FFF8F5; }
+    #loading {
+      position: fixed; inset: 0; display: flex; align-items: center;
+      justify-content: center; text-align: center; padding: 24px;
+      font: 16px/1.5 system-ui, sans-serif; color: #5B4636;
+    }
+  </style>
 </head>
 <body>
-  <!--
-    You can customize the "flutter_bootstrap.js" script.
-    This is useful to provide a custom configuration to the Flutter loader
-    or to give the user feedback during the initialization process.
-
-    For more details:
-    * https://docs.flutter.dev/platform-integration/web/initialization
-  -->
+  <!-- Shown until the app's engine has loaded; flutter_bootstrap.js
+       (ours, next to this file) removes it. -->
+  <div id="loading">Seven Readings is loading…</div>
   <script src="flutter_bootstrap.js" async></script>
+  <script>
+    // Offline: sw.js caches the app itself (the texts live in the
+    // browser's storage once loaded). Written at build time; absent when
+    // running from the dev server, hence the catch.
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js').catch(function () {});
+      });
+    }
+  </script>
 </body>
 </html>

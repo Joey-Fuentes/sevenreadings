@@ -101,3 +101,40 @@ jobs:
             app/build/integration_response_data.json
           if-no-files-found: error
           retention-days: 30
+
+  web:
+    name: Web (headless Chrome)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/content
+        with:
+          mode: ${{ env.CONTENT_MODE }}
+          token: ${{ github.token }}
+      - uses: ./.github/actions/setup-flutter
+      - run: tools/web-assets.sh
+      - name: Run the checklist in Chrome
+        # The runner's chromedriver ($CHROMEWEBDRIVER) drives a headless
+        # Chrome; flutter drive serves a debug build to it.
+        run: |
+          "$CHROMEWEBDRIVER/chromedriver" --port=4444 &
+          bash tools/checklist.sh chrome
+      - name: Build the site and prove it installs and works offline
+        # The release build with our service worker, served locally: the
+        # reader must come up, the worker must control the page, and after
+        # the network is cut a reload must bring the reader back.
+        run: |
+          cd app && flutter build web --release --base-href "/" --dart-define=SR_DISTRIBUTION=web && cd ..
+          python3 tools/web-sw.py app/build/web
+          pip install --quiet selenium
+          python3 tools/web-offline-check.py app/build/web app/screenshots
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: screenshots-web
+          path: |
+            app/screenshots/
+            app/build/integration_response_data.json
+          if-no-files-found: error
+          retention-days: 30

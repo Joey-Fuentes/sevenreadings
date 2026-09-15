@@ -9,6 +9,8 @@
 #
 #   bash tools/checklist.sh emulator-5554                       # Android
 #   xvfb-run -a -s "-screen 0 1280x800x24" bash tools/checklist.sh linux
+#   "$CHROMEWEBDRIVER/chromedriver" --port=4444 &
+#   bash tools/checklist.sh chrome                              # headless web
 #
 # One script, invoked as one command, because reactivecircus/android-
 # emulator-runner runs each line of its `script` in a separate shell: a
@@ -19,9 +21,13 @@ device="${1:-emulator-5554}"
 rm -rf screenshots
 mkdir -p build
 
+extra=()
+case "$device" in
+  chrome) device=web-server; extra=(--browser-name=chrome --headless --driver-port=4444) ;;
+esac
 status=0
 flutter drive --driver=test_driver/integration_test.dart \
-  --target=integration_test/app_test.dart -d "$device" || status=$?
+  --target=integration_test/app_test.dart -d "$device" "${extra[@]}" || status=$?
 
 case "$device" in
   emulator-*) adb -s "$device" logcat -d -v time > build/logcat.txt || true ;;

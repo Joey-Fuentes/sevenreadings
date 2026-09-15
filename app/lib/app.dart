@@ -53,7 +53,24 @@ class _SevenReadingsAppState extends State<SevenReadingsApp> {
           }
           if (!snapshot.hasData) {
             return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
+              body: Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16),
+                      Text(
+                        'Preparing the texts. The first launch copies about '
+                        '170 MB once; after that, everything is on this '
+                        'device and needs no network.',
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             );
           }
           return ReaderScreen(db: snapshot.data!, user: _user);

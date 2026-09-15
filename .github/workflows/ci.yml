@@ -57,6 +57,9 @@ jobs:
   smoke:
     name: Smoke build (web + linux)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read # the latest screenshots run's artifacts, for the site
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/content
@@ -76,6 +79,13 @@ jobs:
         # domain), so the base is the root. Without the custom domain it
         # would need --base-href "/<repo>/".
         run: flutter build web --release --base-href "/" --dart-define=SR_DISTRIBUTION=web
+      - name: Service worker for the site
+        run: python3 tools/web-sw.py app/build/web
+      - name: Latest screenshots onto the site (docs/plan.md, T4)
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash tools/site-screenshots.sh app/build/web
       - name: Build linux
         working-directory: app
         run: flutter build linux --release --dart-define=SR_DISTRIBUTION=direct

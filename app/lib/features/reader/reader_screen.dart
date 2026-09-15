@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:sr_core/sr_core.dart';
 import 'package:sr_data/sr_data.dart';
 
@@ -138,7 +139,20 @@ class _ReaderScreenState extends State<ReaderScreen> {
     ];
   }
 
+  /// The chapter in the browser tab's title (and Android's recents), which
+  /// is also the one signal a canvas-rendered web app gives a browser test.
+  void _announce() {
+    final where = '${_chapter.bookInfo.name} ${_chapter.chapter}';
+    SystemChrome.setApplicationSwitcherDescription(
+      ApplicationSwitcherDescription(
+        label: '$where \u00b7 Seven Readings',
+        primaryColor: 0xFF5B4636,
+      ),
+    );
+  }
+
   Future<_ChapterData> _load() async {
+    _announce();
     final translations = await widget.db.allTranslations().get();
     final verses = <String, List<ChapterVersesResult>>{};
     for (final t in translations) {

@@ -96,6 +96,18 @@ replace: a different design is a change to one function in that script.
   console. Needs: the accounts.
 - **S3. Flathub manifest** and a PWA manifest: both free, both provable in
   CI (`flatpak-builder` in a job; Lighthouse's installability check).
+- **S3, PWA (2026-09-15): in the tree, first run pending.** `app/web/`:
+  `manifest.json` (name, icons incl. maskable, standalone, root scope),
+  our `flutter_bootstrap.js` (keeps a loading line on screen through the
+  white phase; Flutter's own service worker is gone from the template),
+  `index.html` registering `sw.js`, which `tools/web-sw.py` writes after
+  every build from the files the build actually produced: everything but
+  the content database is precached (about 20 MB; the database lives in
+  the browser's storage once loaded, so the app is complete offline after
+  one visit), a new build is a new cache and old ones are dropped. The
+  app's first screen says what the wait is (native too: the copy). Proof
+  is the `web` job (T3 web, above), not Lighthouse: its PWA category was
+  removed in Lighthouse 12. The Pages bandwidth note stands: a demo host.
 - **S4. Store listings as code**: `fastlane/metadata`-style directories
   with descriptions, keywords, privacy answers, and the screenshots from
   section 2, so a listing is reproducible from the repo.
@@ -171,6 +183,23 @@ weekly, and on demand, not on every push.
   process after the first is unmounted and `SevenReadingsApp.dispose`
   has closed both databases, not a process restart. Triggers: on demand,
   Mondays at 06:00 UTC, every `v*` tag; never on plain pushes.
+- **T3, web (2026-09-15): in the tree, first run pending.** A `web` job in
+  `screenshots.yml`: the runner's chromedriver drives a headless Chrome,
+  `tools/checklist.sh chrome` runs the same test through `flutter drive
+  -d web-server` (screenshots by WebDriver, the plugin path), artifact
+  `screenshots-web`. The same job then builds the release site with the
+  service worker and runs `tools/web-offline-check.py` (Selenium): the
+  reader must come up, the worker must control the page, and after the
+  network is cut with the DevTools protocol a reload must bring the
+  reader back; it writes `web-offline.png` beside the ten. Windows, macOS
+  and the iOS simulator remain.
+- **T4 (2026-09-15): in the tree, first run pending.** CI's smoke job puts
+  the newest successful screenshots run's artifacts on the site
+  (`tools/site-screenshots.sh`, `tools/screenshots-page.py`):
+  https://sevenreadings.org/screenshots/ is the contact sheet, and
+  `screenshots/<target>/screenshots/<name>.png` are stable addresses the
+  Flatpak metainfo can cite. Artifacts expire after 30 days, so the weekly
+  run keeps it current; with none available the site still deploys.
 - **T3, Linux (2026-09-15): done.** Second run green on sample content:
   first launch 2461 ms, second 253 ms, eight screenshots of the 1280x720
   side-by-side layout (three columns, the sheet constrained to 640 px,

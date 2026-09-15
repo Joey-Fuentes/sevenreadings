@@ -108,7 +108,11 @@ Site: https://sevenreadings.org/ — the Pages custom domain (Settings >
 Pages), DNS at the registrar (four A and four AAAA records on the apex to
 GitHub Pages' addresses, `www` a CNAME to `joey-fuentes.github.io`),
 `app/web/CNAME` in the build, `--base-href "/"` in ci.yml; sevenreadings.com
-is a registrar-level 301 to it. Hard-refresh after a deploy.
+is a registrar-level 301 to it. The site is a PWA: `tools/web-sw.py` writes
+its service worker after every build, so after a deploy a browser that has
+the old cache shows the new build on its second load (the worker updates
+in the background); to see it at once, clear the site's data in the
+browser.
 
 ## The first-launch checklist on a device
 
@@ -137,8 +141,11 @@ maintainer has no Flutter locally, so in practice this runs in CI, below.
 
 `screenshots.yml` runs the same `flutter drive` (`tools/checklist.sh`) on
 an Android emulator (API 34, Pixel 6; about nine minutes: boot 40 s, debug
-APK 4 min, the test 27 s) and on the Linux build under Xvfb, with the
-pinned release content, on demand, every Monday, and on every `v*` tag.
+APK 4 min, the test 27 s), on the Linux build under Xvfb, and on headless
+Chrome (which then also builds the site and proves it works offline),
+with the pinned release content, on demand, every Monday, and on every
+`v*` tag. The newest successful run's screenshots are published by the
+next site deploy at https://sevenreadings.org/screenshots/ (T4).
 Not on pushes. A job is green only if ten screenshots and both launch
 timings came out of its run; the script checks and says so.
 
@@ -148,6 +155,7 @@ gh workflow run screenshots.yml -f content=sample     # fixture content, faster
 gh run watch
 gh run download -n screenshots-android -D ~/storage/downloads/screenshots-android
 gh run download -n screenshots-linux -D ~/storage/downloads/screenshots-linux
+gh run download -n screenshots-web -D ~/storage/downloads/screenshots-web
 ```
 
 Each artifact holds the ten PNGs and `integration_response_data.json`
