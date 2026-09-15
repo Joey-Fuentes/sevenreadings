@@ -7,3 +7,13 @@ workspace:
   - app
   - packages/sr_core
   - packages/sr_data
+
+# Workspace-wide overrides. Each one names the day it was added and the
+# condition for removing it.
+dependency_overrides:
+  # 2026-09-15: objective_c 9.6.1 (published that day) uses
+  # OSArchitecture.arm64e, which the Dart SDK in Flutter 3.47.4 does not have,
+  # so every build that resolves it fails in its build hook. It reaches us
+  # only through sqlite3's native assets. Drop the override once the Flutter
+  # pin in .github/actions/setup-flutter/action.yml is past 3.47.x.
+  objective_c: 9.6.0

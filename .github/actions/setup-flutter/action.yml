@@ -5,7 +5,10 @@ runs:
   steps:
     - uses: subosito/flutter-action@v2
       with:
-        # TODO: pin an exact version (flutter-version: 3.x.y) and mirror it in .fvmrc.
+        # Exact pin, mirrored in .fvmrc: CI resolved 3.47.4 on 2026-09-15 and the
+        # dependency override in the root pubspec.yaml is written against it.
+        # Bump both together, and revisit that override when you do.
+        flutter-version: 3.47.4
         channel: stable
         cache: true
     - name: Resolve workspace
