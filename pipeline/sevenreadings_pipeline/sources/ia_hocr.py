@@ -36,20 +36,32 @@ from ..refs import BY_OSIS, verse_id
 from .base import Source
 
 _ROMAN = {"I": 1, "V": 5, "X": 10, "L": 50, "C": 100}
-# "[I. 1" on a left page, "I. 1-7]" on a right one; OCR often loses the bracket's
-# partner, so either bracket alone is accepted next to the numeral.
-_HEAD_LEFT = re.compile(r"\[\s*([IVXLC]+)\.\s*(\d+)")
-_HEAD_RIGHT = re.compile(r"\b([IVXLC]+)\.\s*(\d+)(?:\s*[-–]\s*(\d+))?\s*\]")
-# The OCR drops or misreads the bracket on most pages ("I. 1", "(I. 1", "l. 1-7");
-# a short line in capitals with a chapter-and-verse in it is a running head.
-_HEAD_ANY = re.compile(r"\b([IVXLC]+)\.\s*(\d+)(?:\s*[-–]\s*(\d+))?\b")
-_SECTION = re.compile(r"^([IVXLC]+)\.\s*(\d+)(?:\s*[-–]\s*(\d+))?\.\s+(\S.*)$")
-_NOTE = re.compile(r"^(\d{1,3})\.\s+(\S.*)$")
+# Running heads as this OCR renders them: "[I. 1", "I. 1.]", "I. 17.J", "[l. 7.",
+# "1. 16, 17.]", "[I 10, 17.", "[I. 1 7". A chapter numeral (with l or 1 for I),
+# an optional period, a verse number, and a bracket on one side or the other,
+# which may have become J or gone missing.
+_CH = r"([IVXLC]+|[l1])"
+_HEAD_LEFT = re.compile(r"\[\s*" + _CH + r"\.?\s*(\d+)")
+_HEAD_RIGHT = re.compile(r"(?<![A-Za-z])" + _CH + r"\.?\s+(\d+)(?:\s*[-–,]\s*(\d+))?\.?\s*[\]J]")
+# A short line in capitals with a chapter-and-verse in it is a running head even
+# when both brackets are gone.
+_HEAD_ANY = re.compile(r"(?<![A-Za-z])" + _CH + r"\.?\s+(\d+)(?:\s*[-–,]\s*(\d+))?\b")
+# Section headings: "I. 1-7. THE APOSTOLIC SALUTATION.", "I. 16, 17. That message".
+_SECTION = re.compile(r"^([IVXLC]+)\.\s*(\d+)(?:\s*[-–,]\s*(\d+))*\.\s+(\S.*)$")
+# The section's own note, a bare range: "1-7. In writing to the Church".
+_RANGE = re.compile(r"^(\d{1,3})\s*[-–,]\s*(\d{1,3})\.\s+((?!\d+\b)\S.*)$")
+# A verse note: the number, a period, then a word ("4. 6pia0«Vros" is Greek the
+# OCR turned into digits) but not a bare number ("37. 52 ;" is a wrapped
+# scripture reference). "I." for "1." at the start of a chapter.
+_NOTE = re.compile(r"^(\d{1,3})\.\s+((?!\d+\b)\S.*)$")
+_NOTE_ONE = re.compile(r"^[Il]\.\s+((?!\d+\b)\S.*)$")
 _PAGE_NUMBER = re.compile(r"^\s*(?:\d{1,4}|[ivxlc]{1,7})\s*$")
 _SKIP_HEAD = re.compile(r"\b(INDEX|INTRODUCTION|PREFACE|CONTENTS|ABBREVIATIONS)\b")
 
 
 def roman(numeral: str) -> int:
+    if numeral in ("l", "1"):
+        return 1
     total = 0
     for i, ch in enumerate(numeral):
         value = _ROMAN[ch]
@@ -129,7 +141,7 @@ def read_page(lines: list[str]) -> Page:
         m = _HEAD_LEFT.search(body[i]) or _HEAD_RIGHT.search(body[i])
         if m is None and _is_head(body[i]):
             m = _HEAD_ANY.search(body[i])
-        if m and all(c in _ROMAN for c in m.group(1)):
+        if m:
             chapter = roman(m.group(1))
             first = int(m.group(2))
             last = int(m.group(3)) if m.re.groups >= 3 and m.group(3) else first
@@ -163,28 +175,73 @@ class Note:
     lines: list[str] = field(default_factory=list)
 
 
-def notes(pages: list[list[str]], report: dict | None = None) -> Iterator[Note]:
+def _section_range(m: re.Match) -> tuple[int, int]:
+    """First and last verse of a heading like "I. 1-7." or "I. 16, 17."."""
+    numbers = [int(x) for x in re.findall(r"\d+", m.group(0).split(".", 2)[1])]
+    v1, v2 = numbers[0], max(numbers)
+    return v1, max(v1, v2)  # "VIII. 31-30.": the OCR read a 9 as a 0
+
+
+def _section_chapter(lines: list[str], limit: int = 12) -> int | None:
+    """The chapter of the first section heading on the page, if any. Page 1
+    of a volume carries the book title where the running head would be and
+    is recognised this way ("I. 1-7. THE APOSTOLIC SALUTATION.")."""
+    for line in lines[:limit]:
+        m = _SECTION.match(line)
+        if m and all(c in _ROMAN for c in m.group(1)):
+            return roman(m.group(1))
+    return None
+
+
+def notes(
+    pages: list[list[str]],
+    report: dict | None = None,
+    limits: dict[int, int] | None = None,
+) -> Iterator[Note]:
     """Walk the pages in order. A page with a chapter head opens or continues
     that chapter; pages without one are skipped until the commentary has
     started and afterwards attached to the current note (a garbled head
-    should not lose a page)."""
+    should not lose a page). `limits` maps chapter to its verse count, so a
+    stray number ("37. 52;", a wrapped reference) cannot become a verse."""
+    limits = limits or {}
     current: Note | None = None
     chapter: int | None = None
     last_verse = 0
+    seen_one = False  # a note on verse 1 of the current chapter has been made
     started = False
     skipped = kept_blind = 0
+
+    def cap() -> int:
+        return limits.get(chapter or 0, 176)
+
     for raw in pages:
         page = read_page(raw)
-        if page.chapter is None:
+        head = page.chapter
+        if head is None and not started:
+            head = _section_chapter(page.lines)
+        # A head continues the chapter, or advances it by one with evidence: a
+        # verse number that opens a chapter, a section heading for the new
+        # chapter on the page, or the old chapter at its end. "II 7.J" in the
+        # middle of chapter I is a misread I, not chapter II.
+        if head is not None and chapter is not None and head != chapter:
+            advancing = head == chapter + 1 and (
+                (page.first is not None and page.first <= 3)
+                or _section_chapter(page.lines, 40) == head
+                or last_verse >= cap() - 3
+            )
+            if not advancing:
+                head = None
+        if head is None:
             if not started or (page.lines and _SKIP_HEAD.search(page.lines[0])):
                 skipped += 1
                 continue
             kept_blind += 1
         else:
             started = True
-            if page.chapter != chapter:
-                chapter = page.chapter
+            if head != chapter:
+                chapter = head
                 last_verse = 0
+                seen_one = False
         for line in join_lines(page.lines):
             s = _SECTION.match(line)
             if s and all(c in _ROMAN for c in s.group(1)) and chapter is not None:
@@ -192,23 +249,42 @@ def notes(pages: list[list[str]], report: dict | None = None) -> Iterator[Note]:
                 if ch == chapter or ch == chapter + 1:
                     if current is not None:
                         yield current
+                    if ch != chapter:
+                        seen_one = False
                     chapter = ch
-                    v1 = int(s.group(2))
-                    v2 = int(s.group(3)) if s.group(3) else v1
-                    if v2 < v1:
-                        v2 = v1  # "VIII. 31-30.": the OCR read a 9 as a 0
-                    current = Note(ch, v1, v2, s.group(4).strip(" .") or None)
+                    v1, v2 = _section_range(s)
+                    text = s.group(4).strip(" .")
+                    # "I. 1-7. THE APOSTOLIC SALUTATION." names the section; "I. 16, 17.
+                    # That message, humble as it may seem," opens its paraphrase.
+                    if text.isupper():
+                        current = Note(ch, v1, v2, text or None)
+                    else:
+                        current = Note(ch, v1, v2, None, [text])
                     last_verse = v1 - 1
                     continue
-            n = _NOTE.match(line)
-            if n and chapter is not None:
-                v = int(n.group(1))
-                if last_verse < v <= last_verse + 40 and v <= 176:
+            r = _RANGE.match(line)
+            if r and chapter is not None:
+                v1, v2 = int(r.group(1)), int(r.group(2))
+                if last_verse <= v1 <= v2 <= cap() and v1 <= last_verse + 10:
                     if current is not None:
                         yield current
-                    current = Note(chapter, v, v, None, [n.group(2)])
-                    last_verse = v
+                    current = Note(chapter, v1, v2, None, [r.group(3)])
+                    last_verse = max(last_verse, v1)
                     continue
+            n = _NOTE.match(line)
+            if n:
+                v, text = int(n.group(1)), n.group(2)
+                ok = last_verse < v <= min(last_verse + 12, cap())
+            else:
+                one = _NOTE_ONE.match(line) if last_verse <= 1 and not seen_one else None
+                v, text, ok = 1, one.group(1) if one else "", one is not None
+            if ok and chapter is not None:
+                if current is not None:
+                    yield current
+                current = Note(chapter, v, v, None, [text])
+                last_verse = max(last_verse, v)
+                seen_one = seen_one or v == 1
+                continue
             if current is not None:
                 current.lines.append(line)
     if current is not None:
@@ -234,7 +310,8 @@ class IccSource(Source):
             report: dict = {}
             got: list[Entry] = []
             per_chapter: dict[int, int] = {}
-            for note in notes(pages, report):
+            limits = self._limits(ctx, self.cfg.get("reference", "web"), book.id)
+            for note in notes(pages, report, limits):
                 text = paragraphs(note.lines)
                 if len(text) < 40:
                     continue
@@ -250,10 +327,8 @@ class IccSource(Source):
                 )
                 per_chapter[note.chapter] = per_chapter.get(note.chapter, 0) + 1
             total += db.add_entries(ctx.conn, got)
-            ref = self.cfg.get("reference", "web")
             chapters = ", ".join(
-                f"{c}:{n}/{self._verses(ctx, ref, book.id, c)}"
-                for c, n in sorted(per_chapter.items())
+                f"{c}:{n}/{limits.get(c, 0)}" for c, n in sorted(per_chapter.items())
             )
             ctx.log(
                 f"{self.id}: {osis} ({author}): {len(got)} notes from {len(pages)} pages; "
@@ -265,12 +340,14 @@ class IccSource(Source):
         ctx.log(f"{self.id}: {total} entries")
 
     @staticmethod
-    def _verses(ctx: BuildContext, ref: str, book: int, chapter: int) -> int:
-        row = ctx.conn.execute(
-            "SELECT COUNT(*) FROM verses WHERE translation_id=? AND verse_id BETWEEN ? AND ?",
-            (ref, verse_id(book, chapter, 1), verse_id(book, chapter, 998)),
-        ).fetchone()
-        return int(row[0]) if row else 0
+    def _limits(ctx: BuildContext, ref: str, book: int) -> dict[int, int]:
+        """Verse count per chapter of `book` in the reference translation."""
+        rows = ctx.conn.execute(
+            "SELECT verse_id / 1000 % 1000 AS c, MAX(verse_id % 1000) FROM verses "
+            "WHERE translation_id=? AND verse_id BETWEEN ? AND ? GROUP BY c",
+            (ref, verse_id(book, 1, 1), verse_id(book, 150, 998)),
+        ).fetchall()
+        return {int(c): int(v) for c, v in rows}
 
     def _version(self) -> str:
         shas = self.cfg.get("sha256")
