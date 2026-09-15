@@ -360,7 +360,11 @@ Spikes:
 
 ### State
 
-- **N1 (2026-09-15): in the tree, first run pending.** `app/lib/features/narrator/`:
+- **N1 (2026-09-15): done by state, both targets green with ten screenshots**
+  (emulator: the engine accepted the chapter, the strip in its speaking
+  state, verse 1 highlighted and scrolled to; Linux: the failed state with
+  its message; first launch 3404 / 2412 ms, second 167 / 277 ms). By ear
+  on the phone is still the maintainer's part. `app/lib/features/narrator/`:
   `Narrator` (a `ChangeNotifier` over `flutter_tts`) reads one chunk at a
   time — the verses of the chapter in the first English translation shown,
   from the highlighted verse if any, or a reading paragraph by paragraph —
@@ -388,9 +392,8 @@ Spikes:
 2. S3 (Flathub manifest, PWA) and D1 (donations screen, links only): free,
    ship on the free channels. D1 done 2026-09-15; S3 in progress (the
    platform folders and the domain are in; icon, PWA and Flatpak remain).
-3. N1 (narrator with system voices). In the tree 2026-09-15 (section 5,
-   State); item 2's PWA and Flatpak are paused at the maintainer's
-   direction and resume after this.
+3. N1 (narrator with system voices). Done by state 2026-09-15 (section 5,
+   State), by ear pending; item 2's PWA and Flatpak resume next.
 4. L1 and L2 (chat feasibility, web and Linux) — decide from the numbers.
 5. T3-T4 (remaining targets' screenshots, the contact sheet).
 6. S1-S2 and D2-D3 as the maintainer opens accounts; S4 with the

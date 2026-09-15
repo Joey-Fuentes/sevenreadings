@@ -384,10 +384,12 @@ None is hidden in a log; this list is the place to look.
 
 App-side: `docs/plan.md`, in the order at its end. Item 1 (the integration
 test and the Android emulator job) is done and measured, T3 has Linux,
-and D1 (the Support band and screen) is done; next is the rest of S3: an
-app icon, the PWA (our own service worker, a loading message, a `web` job
-with the offline check), the Flatpak manifest with a `flatpak-builder`
-job and a launch smoke on the sandboxed app. Content-side, below.
+D1 (the Support band and screen) and the icon are done, N1 (the
+narrator) is done by state; next is the rest of S3: the PWA (our own
+service worker, a loading message, a `web` job with the offline check,
+the screenshots published on the site), then the Flatpak manifest with a
+`flatpak-builder` job and a launch smoke on the sandboxed app.
+Content-side, below.
 
 In rough order of value: extend the Qur'an pairings (the file is the whole
 of the Islamic reading's coverage); more ICC volumes (Plummer's Luke 1896,
