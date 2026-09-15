@@ -23,6 +23,7 @@ void main() {
     expect(await db.toggleBookmark(a), isTrue);
     expect(await db.toggleBookmark(b), isTrue);
     expect((await db.bookmarkForVerse(a).getSingleOrNull())?.verseId, a);
+    // Newest first; two bookmarks in the same millisecond order by id.
     expect((await db.allBookmarks().get()).map((x) => x.verseId), [b, a]);
     expect(await db.toggleBookmark(a), isFalse);
     expect(await db.bookmarkForVerse(a).getSingleOrNull(), isNull);
