@@ -23,7 +23,9 @@ mkdir -p build
 
 extra=()
 case "$device" in
-  chrome) device=web-server; extra=(--browser-name=chrome --headless --driver-port=4444) ;;
+  # Chrome itself (not web-server) so the browser console, where the
+  # app's debugPrint goes on web, is forwarded into this log.
+  chrome) extra=(--headless --driver-port=4444) ;;
 esac
 status=0
 flutter drive --driver=test_driver/integration_test.dart \

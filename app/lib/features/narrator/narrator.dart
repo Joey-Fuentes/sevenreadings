@@ -71,6 +71,7 @@ class Narrator extends ChangeNotifier {
     List<NarratorChunk> chunks, {
     int from = 0,
   }) async {
+    debugPrint('narrator: read "$title", ${chunks.length} chunks');
     await stop();
     this.title = title;
     _chunks = chunks;
@@ -84,6 +85,7 @@ class Narrator extends ChangeNotifier {
     status = NarratorStatus.speaking;
     unavailable = null;
     notifyListeners();
+    debugPrint('narrator: speaking from $start');
     try {
       await _configure();
       await _tts.setSpeechRate(_pluginRate(speed));

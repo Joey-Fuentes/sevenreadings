@@ -106,6 +106,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
   /// Reads this chapter aloud in the first English translation shown, from
   /// the highlighted verse when there is one.
   Future<void> _listen() async {
+    debugPrint('narrator: listen tapped');
     final data = await _data;
     final shown = data.translations.where(
       (t) => t.language == 'en' && !_hidden.contains(t.id),
