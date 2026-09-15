@@ -165,9 +165,14 @@ weekly, and on demand, not on every push.
   the `_load()` Future; the same pattern was in `NotesScreen`), fixed in
   the same patch as this note. The release APK on the phone never showed
   it because release builds strip asserts: a first thing the test found
-  that a person could not. Once a run has passed, its numbers and anything
-  it found go here and in `AGENTS.md`'s targets table; that run is the
-  proof of both spikes.
+  that a person could not. Third run, sample content: first launch
+  2370 ms, second launch 408 ms; screenshots 01-02 as intended; the note
+  saved and showed; then the closing note dialog rebuilt its TextField
+  against a controller `noteDialog` had already disposed (again debug-only;
+  the dialog now owns and disposes its controller), and screenshot 03 is
+  Flutter's red error screen, which is the right thing for it to be. Once
+  a run has passed, its numbers and anything it found go here and in
+  `AGENTS.md`'s targets table; that run is the proof of both spikes.
 
 ## 3. Donations
 

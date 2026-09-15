@@ -235,9 +235,11 @@ Rules that keep patches applying cleanly:
 - `setState(() => _x = _load())` returns the Future to `setState`, which
   asserts in debug builds only; the phone's release APK ran it for days,
   the emulator test failed on it at the first bookmark. Write the block
-  form. The integration test runs a debug build, so it sees every assert
-  the release build hides; treat its failures as real even when the phone
-  disagrees.
+  form. Likewise a `TextEditingController` disposed the moment `showDialog`
+  returns is still in use by the dialog animating out; a dialog owns its
+  controller (`_NoteDialog`). The integration test runs a debug build, so
+  it sees every assert the release build hides; treat its failures as real
+  even when the phone disagrees.
 
 
 

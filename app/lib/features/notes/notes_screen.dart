@@ -159,14 +159,41 @@ String firstLine(String body) {
 
 /// A dialog to write or edit a note. Resolves to the trimmed text, or null
 /// when cancelled.
-Future<String?> noteDialog(BuildContext context, {String initial = ''}) async {
-  final controller = TextEditingController(text: initial);
-  final result = await showDialog<String>(
+Future<String?> noteDialog(BuildContext context, {String initial = ''}) {
+  return showDialog<String>(
     context: context,
-    builder: (context) => AlertDialog(
-      title: Text(initial.isEmpty ? 'New note' : 'Edit note'),
+    builder: (_) => _NoteDialog(initial: initial),
+  );
+}
+
+/// Owns its text controller, so it is disposed with the dialog's widgets
+/// after the closing animation. Disposing it when showDialog returned, as
+/// this did before, hit the still-animating TextField ("used after being
+/// disposed"; the emulator checklist, 2026-09-15).
+class _NoteDialog extends StatefulWidget {
+  const _NoteDialog({required this.initial});
+
+  final String initial;
+
+  @override
+  State<_NoteDialog> createState() => _NoteDialogState();
+}
+
+class _NoteDialogState extends State<_NoteDialog> {
+  late final _controller = TextEditingController(text: widget.initial);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.initial.isEmpty ? 'New note' : 'Edit note'),
       content: TextField(
-        controller: controller,
+        controller: _controller,
         autofocus: true,
         minLines: 3,
         maxLines: 8,
@@ -178,12 +205,10 @@ Future<String?> noteDialog(BuildContext context, {String initial = ''}) async {
           child: const Text('Cancel'),
         ),
         FilledButton(
-          onPressed: () => Navigator.pop(context, controller.text.trim()),
+          onPressed: () => Navigator.pop(context, _controller.text.trim()),
           child: const Text('Save'),
         ),
       ],
-    ),
-  );
-  controller.dispose();
-  return result;
+    );
+  }
 }
