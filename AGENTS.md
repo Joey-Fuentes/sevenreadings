@@ -122,6 +122,19 @@ cp name.patch /mnt/user-data/outputs/     # then present it
 
 Rules that keep patches applying cleanly:
 
+- **HARD RULE: every patch file has a name never used before.** Suffix
+  each with a short unique tag (`t3-linux-xvfb-2b7f.patch`, or a
+  date-time), never a bare `fix.patch` twice in a session. The phone's
+  download folder keeps the old file and saves a re-download as
+  `name-1.patch`; the `git apply` command then applies the stale one and
+  the failure looks like a broken patch (2026-09-15: twice, an hour lost).
+  The hand-over names the exact file in its `git apply` line.
+- **HARD RULE: diff against the tree the maintainer has**, i.e. a copy
+  unpacked from their tarball plus the patches they have confirmed
+  applied; never against a scratch snapshot. A file that existed only in
+  the sandbox once leaked into a base and the patch described editing a
+  file the maintainer did not have (2026-09-15). Before handing over,
+  `git apply --check` the patch on that copy.
 - `app/content.lock` is written by the content bot. Never include it in a patch
   (copy the maintainer's version into both trees before diffing).
 - `pipeline/sources.toml` carries real upstream checksums that only the

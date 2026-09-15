@@ -12,6 +12,12 @@ git apply -p1 ~/storage/downloads/<name>.patch
 git add -A && git commit -m "<message>" && git pull && git push
 ```
 
+- **Every patch has a unique name** (a tag or date in the file name; the
+  AI's hard rule, `AGENTS.md`). If a download lands as `<name>-1.patch`, an
+  older file of that name is already in the folder and is the wrong one:
+  `ls -lt ~/storage/downloads/<name>*` shows which is newest, and a new
+  file's header reads `--- ... 1970-01-01`. A patch that says "No such
+  file or directory" for a file it should create was the stale download.
 - Commit **before** `git pull`; with rebase pulls, a dirty tree refuses to pull.
 - `git pull` is required before nearly every push: the content bot commits
   `app/content.lock` to `main` after each content release.
@@ -186,7 +192,9 @@ How we work:
 - You deliver changes as unified diff patches against my tree (docs/workflow.md
   and AGENTS.md, "How changes are delivered"); I apply them with
   git apply -p1, run what you tell me, and paste the output or upload the
-  CI log zip. Give me copy-pastable commands every time.
+  CI log zip. Give me copy-pastable commands every time. Every patch file
+  gets a name never used before, and you diff against the tree I have,
+  not a scratch copy (the two hard rules in AGENTS.md).
 - Verify before claiming: run the pipeline's ruff and tests on the tree
   before every patch; for Dart, state that CI is the check and read its
   logs when I upload them. Never say something works that has not run.
