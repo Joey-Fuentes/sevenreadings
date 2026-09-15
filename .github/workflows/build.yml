@@ -47,9 +47,6 @@ jobs:
       - uses: actions/setup-java@v6
         with: { distribution: temurin, java-version: "17" }
       - uses: ./.github/actions/setup-flutter
-      - name: Bootstrap (no-op once platform folders are committed)
-        working-directory: app
-        run: flutter create --org org.sevenreadings --project-name sevenreadings --platforms=android .
       # Signing: see README. Without key.properties these are debug-signed.
       - working-directory: app
         run: flutter build apk --release
@@ -71,8 +68,6 @@ jobs:
       - uses: actions/download-artifact@v8
         with: { name: content, path: app/assets/content }
       - uses: ./.github/actions/setup-flutter
-      - working-directory: app
-        run: flutter create --org org.sevenreadings --project-name sevenreadings --platforms=web .
       - run: tools/web-assets.sh
       - working-directory: app
         run: flutter build web --release
@@ -97,8 +92,6 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev
       - uses: ./.github/actions/setup-flutter
       - working-directory: app
-        run: flutter create --org org.sevenreadings --project-name sevenreadings --platforms=linux .
-      - working-directory: app
         run: flutter build linux --release
       - name: Package
         run: |
@@ -119,8 +112,6 @@ jobs:
         with: { name: content, path: app/assets/content }
       - uses: ./.github/actions/setup-flutter
       - working-directory: app
-        run: flutter create --org org.sevenreadings --project-name sevenreadings --platforms=windows .
-      - working-directory: app
         run: flutter build windows --release
       - name: Package
         shell: pwsh
@@ -137,8 +128,6 @@ jobs:
       - uses: actions/download-artifact@v8
         with: { name: content, path: app/assets/content }
       - uses: ./.github/actions/setup-flutter
-      - working-directory: app
-        run: flutter create --org org.sevenreadings --project-name sevenreadings --platforms=macos .
       # Unsigned. Add Developer ID signing + notarization once certificates exist.
       - working-directory: app
         run: flutter build macos --release
@@ -156,8 +145,6 @@ jobs:
       - uses: actions/download-artifact@v8
         with: { name: content, path: app/assets/content }
       - uses: ./.github/actions/setup-flutter
-      - working-directory: app
-        run: flutter create --org org.sevenreadings --project-name sevenreadings --platforms=ios .
       # --no-codesign proves the build; switch to `flutter build ipa` with an
       # export options plist once an Apple Developer account is wired in.
       - working-directory: app

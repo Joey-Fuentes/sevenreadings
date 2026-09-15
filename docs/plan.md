@@ -71,7 +71,7 @@ and the rest, and until 2026-09-15 those folders did not exist in git:
 nine `flutter create` steps regenerated them from the template on every
 build. `bootstrap.yml` (run once, by hand) creates all six, sets the
 application id `org.sevenreadings.SevenReadings` (see `AGENTS.md`,
-"Identity") and commits them; the create steps then go. Nothing in the
+"Identity") and commits them; the create steps are gone since. Nothing in the
 tree is an app icon either; every target ships Flutter's placeholder,
 which neither Flathub nor the stores accept. An original icon, generated
 into the sizes each platform wants, is part of S3, and its design is the

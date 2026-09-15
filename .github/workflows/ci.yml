@@ -64,11 +64,6 @@ jobs:
           mode: ${{ github.event_name == 'pull_request' && 'sample' || 'auto' }}
           token: ${{ github.token }}
       - uses: ./.github/actions/setup-flutter
-      - name: Bootstrap platform folders
-        # Platform folders are not committed until `make bootstrap` has been run
-        # and committed; this keeps the smoke build working before then.
-        working-directory: app
-        run: flutter create --org org.sevenreadings --project-name sevenreadings --platforms=linux,web .
       - name: Linux build deps
         run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev
       - name: Web runtime assets

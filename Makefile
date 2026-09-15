@@ -1,11 +1,8 @@
-ORG ?= org.sevenreadings
 VERSION ?= 0.1.0
 
 .PHONY: bootstrap gen content-sample content web-assets test format
 
-bootstrap: ## One-time: create platform folders, resolve deps, run codegen
-	cd app && flutter create --org $(ORG) --project-name sevenreadings \
-		--platforms=android,ios,macos,windows,linux,web .
+bootstrap: ## Resolve deps and run codegen (the platform folders are committed)
 	flutter pub get
 	$(MAKE) gen
 
