@@ -5,8 +5,6 @@
 // the tests passed or not, so a failing run still shows what it saw.
 import 'dart:io';
 
-import 'package:integration_test/integration_test_driver.dart'
-    show writeResponseData;
 import 'package:integration_test/integration_test_driver_extended.dart';
 
 Future<void> main() async {
