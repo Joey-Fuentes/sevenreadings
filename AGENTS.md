@@ -90,10 +90,12 @@ have. The sandbox filesystem may reset between conversations; keep the copy in
   upstream but one Ibn Ezra listing; build with `--only` and everything
   except `ibn_ezra` to reproduce), so a red run is a runtime problem, not a
   wrong expectation, unless the content changed. Two things the runs
-  taught: every `ListView` builds lazily, so a finder for anything below
-  the fold finds nothing until the test scrolls there
-  (`dragUntilVisible`); and it is one `testWidgets`, because the binding
-  resets the Android screenshot surface between tests.
+  taught: every `ListView` builds lazily and a finder for anything below
+  the fold finds nothing until the test scrolls there, and it scrolls by
+  jumping the `ScrollPosition` (`scrollTo`), because synthetic drags
+  moved nothing on the Linux build while they worked on the emulator;
+  and it is one `testWidgets`, because the binding resets the Android
+  screenshot surface between tests.
 - **Upstream data**: no network. To learn how a source is laid out, ask the
   maintainer to run a command in Termux and paste the output (see
   `docs/workflow.md`, "Inspecting an upstream"). Don't guess file layouts;

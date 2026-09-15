@@ -17,7 +17,9 @@
 // One test, deliberately: the binding resets the Android screenshot surface
 // between tests, so the second launch lives in the same test, after the
 // first app is unmounted the way the binding would unmount it. Lists are
-// lazy, so anything below the fold is scrolled to before it is expected.
+// lazy, so anything below the fold is scrolled to before it is expected;
+// scrolled programmatically, because synthetic drags moved nothing on the
+// Linux build while the same drags worked on the emulator.
 //
 // Screenshots: Android, iOS and web go through the integration_test
 // plugin (proven on the Android emulator). Desktop has no such plugin, so
@@ -88,17 +90,9 @@ void main() {
     // Protestant reading on Genesis 1:1 is Matthew Henry in both contents.
     final sheet = find.byKey(readingsSheetKey);
     for (final name in perspectives) {
-      await tester.dragUntilVisible(
-        find.text(name),
-        sheet,
-        const Offset(0, -200),
-      );
+      await scrollTo(tester, find.text(name), sheet);
       if (name == 'Protestant / Reformed') {
-        await tester.dragUntilVisible(
-          find.textContaining('Matthew Henry'),
-          sheet,
-          const Offset(0, -200),
-        );
+        await scrollTo(tester, find.textContaining('Matthew Henry'), sheet);
       }
     }
     await closeSheet(tester);
@@ -128,10 +122,10 @@ void main() {
 
     // Bookmarks & notes, reached from the book picker.
     await openPicker(tester);
-    await tester.dragUntilVisible(
+    await scrollTo(
+      tester,
       find.text('Bookmarks & notes'),
       find.byKey(bookPickerKey),
-      const Offset(0, -300),
     );
     await tester.tap(find.text('Bookmarks & notes'));
     await waitFor(tester, find.text('Bookmarks'));
@@ -143,19 +137,15 @@ void main() {
 
     // About the texts: licenses and notices from the database.
     await openPicker(tester);
-    await tester.dragUntilVisible(
+    await scrollTo(
+      tester,
       find.text('About the texts'),
       find.byKey(bookPickerKey),
-      const Offset(0, -300),
     );
     await tester.tap(find.text('About the texts'));
     await waitFor(tester, find.text('Bibles'));
     await screenshot(tester, '07-about-the-texts');
-    await tester.dragUntilVisible(
-      find.text('Notices'),
-      find.byKey(aboutListKey),
-      const Offset(0, -300),
-    );
+    await scrollTo(tester, find.text('Notices'), find.byKey(aboutListKey));
     await tester.pageBack();
     await waitFor(tester, find.byIcon(Icons.expand_more));
 
@@ -217,6 +207,26 @@ Future<void> openPicker(WidgetTester tester) async {
   await tester.tap(find.byIcon(Icons.expand_more));
   await waitFor(tester, find.byKey(bookPickerKey));
   await tester.pump(const Duration(milliseconds: 500));
+}
+
+/// Scrolls the list [view] until [finder] is on stage, then aligns it.
+/// Programmatic, not a drag: the first Linux run (2026-09-15) showed
+/// synthetic drags not moving the readings sheet, and bringing an item
+/// into view needs no gesture anyway.
+Future<void> scrollTo(WidgetTester tester, Finder finder, Finder view) async {
+  final scrollables = find.descendant(
+    of: view,
+    matching: find.byType(Scrollable),
+  );
+  final position = tester.state<ScrollableState>(scrollables.first).position;
+  for (var i = 0; i < 100 && finder.evaluate().isEmpty; i++) {
+    final max = position.maxScrollExtent;
+    final next = position.pixels + 200;
+    position.jumpTo(next > max ? max : next);
+    await tester.pump();
+  }
+  await Scrollable.ensureVisible(tester.element(finder.first));
+  await tester.pump(const Duration(milliseconds: 300));
 }
 
 /// Pumps real frames until [finder] matches; fails after [timeout].
