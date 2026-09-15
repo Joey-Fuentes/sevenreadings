@@ -41,6 +41,9 @@ picker; stored in `UserDb`, never in content).
 
 ## Setting up a session (AI side)
 
+(The maintainer's side — what to upload and the prompt to paste — is in
+`docs/workflow.md`, "Starting an AI session".)
+
 The maintainer uploads the repo as a Termux `tar` of `~/sevenreadings` made
 with this command (kept here so it can be pasted; the upload arrives named
 `sevenreadings_tar.gz`, and paths inside start with

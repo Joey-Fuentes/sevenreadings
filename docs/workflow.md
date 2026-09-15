@@ -107,6 +107,61 @@ first; one of them moved sqlite3 to 3.x, which was fine, but a future one
 could change drift codegen. The limit of 5 open PRs per ecosystem means more
 appear after you merge.
 
+## Starting an AI session
+
+Upload two files, then paste the prompt below. Nothing else is needed to
+begin; CI log zips and screenshots follow as the work produces them.
+
+1. The repo: `rm -rf ~/sevenreadings.tar.gz && tar -czvf ~/sevenreadings.tar.gz ~/sevenreadings`
+   (arrives as `sevenreadings_tar.gz`; includes `pipeline/.cache`, which
+   the AI uses instead of the network).
+2. The tools, if the AI's sandbox turns out to lack ruff or pytest (it says
+   so on its first command): `gh workflow run tools.yml`, wait for it, then
+   `gh run download -D ~/storage/downloads` and upload the
+   `pipeline-wheels-*` zip. Without it the AI can still run the tests
+   (`tests/_run_without_pytest.py`) but not lint.
+
+The prompt:
+
+```
+You are picking up the sevenreadings project. I have uploaded the repo as a
+Termux tarball (sevenreadings_tar.gz; paths inside start with
+data/data/com.termux/files/home/). Unpack it and read AGENTS.md first, in
+full; it is the handoff and states the constraints: I work on an Android
+phone in Termux with no Flutter, you work in a sandbox with no network, and
+CI is the only machine that runs Flutter. Then read docs/plan.md, which is
+the roadmap for everything app-side, and the Known gaps section of
+AGENTS.md, which lists every deferral.
+
+How we work:
+- You deliver changes as unified diff patches against my tree (docs/workflow.md
+  and AGENTS.md, "How changes are delivered"); I apply them with
+  git apply -p1, run what you tell me, and paste the output or upload the
+  CI log zip. Give me copy-pastable commands every time.
+- Verify before claiming: run the pipeline's ruff and tests on the tree
+  before every patch; for Dart, state that CI is the check and read its
+  logs when I upload them. Never say something works that has not run.
+- Every fact about a source's layout or license comes from reading the
+  real thing (the cached upstream files in pipeline/.cache, or something I
+  paste), not from memory.
+- No /tmp anywhere. No new dependency, model, service or text that costs
+  money or is not open source; if a goal cannot be met that way, say so and
+  record it.
+- Do not quietly defer. Anything you decide not to do goes into the Known
+  gaps section of AGENTS.md in the same patch, with its state and what
+  would resolve it. Anything you finish updates the relevant doc in the
+  same patch (AGENTS.md tables, docs/plan.md spike results, notices).
+- Keep the documentation true: when you change behaviour, change the docs
+  that describe it.
+
+The task for this session: <state it, or: "start on docs/plan.md, order
+item 1 (the integration test and the Android emulator screenshots), and
+continue down the order as each item is verified">.
+
+Begin by unpacking the repo, running the pipeline's tests, and telling me
+in a few lines what state you found and what you will do first.
+```
+
 ## Giving the AI what it needs
 
 Repo: make the archive, then upload `~/sevenreadings.tar.gz` (it arrives as
