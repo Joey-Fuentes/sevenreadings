@@ -232,6 +232,12 @@ Rules that keep patches applying cleanly:
   fails the job unless the screenshots and timings exist. A workflow that
   can pass without doing its work is a bug of the same kind as untested
   code.
+- `setState(() => _x = _load())` returns the Future to `setState`, which
+  asserts in debug builds only; the phone's release APK ran it for days,
+  the emulator test failed on it at the first bookmark. Write the block
+  form. The integration test runs a debug build, so it sees every assert
+  the release build hides; treat its failures as real even when the phone
+  disagrees.
 
 
 

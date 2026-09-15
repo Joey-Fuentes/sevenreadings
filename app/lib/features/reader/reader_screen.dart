@@ -742,7 +742,14 @@ class _ReadingsSheetState extends State<_ReadingsSheet> {
     return _SheetData(perspectives, readings, notes, marked, userError);
   }
 
-  void _refresh() => setState(() => _data = _load());
+  // A block, not an arrow: an arrow would return the Future from _load(),
+  // which setState rejects in debug builds (the integration test's first
+  // run, 2026-09-15).
+  void _refresh() {
+    setState(() {
+      _data = _load();
+    });
+  }
 
   Future<void> _guard(Future<void> Function() action) async {
     try {

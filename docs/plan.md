@@ -157,9 +157,17 @@ weekly, and on demand, not on every push.
   each `script` line in its own shell and the `cd app` did not carry, and
   the job still passed. Since then the script is one command and the
   "What the run produced" step fails the job unless eight screenshots and
-  both timings exist. Once a run has passed, its numbers and anything it
-  found go here and in `AGENTS.md`'s targets table; that run is the proof
-  of both spikes.
+  both timings exist. Second run, same day, sample content: the test ran.
+  First launch to Genesis 1 with its verses, content copy included, 1847 ms
+  (the fixture database, so not the real copy time); screenshots 01 and 02
+  as intended; then the bookmark tap hit a debug-only assertion in the app
+  (`_ReadingsSheetState._refresh` set state with an arrow that returned
+  the `_load()` Future; the same pattern was in `NotesScreen`), fixed in
+  the same patch as this note. The release APK on the phone never showed
+  it because release builds strip asserts: a first thing the test found
+  that a person could not. Once a run has passed, its numbers and anything
+  it found go here and in `AGENTS.md`'s targets table; that run is the
+  proof of both spikes.
 
 ## 3. Donations
 

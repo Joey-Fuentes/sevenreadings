@@ -32,7 +32,12 @@ class _NotesScreenState extends State<NotesScreen> {
     return _Items(bookmarks, notes);
   }
 
-  void _refresh() => setState(() => _items = _load());
+  // A block, not an arrow: see _ReadingsSheetState._refresh.
+  void _refresh() {
+    setState(() {
+      _items = _load();
+    });
+  }
 
   Future<void> _deleteNote(Note note) async {
     final yes = await showDialog<bool>(
