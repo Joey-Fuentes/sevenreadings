@@ -179,13 +179,13 @@ Rules that keep patches applying cleanly:
   `notes per chapter` should be dense and the "kept without one" count small.
   Missing verses are usually the OCR losing the bold number, not the text;
   the surrounding note absorbs it. Do not try to fix OCR in the parser.
-- `pubspec.lock` is not committed, so CI resolves the newest compatible
-  packages on every run; a transitive release can break the build with no
-  change of ours (objective_c 9.6.1 did, 2026-09-15). The fix is a dated
-  `dependency_overrides` entry in the root `pubspec.yaml` with its removal
-  condition, and Flutter pinned to an exact version in
-  `.github/actions/setup-flutter/action.yml` and `.fvmrc`. Committing the
-  lockfile would be better still; it needs a machine with Flutter.
+- `pubspec.lock` is generated and committed by `.github/workflows/lockfile.yml`
+  (on the pinned Flutter; runs when a pubspec.yaml changes, or on demand with
+  `upgrade` to move to newer versions deliberately). With it committed, CI
+  resolves exactly what is locked; before it existed, a transitive release
+  broke a build with no change of ours (objective_c 9.6.1, 2026-09-15), fixed
+  with a dated `dependency_overrides` entry in the root `pubspec.yaml`. Keep
+  such overrides until the lockfile and the Flutter pin have moved past them.
 - Every shipped source has `pipeline/sources/<id>/NOTICE.md`; the build
   concatenates them into `meta.notices` and the app shows them. CC BY and
   CC BY-SA sources (sblgnt, wlc, lxx) require that attribution in what we

@@ -130,3 +130,13 @@ appear after you merge.
 - The web app persists the content database in the browser after first load;
   Pages has a soft 100 GB/month bandwidth limit, so it is a demo host, not a
   distribution channel.
+
+## Dart dependencies
+
+`pubspec.lock` is committed and owned by the "Dart lockfile" workflow. A
+change to any pubspec.yaml regenerates it on the pinned Flutter and commits
+it; to take newer versions on purpose, run the workflow by hand with
+`upgrade` (`gh workflow run lockfile.yml -f upgrade=true`). Nobody needs a
+machine with Flutter for this. If a transitive release breaks CI before the
+lockfile has caught up, the pattern is a dated `dependency_overrides` entry
+in the root `pubspec.yaml` with its removal condition written beside it.
