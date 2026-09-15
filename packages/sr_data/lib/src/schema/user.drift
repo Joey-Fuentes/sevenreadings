@@ -1,4 +1,8 @@
 -- Per-user data. Lives in its own database so content updates never touch it.
+-- Everything here must be safe to create twice: drift creates tables with
+-- IF NOT EXISTS but emits index statements as written, and a first open that
+-- is interrupted before the schema version is recorded (seen on the web,
+-- 2026-09-15) runs onCreate again on the next launch.
 
 CREATE TABLE bookmarks (
   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -6,7 +10,7 @@ CREATE TABLE bookmarks (
   label TEXT,
   created_at INTEGER NOT NULL
 );
-CREATE INDEX ix_bookmarks_verse ON bookmarks (verse_id);
+CREATE INDEX IF NOT EXISTS ix_bookmarks_verse ON bookmarks (verse_id);
 
 CREATE TABLE notes (
   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -16,7 +20,8 @@ CREATE TABLE notes (
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL
 );
-CREATE INDEX ix_notes_range ON notes (start_verse_id, end_verse_id);
+CREATE INDEX IF NOT EXISTS ix_notes_range
+  ON notes (start_verse_id, end_verse_id);
 
 CREATE TABLE reading_positions (
   translation_id TEXT NOT NULL PRIMARY KEY,

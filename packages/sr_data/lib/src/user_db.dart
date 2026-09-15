@@ -27,6 +27,9 @@ class UserDb extends _$UserDb {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
+        // Idempotent: the tables use IF NOT EXISTS (drift's default) and the
+        // indexes say so in user.drift, so a re-run after an interrupted
+        // first open completes instead of failing on "already exists".
         onCreate: (m) => m.createAll(),
         // Add onUpgrade steps here as the user schema evolves. Never break
         // an existing user database.

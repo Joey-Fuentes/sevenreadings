@@ -9,6 +9,14 @@ void main() {
   setUp(() => db = UserDb(NativeDatabase.memory()));
   tearDown(() => db.close());
 
+  test('onCreate can run twice on the same database', () async {
+    // A first open interrupted before the schema version was recorded leaves
+    // the tables behind; the next open runs onCreate again and must succeed.
+    await db.toggleBookmark(const VerseRef(1, 1, 1).id); // opens, creates
+    await db.createMigrator().createAll(); // the second run
+    expect(await db.toggleBookmark(const VerseRef(1, 1, 1).id), isFalse);
+  });
+
   test('bookmarks toggle and list newest first', () async {
     final a = const VerseRef(43, 3, 16).id;
     final b = const VerseRef(1, 1, 1).id;
