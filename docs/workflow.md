@@ -109,13 +109,28 @@ appear after you merge.
 
 ## Giving the AI what it needs
 
-- Repo: `cd ~ && tar -czf ~/storage/downloads/sevenreadings_tar.gz sevenreadings`
-  then upload the file. (Excluding `pipeline/.cache` keeps it small:
-  `tar --exclude=sevenreadings/pipeline/.cache -czf …`.)
+Repo: make the archive, then upload `~/sevenreadings.tar.gz` (it arrives as
+`sevenreadings_tar.gz`; that is fine).
+
+```
+rm -rf ~/sevenreadings.tar.gz && tar -czvf ~/sevenreadings.tar.gz ~/sevenreadings
+```
+
+That includes `pipeline/.cache`, the fetched upstreams (about 200 MB), which
+lets the AI read real upstream files offline. When only the code matters,
+the same without the cache is a couple of megabytes:
+
+```
+rm -rf ~/sevenreadings.tar.gz && tar --exclude=sevenreadings/pipeline/.cache -czvf ~/sevenreadings.tar.gz -C ~ sevenreadings
+```
+
 - Tools: run `gh workflow run tools.yml`, then `gh run download -D ~/storage/downloads`
   and upload the `pipeline-wheels-*` zip (ruff + pytest + httpx, matching CI).
-- CI failures: the run's log zip.
-- Anything about an upstream's layout: the `unzip -p` / `gh api` output above.
+- CI failures: the run's log zip (`gh run view --log-failed` is the short
+  form; the zip has everything).
+- Anything about an upstream's layout: the `unzip -p` / `gh api` output above,
+  or a small Python snippet the AI writes that prints the relevant part to a
+  file under `~/storage/downloads` for upload.
 
 ## Odds and ends
 
@@ -133,10 +148,15 @@ appear after you merge.
 
 ## Dart dependencies
 
-`pubspec.lock` is committed and owned by the "Dart lockfile" workflow. A
+`pubspec.lock` is committed and owned by the "Dart lockfile" workflow (first
+run 2026-09-15, Flutter 3.47.4). A
 change to any pubspec.yaml regenerates it on the pinned Flutter and commits
 it; to take newer versions on purpose, run the workflow by hand with
 `upgrade` (`gh workflow run lockfile.yml -f upgrade=true`). Nobody needs a
 machine with Flutter for this. If a transitive release breaks CI before the
 lockfile has caught up, the pattern is a dated `dependency_overrides` entry
 in the root `pubspec.yaml` with its removal condition written beside it.
+The workflow's log also shows (`git status --short`) that drift codegen
+modifies `app/analysis_options.yaml` and `packages/sr_data/analysis_options.yaml`
+on the runner; those changes are not committed, and what they are has not
+yet been looked at.

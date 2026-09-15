@@ -24,10 +24,10 @@ Current content (see `pipeline/sources.toml` for pins and licenses):
 | lxx | Septuagint, Swete's edition via nathans/lxx-swete (CC BY-SA 4.0), LXX numbering mapped at ingest | live, known gaps: Exodus 36-40 and Proverbs 24-31 reordered, Ecclesiastes missing upstream |
 | matthew_henry | Matthew Henry's Commentary, CCEL public-domain HTML edition | live (Protestant reading) |
 | haydock | Haydock's Catholic Bible Commentary (1859), JohnBlood GitLab transcription; notes anchored where the Douay verses land | live (Catholic reading); same pin as douay |
-| chrysostom | Chrysostom's NT homilies, CCEL ThML editions of NPNF 1/10-14 (files declare DC.Rights Public Domain); each homily anchored to its passage up to the next homily's | wired (Orthodox reading); needs `srp lock --write chrysostom`, then a build read |
-| rashi, ibn_ezra | Sefaria's database export on Hugging Face, pinned by commit; per book the largest English version whose recorded license is PD/CC0/CC BY/CC BY-SA, NC never read; Masoretic numbering followed through the WLC's ingest | wired (Jewish readings); needs a build with wlc in it, then the per-book version list read |
-| icc | International Critical Commentary, pre-1929 volumes, from the Internet Archive's hOCR (`_hocr.html`); chapter from each page's running head, notes split at bold verse numbers, sections at "I. 1-7." headings | wired (Academic reading), one volume so far (Sanday-Headlam, Romans); OCR unproofread by design; needs `srp lock --write icc`, then a build read |
-| quran | Pickthall's Qur'an (1930, public domain) from Project Gutenberg #16955, shown at the Bible passages it parallels; the pairings are `pipeline/data/quran_parallels.tsv` (project data, CC0), one entry and one `parallels` row per pairing | wired (Islamic reading); needs `srp lock --write quran`, then a build read (the log lists passages not found) |
+| chrysostom | Chrysostom's NT homilies, CCEL ThML editions of NPNF 1/10-14 (files declare DC.Rights Public Domain); each homily anchored to its passage up to the next homily's | live (Orthodox reading): 478 homilies across all 17 books he preached on |
+| rashi, ibn_ezra | Sefaria's database export on Hugging Face, pinned by commit; per book the largest English version whose recorded license is PD/CC0/CC BY/CC BY-SA, NC never read; Masoretic numbering followed through the WLC's ingest | live (Jewish readings): Rashi 11,050 entries in 39 books; Ibn Ezra 1,350 in 7 books (22 books have no open-licensed English; Hebrew-only for those is an open decision) |
+| icc | International Critical Commentary, pre-1929 volumes, from the Internet Archive's hOCR (`_hocr.html`); chapter from each page's running head, notes split at bold verse numbers, sections at "I. 1-7." headings | live (Academic reading): Sanday-Headlam on Romans, 376 notes; OCR unproofread by design; more volumes are one `sources.toml` entry each |
+| quran | Pickthall's Qur'an (1930, public domain) from Project Gutenberg #16955, shown at the Bible passages it parallels; the pairings are `pipeline/data/quran_parallels.tsv` (project data, CC0), one entry and one `parallels` row per pairing | live (Islamic reading): 178 pairings, 345 parallels; the file is the whole coverage, so a new line is a new reading |
 | ibn_kathir | documented stub in `pipeline/sevenreadings_pipeline/sources/stubs.py` | not wired: no permissive English translation; the Arabic (Arabic Wikisource, CC BY-SA) plus machine translation is possible and would sit beside the Qur'an entries |
 
 App: verse-by-verse phone layout, side-by-side on wide screens, translation
@@ -41,13 +41,22 @@ picker; stored in `UserDb`, never in content).
 
 ## Setting up a session (AI side)
 
-The maintainer will upload two things: the repo as `sevenreadings_tar.gz`
-(a Termux `tar` of `~/sevenreadings`, so paths start with
-`data/data/com.termux/files/home/`) and a ruff wheel or the `pipeline-wheels`
-artifact from the `Tools for offline review` workflow.
+The maintainer uploads the repo as a Termux `tar` of `~/sevenreadings` made
+with this command (kept here so it can be pasted; the upload arrives named
+`sevenreadings_tar.gz`, and paths inside start with
+`data/data/com.termux/files/home/`):
 
 ```
-mkdir -p /home/claude/in && tar -xzf /mnt/user-data/uploads/sevenreadings_tar.gz -C /home/claude/in
+rm -rf ~/sevenreadings.tar.gz && tar -czvf ~/sevenreadings.tar.gz ~/sevenreadings
+```
+
+It contains `pipeline/.cache` (the fetched upstreams, ~200 MB), which the AI
+can use in place of the network. With the archive, the maintainer uploads a
+ruff wheel or the `pipeline-wheels` artifact from the `Tools for offline
+review` workflow when the sandbox lacks them.
+
+```
+mkdir -p /home/claude/in && tar -xzf /mnt/user-data/uploads/sevenreadings*tar.gz -C /home/claude/in
 rm -rf /home/claude/sevenreadings && cp -r /home/claude/in/data/data/com.termux/files/home/sevenreadings /home/claude/
 pip install --break-system-packages --no-index <uploaded>.whl        # ruff alone, or:
 pip install --break-system-packages --no-index --find-links wheels -r wheels/requirements.txt
@@ -206,13 +215,15 @@ Rules that keep patches applying cleanly:
 
 ## Where to go next
 
-In rough order of value: pin and build the Qur'an parallels, then extend
-them (the file is the whole of the Islamic reading's coverage); more ICC
-volumes (Plummer's Luke 1896, Skinner's Genesis 1910, Driver's Deuteronomy
-1895, Briggs's Psalms 1906-07 — Psalms needs MT numbering through the WLC
-trace like Rashi); Hebrew-only fallback for Ibn Ezra books without a
-usable English version (a decision, not code); a tafsir beside the
-Qur'an entries if an open English one appears,
+In rough order of value: extend the Qur'an pairings (the file is the whole
+of the Islamic reading's coverage); more ICC volumes (Plummer's Luke 1896,
+Skinner's Genesis 1910, Driver's Deuteronomy 1895, Briggs's Psalms 1906-07 —
+Psalms needs MT numbering through the WLC trace like Rashi); Hebrew-only
+fallback for Ibn Ezra books without a usable English version (a decision,
+not code); a tafsir beside the Qur'an entries if an open English one
+appears; find out what drift codegen writes into the two
+`analysis_options.yaml` files in CI (the lockfile workflow prints
+`git status --short`; commit the change or ignore it deliberately),
 scroll-to-verse in the wide layout, Exodus 36-40 and Proverbs 24-31 LXX
 tables, Play Asset Delivery if the AAB passes 200 MB. Each new source: verify
 the upstream and its license from the actual repository, write the parser
