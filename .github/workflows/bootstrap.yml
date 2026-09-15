@@ -1,0 +1,79 @@
+name: Platform folders
+
+# One-time: generates the six platform folders with `flutter create` on the
+# pinned Flutter, sets the application id to org.sevenreadings.SevenReadings
+# (Flutter's default would be org.sevenreadings.sevenreadings), and commits
+# them, so that manifests, icons, the web manifest and service worker,
+# desktop files and signing configuration have a place in git. Until this
+# has run, every build recreates the folders from the template (the
+# "Bootstrap" steps in ci.yml, build.yml and screenshots.yml); once the
+# commit is in, those steps are removed (they only re-add template files
+# that are missing, and would put back the Kotlin file at the old package).
+#
+#   gh workflow run bootstrap.yml
+#
+# The Android application id and the iOS bundle id cannot change after the
+# first store upload; this is where they are decided.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: bootstrap
+  cancel-in-progress: false
+
+env:
+  APP_ID: org.sevenreadings.SevenReadings
+  DEFAULT_ID: org.sevenreadings.sevenreadings
+
+jobs:
+  create:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-flutter
+      - name: Create the platform folders
+        working-directory: app
+        run: |
+          flutter create --org org.sevenreadings --project-name sevenreadings \
+            --platforms=android,ios,macos,windows,linux,web .
+          rm -f README.md   # the template's, not ours
+      - name: Set the application id
+        working-directory: app
+        run: |
+          set -eu
+          # Every generated file that carries the default id: Gradle namespace
+          # and applicationId, the Xcode projects, the macOS xcconfig, the Linux
+          # CMake APPLICATION_ID. The Kotlin source moves to the new package.
+          grep -rl --exclude-dir=build "$DEFAULT_ID" android ios macos linux windows web 2>/dev/null \
+            | xargs -r sed -i "s/$DEFAULT_ID/$APP_ID/g"
+          old=android/app/src/main/kotlin/org/sevenreadings/sevenreadings
+          new=android/app/src/main/kotlin/org/sevenreadings/SevenReadings
+          if [ -d "$old" ]; then mkdir -p "$(dirname "$new")" && mv "$old" "$new"; fi
+          echo "files carrying the id now:"
+          grep -rl --exclude-dir=build "$APP_ID" android ios macos linux windows web || true
+          echo "files still carrying the default:"
+          ! grep -rl --exclude-dir=build "$DEFAULT_ID" android ios macos linux windows web
+      - name: What drift codegen changed in analysis_options.yaml (known gap; not committed)
+        run: |
+          git --no-pager diff -- app/analysis_options.yaml packages/sr_data/analysis_options.yaml
+          git checkout -- app/analysis_options.yaml packages/sr_data/analysis_options.yaml
+      - name: Show what will be committed
+        run: git status --short
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then echo "nothing to commit"; exit 0; fi
+          git commit -m "Platform folders from flutter create ($(flutter --version --machine | jq -r .flutterVersion)); id $APP_ID"
+          git pull --rebase --autostash origin main
+          git push origin HEAD:main
+      - name: Run CI on the committed folders
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run ci.yml --ref main

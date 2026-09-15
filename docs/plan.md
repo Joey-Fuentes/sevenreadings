@@ -64,6 +64,19 @@ this plan is unaffected.
   the content database so the site installs and works offline; that is a
   small change and belongs before any store work because it is free.
 
+### Before any of it: the platform folders and an icon
+
+Every item below edits files under `app/android`, `app/web`, `app/linux`
+and the rest, and until 2026-09-15 those folders did not exist in git:
+nine `flutter create` steps regenerated them from the template on every
+build. `bootstrap.yml` (run once, by hand) creates all six, sets the
+application id `org.sevenreadings.SevenReadings` (see `AGENTS.md`,
+"Identity") and commits them; the create steps then go. Nothing in the
+tree is an app icon either; every target ships Flutter's placeholder,
+which neither Flathub nor the stores accept. An original icon, generated
+into the sizes each platform wants, is part of S3, and its design is the
+maintainer's call.
+
 ### Spikes
 
 - **S1. Signing without secrets in git**: write the secret-to-file steps for

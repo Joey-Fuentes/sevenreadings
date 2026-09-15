@@ -136,6 +136,14 @@ Rules that keep patches applying cleanly:
 
 ## Conventions and traps (learned the hard way)
 
+- Identity, decided 2026-09-15: the domain is sevenreadings.org
+  (sevenreadings.com redirects to it) and the application id is
+  `org.sevenreadings.SevenReadings` on every platform: Android application
+  id, iOS and macOS bundle id, Linux `APPLICATION_ID`, the Flatpak id.
+  `bootstrap.yml` writes it into the generated platform folders (Flutter's
+  default would have been `org.sevenreadings.sevenreadings`); the Android
+  and iOS ids are permanent after the first store upload. The Dart package
+  stays `sevenreadings`.
 - Verse ids: `book*1_000_000 + chapter*1_000 + verse`; verse 0 = chapter-level
   material (titles, introductions); 999 = chapter end. Books 1-66 Protestant
   order, 67-75 deuterocanon. Ids never change; display order lives in
