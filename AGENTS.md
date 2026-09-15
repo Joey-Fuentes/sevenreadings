@@ -213,6 +213,51 @@ Rules that keep patches applying cleanly:
   re-triggers CI after pinning, because pushes made with the built-in token do
   not start workflows on their own.
 
+
+## Known gaps (recorded, not scheduled)
+
+Everything below is deferred on purpose, with its state as of 2026-09-15.
+None is hidden in a log; this list is the place to look.
+
+- **Ibn Ezra, 22 books; Rashi on Psalms** — no open-licensed English version
+  in Sefaria's export (the build lists them). The Hebrew is complete and
+  public domain. Decision open: ship Hebrew there, labelled (the reader
+  handles RTL), or leave "No reading". Recommendation: ship the Hebrew.
+- **Chrysostom on Matthew: 86 of 90 homilies** — four divisions in npnf110
+  did not parse (no scripCom, title not a passage, or nested a level down).
+  `SELECT heading FROM commentary_entries WHERE source_id='chrysostom' AND
+  start_verse_id/1000000=40` against the built database shows which are
+  missing; the fixture then gets their shape.
+- **ICC Romans: OCR losses** — the `1. Παῦλος` line is absent from the
+  Archive's text (its content sits in the `1-7.` section note); 95 pages had
+  no readable running head (their text goes to the open note). The parser
+  is fitted to this scan; the remaining losses are the OCR's. Better text
+  means proofreading, the Google-digitised copy, or Tesseract on the JP2s.
+- **Qur'an 17:33** — merged into a neighbouring verse in Gutenberg #16955;
+  the Exodus 20 entry ships the other seventeen verses. Fix: take that one
+  verse (or the whole text) from Wikisource's 1930 edition.
+- **`analysis_options.yaml` in CI** — drift codegen modifies
+  `app/analysis_options.yaml` and `packages/sr_data/analysis_options.yaml`
+  on the runner (seen in the lockfile workflow's `git status --short`); the
+  changes are never committed and have not been read. One run printing the
+  diff settles whether to commit or ignore them.
+- **Embedded psalm titles** — Psalms 23, 25, 87, 100, 130 carry their title
+  inside verse 1 in the Hebrew, LXX and Douay numbering; those texts show
+  no Title row there. A text heuristic could split them; not done.
+- **Wide layout: no scroll-to-verse** — search hits highlight the row in
+  each column but do not scroll to it on screens over 720 px.
+- **Greek search needs accents** — FTS5 `remove_diacritics 2` does not fold
+  polytonic Greek in the SQLite builds tested; `λόγος` finds John 1:1,
+  `λογος` does not. A custom tokenizer or a stripped shadow column would fix
+  it.
+- **LXX reorder tables** — Exodus 36-40 and Proverbs 24-31 follow the LXX
+  order, not the Hebrew; the mapping tables are not written, so those
+  chapters' LXX text sits under LXX chapter numbers.
+- **Islamic tafsir** — no open-licensed English of Ibn Kathir or another
+  classical tafsir exists; the Arabic (Arabic Wikisource, CC BY-SA) plus
+  labelled machine translation is the only route. Blocked on that decision,
+  not on code; the Qur'an pairings are the Islamic reading meanwhile.
+
 ## Where to go next
 
 In rough order of value: extend the Qur'an pairings (the file is the whole
