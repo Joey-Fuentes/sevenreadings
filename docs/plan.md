@@ -144,16 +144,22 @@ weekly, and on demand, not on every push.
   the first number includes the content copy. Nothing here has run yet:
   the AI cannot run Flutter, so the first `screenshots.yml` run (T2) is the
   proof, and its log and artifact settle what the numbers are.
-- **T2 (2026-09-15): in the tree, not yet run.** `.github/workflows/screenshots.yml`
+- **T2 (2026-09-15): in the tree; first run did not reach the test.** `.github/workflows/screenshots.yml`
   boots an API 34 x86_64 Pixel 6 emulator (`reactivecircus/android-emulator-runner`,
   `google_apis` image, 4 GB, animations off, KVM enabled on the runner),
-  runs `flutter drive` with the driver above against the pinned release
-  content (or `sample` by input), and uploads `screenshots-android`: the
-  eight PNGs, `integration_response_data.json` with both launch timings,
-  and the device log. Triggers: on demand, Mondays at 06:00 UTC (after the
-  build canary), and every `v*` tag; never on plain pushes. Once it has
-  passed, its numbers and anything it found go here and in `AGENTS.md`'s
-  targets table; the first run is the proof of both spikes.
+  runs `tools/emulator-checklist.sh` (`flutter drive` with the driver above)
+  against the pinned release content (or `sample` by input), and uploads
+  `screenshots-android`: the eight PNGs, `integration_response_data.json`
+  with both launch timings, and the device log. Triggers: on demand,
+  Mondays at 06:00 UTC (after the build canary), and every `v*` tag; never
+  on plain pushes. First run, 2026-09-15, sample content: the emulator
+  booted in 41 s; `flutter drive` never ran, because the runner executes
+  each `script` line in its own shell and the `cd app` did not carry, and
+  the job still passed. Since then the script is one command and the
+  "What the run produced" step fails the job unless eight screenshots and
+  both timings exist. Once a run has passed, its numbers and anything it
+  found go here and in `AGENTS.md`'s targets table; that run is the proof
+  of both spikes.
 
 ## 3. Donations
 

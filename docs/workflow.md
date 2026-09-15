@@ -123,9 +123,11 @@ runs in CI, below.
 
 ## The checklist in CI (screenshots.yml)
 
-`screenshots.yml` runs the same `flutter drive` on an Android emulator (API
-34, Pixel 6) with the pinned release content, on demand, every Monday, and
-on every `v*` tag. Not on pushes: it takes 15-25 minutes.
+`screenshots.yml` runs the same `flutter drive` (`tools/emulator-checklist.sh`)
+on an Android emulator (API 34, Pixel 6) with the pinned release content,
+on demand, every Monday, and on every `v*` tag. Not on pushes: it takes
+15-25 minutes. The job is green only if eight screenshots and both launch
+timings came out of the run; it says so in its "What the run produced" step.
 
 ```
 gh workflow run screenshots.yml                       # release content

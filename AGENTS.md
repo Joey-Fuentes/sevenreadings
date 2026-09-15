@@ -224,6 +224,14 @@ Rules that keep patches applying cleanly:
 - Pages deploys only when all CI jobs pass on `main`; the content workflow
   re-triggers CI after pinning, because pushes made with the built-in token do
   not start workflows on their own.
+- `reactivecircus/android-emulator-runner` runs every line of its `script`
+  in a separate shell: `cd`, variables, `set -e` all end with the line.
+  The first `screenshots.yml` run (2026-09-15) `cd app`-ed, ran `flutter
+  drive` from the repo root, found no target, and passed. Its `script` is
+  one command, `bash tools/emulator-checklist.sh`, and a step afterwards
+  fails the job unless the screenshots and timings exist. A workflow that
+  can pass without doing its work is a bug of the same kind as untested
+  code.
 
 
 

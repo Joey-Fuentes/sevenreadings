@@ -57,20 +57,22 @@ jobs:
           ram-size: 4096M
           disable-animations: true
           emulator-boot-timeout: 900
-          # `flutter drive` builds the debug APK, installs it, runs the test
-          # and writes app/screenshots/*.png and the timings JSON through
-          # app/test_driver/integration_test.dart. The device log is kept
-          # whether the test passed or not.
-          script: |
-            cd app
-            status=0
-            flutter drive --driver=test_driver/integration_test.dart --target=integration_test/app_test.dart -d emulator-5554 || status=$?
-            mkdir -p build
-            adb -s emulator-5554 logcat -d -v time > build/logcat.txt || true
-            exit $status
-      - name: Launch timings
+          # One command: the runner executes every line of `script` in its
+          # own shell. The script builds the debug APK, installs it, runs
+          # the test, and keeps screenshots, timings and the device log.
+          script: bash tools/emulator-checklist.sh emulator-5554
+      - name: What the run produced
+        # A green job means eight screenshots and both launch timings exist;
+        # the first run (2026-09-15) passed while running nothing.
         if: always()
-        run: cat app/build/integration_response_data.json 2>/dev/null || echo "no report written"
+        run: |
+          set -eu
+          n=$(ls app/screenshots/*.png 2>/dev/null | wc -l)
+          echo "screenshots: $n"
+          report=app/build/integration_response_data.json
+          if [ -f "$report" ]; then cat "$report"; else echo "no report written"; fi
+          test "$n" -eq 8
+          jq -e '.first_launch_ms and .second_launch_ms' "$report" > /dev/null
       - uses: actions/upload-artifact@v7
         if: always()
         with:
@@ -79,5 +81,5 @@ jobs:
             app/screenshots/
             app/build/integration_response_data.json
             app/build/logcat.txt
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 30

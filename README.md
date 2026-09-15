@@ -43,7 +43,8 @@ packages/sr_core/   Pure Dart: canon, verse references. No Flutter.
 packages/sr_data/   Drift schema + typed queries + per-platform DB opener.
 pipeline/           Python (uv). Ingests upstream sources → sevenreadings.sqlite
 docs/               ADRs, licensing matrix, schema notes, workflow.
-tools/              Small scripts used by CI and developers.
+tools/              Small scripts used by CI and developers (web assets, the
+                    emulator checklist).
 ```
 
 ## How content works
