@@ -123,63 +123,34 @@ weekly, and on demand, not on every push.
 
 ### State
 
-- **T1 (2026-09-15): in the tree, not yet run.** `app/integration_test/app_test.dart`
-  walks the checklist in two tests, "first launch" and "second launch",
-  and takes eight screenshots (Genesis 1, the readings sheet, bookmark and
-  note, verse search, readings search, Bookmarks & notes, About, the second
-  launch). Written against what both contents actually hold (checked in the
-  sample database and a full offline build): WEB and BSB in Genesis 1,
-  Matthew Henry and Rashi on Genesis 1:1, the seven perspective headings,
-  Genesis 1:1 first for "beginning God created", a Matthew Henry Genesis
-  entry first for "creation". Two things differ from the spike as written:
-  `flutter test integration_test` runs the checks but has nowhere to put
-  screenshot bytes, so `flutter drive` with `app/test_driver/integration_test.dart`
-  is what saves them (and the launch timings, to
-  `build/integration_response_data.json`); and "restart" is a second app
-  instance in the same process, not a process restart: the binding unmounts
-  the first app between tests, `SevenReadingsApp.dispose` closes both
-  databases, and the second test reopens the copied content (the copy is
-  skipped when the file exists) and the user database, which is where the
-  bookmark and note come back from. Both launches are timed and reported;
-  the first number includes the content copy. Nothing here has run yet:
-  the AI cannot run Flutter, so the first `screenshots.yml` run (T2) is the
-  proof, and its log and artifact settle what the numbers are.
-- **T2 (2026-09-15): in the tree; first run did not reach the test.** `.github/workflows/screenshots.yml`
-  boots an API 34 x86_64 Pixel 6 emulator (`reactivecircus/android-emulator-runner`,
-  `google_apis` image, 4 GB, animations off, KVM enabled on the runner),
-  runs `tools/emulator-checklist.sh` (`flutter drive` with the driver above)
-  against the pinned release content (or `sample` by input), and uploads
-  `screenshots-android`: the eight PNGs, `integration_response_data.json`
-  with both launch timings, and the device log. Triggers: on demand,
-  Mondays at 06:00 UTC (after the build canary), and every `v*` tag; never
-  on plain pushes. First run, 2026-09-15, sample content: the emulator
-  booted in 41 s; `flutter drive` never ran, because the runner executes
-  each `script` line in its own shell and the `cd app` did not carry, and
-  the job still passed. Since then the script is one command and the
-  "What the run produced" step fails the job unless eight screenshots and
-  both timings exist. Second run, same day, sample content: the test ran.
-  First launch to Genesis 1 with its verses, content copy included, 1847 ms
-  (the fixture database, so not the real copy time); screenshots 01 and 02
-  as intended; then the bookmark tap hit a debug-only assertion in the app
-  (`_ReadingsSheetState._refresh` set state with an arrow that returned
-  the `_load()` Future; the same pattern was in `NotesScreen`), fixed in
-  the same patch as this note. The release APK on the phone never showed
-  it because release builds strip asserts: a first thing the test found
-  that a person could not. Third run, sample content: first launch
-  2370 ms, second launch 408 ms; screenshots 01-02 as intended; the note
-  saved and showed; then the closing note dialog rebuilt its TextField
-  against a controller `noteDialog` had already disposed (again debug-only;
-  the dialog now owns and disposes its controller), and screenshot 03 is
-  Flutter's red error screen, which is the right thing for it to be.
-  Fourth run, sample content: first launch 2627 ms, second 427 ms; six
-  screenshots, everything through Bookmarks & notes verified; then two
-  test mistakes, not app bugs: the About screen's "Notices" header sits
-  below the fold of a lazy list and had to be scrolled to, and the binding
-  resets the Android screenshot surface between tests, so the second launch
-  moved into the one test (the app is unmounted and relaunched there, as
-  the binding would do between tests). Once a run has passed, its numbers
-  and anything it found go here and in `AGENTS.md`'s targets table; that
-  run is the proof of both spikes.
+- **T1 and T2: done, 2026-09-15, proven on sample content.** Fifth run of
+  `screenshots.yml` green: `app/integration_test/app_test.dart` walked the
+  whole checklist on an API 34 Pixel 6 emulator and the `screenshots-android`
+  artifact holds the eight PNGs, `integration_response_data.json` and the
+  device log. Measured: first launch to Genesis 1 with its verses, content
+  copy included, 2922 ms; second launch 168 ms (the copy skipped, both
+  databases reopened; the bookmark and note back). The job takes 8-9
+  minutes: emulator boot 40 s, debug APK build about 4 minutes, the test
+  25 s. Still to measure: the same with `-f content=release`, which gives
+  the real first-launch copy time and the real texts in the screenshots.
+- What the runs found on the way, all fixed in the tree: two debug-only
+  assertions in the app that the release APK on the phone never showed
+  (`setState` with an arrow returning the reload Future, in the readings
+  sheet and the notes screen; the note dialog disposing its text
+  controller while still animating out), and on the CI side the
+  emulator-runner executing each `script` line in its own shell, which
+  let a job pass having run nothing (now one command plus a step that
+  fails unless eight screenshots and both timings exist). Test-side
+  lessons are in `AGENTS.md`: lazy lists need scrolling before a finder
+  can see below the fold; one `testWidgets`, because the binding resets
+  the Android screenshot surface between tests.
+- What differs from the spike as written: `flutter test integration_test`
+  runs the checks but has nowhere to put screenshot bytes, so `flutter
+  drive` with `app/test_driver/integration_test.dart` is what saves them
+  (and the timings); and "restart" is a second app instance in the same
+  process after the first is unmounted and `SevenReadingsApp.dispose`
+  has closed both databases, not a process restart. Triggers: on demand,
+  Mondays at 06:00 UTC, every `v*` tag; never on plain pushes.
 
 ## 3. Donations
 
@@ -315,8 +286,8 @@ Spikes:
 ## Order of everything
 
 1. T1-T2 (integration test, Android emulator screenshots): the foundation
-   every other item is checked against. In the tree since 2026-09-15;
-   proven by the first `screenshots.yml` run (see the State under section 2).
+   every other item is checked against. Done 2026-09-15 (section 2, State);
+   one release-content run still owed for the real numbers.
 2. S3 (Flathub manifest, PWA) and D1 (donations screen, links only): free,
    ship on the free channels.
 3. N1 (narrator with system voices).
