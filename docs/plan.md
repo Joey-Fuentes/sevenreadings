@@ -250,7 +250,9 @@ Spikes:
 
 ### State
 
-- **D1 (2026-09-15): in the tree.** `app/lib/features/support/`: a band
+- **D1 (2026-09-15): done, proven on the emulator and under Xvfb** (both
+  green with nine screenshots; step 02 is the Support screen, the band is
+  in every later one). `app/lib/features/support/`: a band
   under the title row of every app bar, full width and centred, "Support
   Seven Readings" with a heart, on screen at all times (the maintainer's
   ask: the most obvious thing in the app), plus an entry at the top of
@@ -357,7 +359,8 @@ Spikes:
 1. T1-T2 (integration test, Android emulator screenshots): the foundation
    every other item is checked against. Done 2026-09-15 (section 2, State).
 2. S3 (Flathub manifest, PWA) and D1 (donations screen, links only): free,
-   ship on the free channels.
+   ship on the free channels. D1 done 2026-09-15; S3 in progress (the
+   platform folders and the domain are in; icon, PWA and Flatpak remain).
 3. N1 (narrator with system voices).
 4. L1 and L2 (chat feasibility, web and Linux) — decide from the numbers.
 5. T3-T4 (remaining targets' screenshots, the contact sheet).
