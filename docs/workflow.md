@@ -119,7 +119,28 @@ flutter drive --driver=test_driver/integration_test.dart \
 timings to `app/build/integration_response_data.json`; `flutter test` runs
 the same assertions but drops the screenshots, because nothing on the host
 receives them. The maintainer has no Flutter locally, so in practice this
-runs in CI (next section).
+runs in CI, below.
+
+## The checklist in CI (screenshots.yml)
+
+`screenshots.yml` runs the same `flutter drive` on an Android emulator (API
+34, Pixel 6) with the pinned release content, on demand, every Monday, and
+on every `v*` tag. Not on pushes: it takes 15-25 minutes.
+
+```
+gh workflow run screenshots.yml                       # release content
+gh workflow run screenshots.yml -f content=sample     # fixture content, faster
+gh run watch
+gh run download -n screenshots-android -D ~/storage/downloads/screenshots
+```
+
+The artifact holds the eight PNGs, `integration_response_data.json` (the
+two launch times in milliseconds, `first_launch_ms` with the content copy,
+`second_launch_ms` without) and `logcat.txt`. A red run gets its log zip
+uploaded to the AI like any other; the screenshots and logcat travel with
+it, since they are written before the failure is reported. When a run has
+passed, its numbers go into `docs/plan.md` (section 2, State) and anything
+it found into `AGENTS.md`.
 
 ## Dependabot
 

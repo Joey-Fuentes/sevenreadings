@@ -1,0 +1,83 @@
+name: Screenshots
+
+# Runs the first-launch checklist (app/integration_test/app_test.dart) on a
+# phone-shaped Android emulator and keeps what it saw: the screenshots, the
+# launch timings and the device log, as the `screenshots-android` artifact.
+# On demand, weekly (after the build canary), and on every release tag; not
+# on every push, because an emulator job takes 15-25 minutes. Other targets
+# are docs/plan.md T3; the contact sheet on Pages is T4.
+
+on:
+  workflow_dispatch:
+    inputs:
+      content:
+        description: Content to test against
+        type: choice
+        options: [release, sample]
+        default: release
+  push:
+    tags: ["v*"]
+  schedule:
+    - cron: "0 6 * * 1"
+
+env:
+  CONTENT_MODE: ${{ inputs.content || 'release' }}
+
+jobs:
+  android:
+    name: Android emulator (API 34, Pixel 6)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/content
+        with:
+          mode: ${{ env.CONTENT_MODE }}
+          token: ${{ github.token }}
+      - uses: actions/setup-java@v6
+        with: { distribution: temurin, java-version: "17" }
+      - uses: ./.github/actions/setup-flutter
+      - name: Bootstrap (no-op once platform folders are committed)
+        working-directory: app
+        run: flutter create --org org.sevenreadings --project-name sevenreadings --platforms=android .
+      - name: Enable KVM
+        # The emulator needs hardware acceleration; the runner has it but the
+        # device node is root-only until this rule is loaded.
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Run the checklist on the emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          profile: pixel_6
+          ram-size: 4096M
+          disable-animations: true
+          emulator-boot-timeout: 900
+          # `flutter drive` builds the debug APK, installs it, runs the test
+          # and writes app/screenshots/*.png and the timings JSON through
+          # app/test_driver/integration_test.dart. The device log is kept
+          # whether the test passed or not.
+          script: |
+            cd app
+            status=0
+            flutter drive --driver=test_driver/integration_test.dart --target=integration_test/app_test.dart -d emulator-5554 || status=$?
+            mkdir -p build
+            adb -s emulator-5554 logcat -d -v time > build/logcat.txt || true
+            exit $status
+      - name: Launch timings
+        if: always()
+        run: cat app/build/integration_response_data.json 2>/dev/null || echo "no report written"
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: screenshots-android
+          path: |
+            app/screenshots/
+            app/build/integration_response_data.json
+            app/build/logcat.txt
+          if-no-files-found: warn
+          retention-days: 30

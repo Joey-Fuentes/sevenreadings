@@ -81,6 +81,15 @@ have. The sandbox filesystem may reset between conversations; keep the copy in
   `dart format`'s 80-column, "short" style (the workspace pins `sdk: ^3.6.0`,
   so the pre-3.7 formatter applies), check every line is ≤ 80 columns, and
   let CI be the judge. When CI fails, the maintainer uploads the run's log zip.
+- **The integration test** (`app/integration_test/app_test.dart`): CI's
+  `dart` job formats and analyzes it; only `screenshots.yml` runs it (on an
+  Android emulator; `docs/workflow.md`, "The checklist in CI"). Its
+  `screenshots-android` artifact is the evidence: PNGs, launch timings,
+  logcat. What the test asserts was checked against the sample database
+  and a full offline build of the content (`pipeline/.cache` has every
+  upstream but one Ibn Ezra listing; build with `--only` and everything
+  except `ibn_ezra` to reproduce), so a red run is a runtime problem, not a
+  wrong expectation, unless the content changed.
 - **Upstream data**: no network. To learn how a source is laid out, ask the
   maintainer to run a command in Termux and paste the output (see
   `docs/workflow.md`, "Inspecting an upstream"). Don't guess file layouts;
@@ -228,7 +237,7 @@ weekly cron had never fired). Results and state:
 |--------|--------------------|--------|-----------------|-------|
 | Web | yes; every push (smoke) and Pages deploy | n/a | yes, daily, on Pages | — |
 | Linux x64 | yes, tar.gz 80 MB; every push (smoke) | n/a | no | a person to run the tarball once; then Flatpak if wanted. Linux arm64 was dropped: Flutter publishes no arm64 Linux SDK |
-| Android | yes: APK 126.5 MB, AAB 125.4 MB — under Play's 200 MB cap, so no Play Asset Delivery at this content size (ADR 0004) | debug key | yes (2026-09-15: the APK installed on the maintainer's phone; first-launch copy, readings, search, a bookmark surviving restart all worked) | a signing key (`app/android/key.properties`, never committed); Play account for the store |
+| Android | yes: APK 126.5 MB, AAB 125.4 MB — under Play's 200 MB cap, so no Play Asset Delivery at this content size (ADR 0004) | debug key | yes (2026-09-15: the APK installed on the maintainer's phone; first-launch copy, readings, search, a bookmark surviving restart all worked). The same checklist is `app/integration_test/app_test.dart`, run on an emulator by `screenshots.yml` (written 2026-09-15, first run pending) | a signing key (`app/android/key.properties`, never committed); Play account for the store |
 | Windows | yes, zip 82 MB | no | no | a person to run it once; code signing is optional (SmartScreen warns without it) |
 | macOS | yes, .app 214.6 MB, zip 89 MB | no | no | Developer ID certificate and notarization in the workflow (the comment in build.yml marks the spot); a person to run it once |
 | iOS | yes, `--no-codesign` .app 185.7 MB | no | no | Apple developer account, provisioning, App Store or TestFlight; cannot be installed as built |
@@ -236,11 +245,15 @@ weekly cron had never fired). Results and state:
 What "run by a person" checks, per target: the app opens, the content
 database copies out of the bundle on first launch (native targets) or
 imports into browser storage (web), Genesis 1 shows the Bibles, a verse
-shows readings, search works, a bookmark survives a restart.
+shows readings, search works, a bookmark survives a restart. The same
+list is the integration test (`app/integration_test/app_test.dart`), with
+one honest difference: its "restart" is a second app instance in the same
+process after the first was disposed, not a process restart.
 
 `gh run list --workflow=build.yml --limit 5` shows whether the jobs still
-pass; a red one gets its log zip uploaded. Nothing in this table can be
-done from the AI's side except the workflow changes (signing steps once
+pass; `gh run list --workflow=screenshots.yml` the same for the emulator
+checklist; a red one gets its log zip uploaded. Nothing in this table can
+be done from the AI's side except the workflow changes (signing steps once
 certificates exist, and reading logs). Accounts, certificates and devices
 are the maintainer's. The plan for stores, automated per-target testing
 with screenshots, donations, a local LLM chat and a narrator is
@@ -293,8 +306,10 @@ None is hidden in a log; this list is the place to look.
 
 ## Where to go next
 
-App-side: `docs/plan.md`, in the order at its end (integration test and
-Android emulator screenshots first). Content-side, below.
+App-side: `docs/plan.md`, in the order at its end. Item 1 (the integration
+test and the Android emulator job) is in the tree; the next step is its
+first run (`gh workflow run screenshots.yml`), reading the artifact, and
+recording the numbers, then item 2. Content-side, below.
 
 In rough order of value: extend the Qur'an pairings (the file is the whole
 of the Islamic reading's coverage); more ICC volumes (Plummer's Luke 1896,
