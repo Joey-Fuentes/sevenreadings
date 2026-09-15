@@ -13,11 +13,17 @@
 // host only through `flutter drive`; `flutter test` hands their bytes to
 // the test and drops them. Launch timings go into the driver's report
 // (build/integration_response_data.json) and the log.
+//
+// One test, deliberately: the binding resets the Android screenshot surface
+// between tests, so the second launch lives in the same test, after the
+// first app is unmounted the way the binding would unmount it. Lists are
+// lazy, so anything below the fold is scrolled to before it is expected.
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:sevenreadings/app.dart';
+import 'package:sevenreadings/features/about/about_screen.dart';
 import 'package:sevenreadings/features/reader/reader_screen.dart';
 
 late final IntegrationTestWidgetsFlutterBinding binding;
@@ -40,7 +46,7 @@ void main() {
   binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   binding.framePolicy = LiveTestWidgetsFlutterBindingFramePolicy.fullyLive;
 
-  testWidgets('first launch: the checklist', (tester) async {
+  testWidgets('first launch, the checklist, second launch', (tester) async {
     // Launch, first content copy, Genesis 1 with the Bible chips.
     final ms = await launch(tester);
     report('first_launch_ms', ms);
@@ -130,18 +136,24 @@ void main() {
       const Offset(0, -300),
     );
     await tester.tap(find.text('About the texts'));
-    await waitFor(tester, find.text('Notices'));
+    await waitFor(tester, find.text('Bibles'));
     await screenshot(tester, '07-about-the-texts');
+    await tester.dragUntilVisible(
+      find.text('Notices'),
+      find.byKey(aboutListKey),
+      const Offset(0, -300),
+    );
     await tester.pageBack();
     await waitFor(tester, find.byIcon(Icons.expand_more));
-  });
 
-  // The binding unmounts the first app between tests, which closes both
-  // databases (SevenReadingsApp.dispose); this is a new app instance in
-  // the same process, reopening the copied content and the user database.
-  testWidgets('second launch: bookmark and note survive', (tester) async {
-    final ms = await launch(tester);
-    report('second_launch_ms', ms);
+    // Second launch: a new app instance in the same process. Unmounting the
+    // first runs SevenReadingsApp.dispose, which closes both databases; the
+    // second reopens the copied content (the copy is skipped, the file
+    // exists) and the user database, where the bookmark and note live.
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(const Duration(milliseconds: 500));
+    final second = await launch(tester);
+    report('second_launch_ms', second);
     expect(find.text('WEB'), findsWidgets);
     await openReadings(tester);
     await waitFor(tester, find.byTooltip('Remove bookmark'));

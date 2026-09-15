@@ -3,6 +3,9 @@ import 'package:sr_data/sr_data.dart';
 
 import '../reader/markdown_text.dart';
 
+/// The screen's list, for the integration test to scroll to the notices.
+const Key aboutListKey = Key('about-list');
+
 /// One block of the notices document: a `# heading` or a paragraph.
 class NoticeBlock {
   const NoticeBlock(this.text, {required this.isHeading});
@@ -71,6 +74,7 @@ class AboutScreen extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
           return ListView(
+            key: aboutListKey,
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
             children: [
               Text(

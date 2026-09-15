@@ -170,9 +170,16 @@ weekly, and on demand, not on every push.
   saved and showed; then the closing note dialog rebuilt its TextField
   against a controller `noteDialog` had already disposed (again debug-only;
   the dialog now owns and disposes its controller), and screenshot 03 is
-  Flutter's red error screen, which is the right thing for it to be. Once
-  a run has passed, its numbers and anything it found go here and in
-  `AGENTS.md`'s targets table; that run is the proof of both spikes.
+  Flutter's red error screen, which is the right thing for it to be.
+  Fourth run, sample content: first launch 2627 ms, second 427 ms; six
+  screenshots, everything through Bookmarks & notes verified; then two
+  test mistakes, not app bugs: the About screen's "Notices" header sits
+  below the fold of a lazy list and had to be scrolled to, and the binding
+  resets the Android screenshot surface between tests, so the second launch
+  moved into the one test (the app is unmounted and relaunched there, as
+  the binding would do between tests). Once a run has passed, its numbers
+  and anything it found go here and in `AGENTS.md`'s targets table; that
+  run is the proof of both spikes.
 
 ## 3. Donations
 

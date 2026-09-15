@@ -89,7 +89,11 @@ have. The sandbox filesystem may reset between conversations; keep the copy in
   and a full offline build of the content (`pipeline/.cache` has every
   upstream but one Ibn Ezra listing; build with `--only` and everything
   except `ibn_ezra` to reproduce), so a red run is a runtime problem, not a
-  wrong expectation, unless the content changed.
+  wrong expectation, unless the content changed. Two things the runs
+  taught: every `ListView` builds lazily, so a finder for anything below
+  the fold finds nothing until the test scrolls there
+  (`dragUntilVisible`); and it is one `testWidgets`, because the binding
+  resets the Android screenshot surface between tests.
 - **Upstream data**: no network. To learn how a source is laid out, ask the
   maintainer to run a command in Termux and paste the output (see
   `docs/workflow.md`, "Inspecting an upstream"). Don't guess file layouts;
