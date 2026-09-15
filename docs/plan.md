@@ -154,7 +154,13 @@ weekly, and on demand, not on every push.
   process after the first is unmounted and `SevenReadingsApp.dispose`
   has closed both databases, not a process restart. Triggers: on demand,
   Mondays at 06:00 UTC, every `v*` tag; never on plain pushes.
-- **T3, Linux (2026-09-15): in the tree; first run got to screenshot 3.**
+- **T3, Linux (2026-09-15): done.** Second run green on sample content:
+  first launch 2461 ms, second 253 ms, eight screenshots of the 1280x720
+  side-by-side layout (three columns, the sheet constrained to 640 px,
+  search, About), the Android job green in the same run (2331 / 198 ms),
+  so the programmatic scroll holds on both. The columns showed one thing
+  the phone layout hides, a title row labelled "0"; fixed. How it got
+  here:
   A `linux` job in `screenshots.yml` runs the same test on the Linux build
   under Xvfb (1280x800, software GL) and uploads `screenshots-linux`. Same
   checklist, same driver; two differences. The desktop window is 1280x720

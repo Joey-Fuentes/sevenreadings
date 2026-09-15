@@ -577,11 +577,13 @@ class _TranslationColumn extends StatelessWidget {
   final ValueChanged<int> onTap;
   final int? highlight;
 
-  /// Verse number, plus the translation's own number when it differs.
+  /// Verse number (or "Title" for verse 0, as the phone layout says), plus
+  /// the translation's own number when it differs.
   static String _label(ChapterVersesResult v) {
     final n = VerseRef.fromId(v.verseId).verse;
+    final label = n == 0 ? 'Title' : '$n';
     final native = v.nativeRef;
-    return native == null ? '$n ' : '$n ($native) ';
+    return native == null ? '$label ' : '$label ($native) ';
   }
 
   @override

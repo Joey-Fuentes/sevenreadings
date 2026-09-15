@@ -258,7 +258,7 @@ weekly cron had never fired). Results and state:
 | target | built (2026-09-15) | signed | run by a person | needs |
 |--------|--------------------|--------|-----------------|-------|
 | Web | yes; every push (smoke) and Pages deploy | n/a | yes, daily, on Pages | — |
-| Linux x64 | yes, tar.gz 80 MB; every push (smoke) | n/a | no; the checklist runs under Xvfb in `screenshots.yml` (written 2026-09-15, first run pending) | a person to run the tarball once; then Flatpak if wanted. Linux arm64 was dropped: Flutter publishes no arm64 Linux SDK |
+| Linux x64 | yes, tar.gz 80 MB; every push (smoke) | n/a | no person; the checklist is green under Xvfb in `screenshots.yml` (2026-09-15, sample content: first launch 2.5 s, second 0.25 s, the side-by-side layout) | a person to run the tarball once; then Flatpak if wanted. Linux arm64 was dropped: Flutter publishes no arm64 Linux SDK |
 | Android | yes: APK 126.5 MB, AAB 125.4 MB — under Play's 200 MB cap, so no Play Asset Delivery at this content size (ADR 0004) | debug key | yes (2026-09-15: the APK installed on the maintainer's phone; first-launch copy, readings, search, a bookmark surviving restart all worked). The same checklist is `app/integration_test/app_test.dart`, run on an emulator by `screenshots.yml`: green 2026-09-15 on sample and on release content; release: first launch 5.0 s (the 167 MB copy included, debug build), second 0.16 s, eight screenshots | a signing key (`app/android/key.properties`, never committed); Play account for the store |
 | Windows | yes, zip 82 MB | no | no | a person to run it once; code signing is optional (SmartScreen warns without it) |
 | macOS | yes, .app 214.6 MB, zip 89 MB | no | no | Developer ID certificate and notarization in the workflow (the comment in build.yml marks the spot); a person to run it once |
@@ -334,9 +334,10 @@ None is hidden in a log; this list is the place to look.
 ## Where to go next
 
 App-side: `docs/plan.md`, in the order at its end. Item 1 (the integration
-test and the Android emulator job) is done and measured; next is item 2
-(S3: Flathub manifest and PWA; D1: the donations screen with links).
-Content-side, below.
+test and the Android emulator job) is done and measured, and T3 has
+Linux; next is item 2 (S3: Flathub manifest with a `flatpak-builder` job
+and a launch smoke on the sandboxed app, PWA; D1: the donations screen
+with links). Content-side, below.
 
 In rough order of value: extend the Qur'an pairings (the file is the whole
 of the Islamic reading's coverage); more ICC volumes (Plummer's Luke 1896,
