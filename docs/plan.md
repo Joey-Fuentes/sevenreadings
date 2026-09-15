@@ -413,6 +413,11 @@ Spikes:
   voice); and the plugin's speed scale differs by platform (mapped in
   `Narrator._pluginRate`). By ear on the phone is the maintainer's part:
   a real voice, the highlight following it, pause and resume, the speed.
+  The web run added a state: headless Chrome has no voices and "finishes"
+  each utterance instantly, so a chapter ended and the strip vanished in
+  milliseconds; now a finished reading keeps the strip ("Genesis 1 ·
+  finished", play reads it again) until Stop, which is better behaviour
+  on a phone too, and every terminal state is on screen for the test.
 
 ## Order of everything
 

@@ -2,7 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
 /// What the narrator is doing, for the widgets that show it.
-enum NarratorStatus { idle, speaking, paused, failed }
+/// `finished` and `failed` keep the bar on screen until Stop: what was
+/// read, or why nothing was, stays visible instead of vanishing.
+enum NarratorStatus { idle, speaking, paused, finished, failed }
 
 /// One thing to read aloud: a chapter's verses or a single reading.
 class NarratorChunk {
@@ -109,8 +111,12 @@ class Narrator extends ChangeNotifier {
       debugPrint('narrator: $e');
     }
     if (generation != _generation) return;
-    // Failure keeps the bar on screen with its message until Stop.
-    status = unavailable == null ? NarratorStatus.idle : NarratorStatus.failed;
+    if (unavailable == null) {
+      status = NarratorStatus.finished;
+    } else {
+      status = NarratorStatus.failed;
+    }
+    debugPrint('narrator: ${status.name}');
     notifyListeners();
   }
 
@@ -126,9 +132,12 @@ class Narrator extends ChangeNotifier {
     }
   }
 
+  /// Continues a paused reading, retries a failed one, or restarts a
+  /// finished one from its beginning.
   Future<void> resume() async {
     if (status == NarratorStatus.speaking || !active) return;
-    await _speakFrom(_index);
+    final from = status == NarratorStatus.finished ? 0 : _index;
+    await _speakFrom(from);
   }
 
   Future<void> stop() async {

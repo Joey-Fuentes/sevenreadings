@@ -15,6 +15,9 @@ class NarratorBar extends StatelessWidget {
 
   String _where() {
     final n = narrator;
+    if (n.status == NarratorStatus.finished) {
+      return '${n.title} \u00b7 finished';
+    }
     final verseId = n.current?.verseId;
     if (verseId != null) {
       final ref = VerseRef.fromId(verseId);
@@ -34,6 +37,9 @@ class NarratorBar extends StatelessWidget {
         final n = narrator;
         if (!n.active) return const SizedBox.shrink();
         final speaking = n.status == NarratorStatus.speaking;
+        final finished = n.status == NarratorStatus.finished;
+        var playTooltip = finished ? 'Read again' : 'Resume';
+        if (speaking) playTooltip = 'Pause';
         return Material(
           key: narratorBarKey,
           color: theme.colorScheme.surfaceContainerHighest,
@@ -45,7 +51,7 @@ class NarratorBar extends StatelessWidget {
                 children: [
                   IconButton(
                     icon: Icon(speaking ? Icons.pause : Icons.play_arrow),
-                    tooltip: speaking ? 'Pause' : 'Resume',
+                    tooltip: playTooltip,
                     onPressed: speaking ? n.pause : n.resume,
                   ),
                   IconButton(
