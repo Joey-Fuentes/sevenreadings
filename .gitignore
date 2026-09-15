@@ -17,6 +17,9 @@ app/assets/content/manifest.json
 app/web/sqlite3.wasm
 app/web/drift_worker.js
 
+# Written by `flutter drive` (test_driver/integration_test.dart)
+app/screenshots/
+
 # Pipeline
 pipeline/.venv/
 pipeline/.cache/

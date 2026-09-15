@@ -100,6 +100,27 @@ or weekly. `release.yml` publishes app binaries on a `v*` tag.
 
 Site: `https://<owner>.github.io/sevenreadings/`. Hard-refresh after a deploy.
 
+## The first-launch checklist on a device
+
+`app/integration_test/app_test.dart` is the checklist a person did by hand
+on 2026-09-15 (launch and content copy, Genesis 1 with the chips, a verse's
+readings, bookmark and note, search, a second launch with both still
+there). With a Flutter toolchain and a connected device, emulator or
+simulator:
+
+```
+cd app
+flutter test integration_test -d <device>                   # the checks only
+flutter drive --driver=test_driver/integration_test.dart \
+  --target=integration_test/app_test.dart -d <device>       # checks + screenshots
+```
+
+`flutter drive` writes `app/screenshots/*.png` (gitignored) and the launch
+timings to `app/build/integration_response_data.json`; `flutter test` runs
+the same assertions but drops the screenshots, because nothing on the host
+receives them. The maintainer has no Flutter locally, so in practice this
+runs in CI (next section).
+
 ## Dependabot
 
 Merge GitHub Actions bumps when CI is green. Dart-group bumps get a look

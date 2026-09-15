@@ -7,6 +7,11 @@ import '../notes/notes_screen.dart';
 import '../search/search_screen.dart';
 import 'markdown_text.dart';
 
+/// The readings sheet's list and the book picker's list, for the integration
+/// test to scroll (`integration_test/app_test.dart`).
+const Key readingsSheetKey = Key('readings-sheet');
+const Key bookPickerKey = Key('book-picker');
+
 /// One chapter, every translation side by side (stacked on narrow screens),
 /// tap a verse for its readings. Navigation follows the selected tradition's
 /// book order from the `book_orders` table; search opens a chapter on the
@@ -340,6 +345,7 @@ class _BookPickerState extends State<_BookPicker> {
         }
         final extras = _extras;
         return ListView(
+          key: bookPickerKey,
           controller: controller,
           padding: const EdgeInsets.all(16),
           children: [
@@ -795,6 +801,7 @@ class _ReadingsSheetState extends State<_ReadingsSheet> {
           grouped.putIfAbsent(r.perspectiveId, () => []).add(r);
         }
         return ListView(
+          key: readingsSheetKey,
           controller: widget.controller,
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
           children: [

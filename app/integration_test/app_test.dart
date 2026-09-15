@@ -1,0 +1,226 @@
+// The first-launch checklist (docs/plan.md, section 2) as an integration
+// test. On a device, emulator or simulator:
+//
+//   cd app
+//   flutter test integration_test -d <device>              # the checks
+//   flutter drive --driver=test_driver/integration_test.dart \
+//     --target=integration_test/app_test.dart -d <device>  # + screenshots
+//
+// Everything asserted holds for sample and release content alike: Genesis 1
+// in the WEB and BSB, Matthew Henry and Rashi on Genesis 1:1, the seven
+// perspective headings, Genesis 1:1 first for "beginning God created", a
+// Matthew Henry Genesis entry first for "creation". Screenshots reach the
+// host only through `flutter drive`; `flutter test` hands their bytes to
+// the test and drops them. Launch timings go into the driver's report
+// (build/integration_response_data.json) and the log.
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:integration_test/integration_test.dart';
+import 'package:sevenreadings/app.dart';
+import 'package:sevenreadings/features/reader/reader_screen.dart';
+
+late final IntegrationTestWidgetsFlutterBinding binding;
+var surfaceConverted = false;
+
+/// The seven readings as the sheet lists them (pipeline db.py PERSPECTIVES).
+const perspectives = [
+  'Jewish: Literal (Peshat)',
+  'Jewish: Rationalist',
+  'Roman Catholic',
+  'Eastern Orthodox',
+  'Protestant / Reformed',
+  'Islamic',
+  'Secular / Academic',
+];
+
+const noteText = 'Written by the integration test';
+
+void main() {
+  binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  binding.framePolicy = LiveTestWidgetsFlutterBindingFramePolicy.fullyLive;
+
+  testWidgets('first launch: the checklist', (tester) async {
+    // Launch, first content copy, Genesis 1 with the Bible chips.
+    final ms = await launch(tester);
+    report('first_launch_ms', ms);
+    expect(find.text('WEB'), findsWidgets);
+    expect(find.text('BSB'), findsWidgets);
+    await screenshot(tester, '01-genesis-1');
+
+    // A verse's readings: the sheet opens on Genesis 1:1.
+    await openReadings(tester);
+    await screenshot(tester, '02-readings-genesis-1-1');
+
+    // A bookmark and a note, from the sheet's header. A device that ran
+    // this before already has the bookmark; only add one when it is missing.
+    if (find.byTooltip('Remove bookmark').evaluate().isEmpty) {
+      await tester.tap(find.byTooltip('Bookmark'));
+    }
+    await waitFor(tester, find.byTooltip('Remove bookmark'));
+    await tester.tap(find.byTooltip('Add a note'));
+    await waitFor(tester, find.text('New note'));
+    await tester.enterText(find.byType(TextField), noteText);
+    await tester.tap(find.text('Save'));
+    await waitFor(tester, find.text(noteText));
+    await screenshot(tester, '03-bookmark-and-note');
+
+    // Every tradition is listed, with a reading or with "No reading"; the
+    // Protestant reading on Genesis 1:1 is Matthew Henry in both contents.
+    final sheet = find.byKey(readingsSheetKey);
+    for (final name in perspectives) {
+      await tester.dragUntilVisible(
+        find.text(name),
+        sheet,
+        const Offset(0, -200),
+      );
+      if (name == 'Protestant / Reformed') {
+        await tester.dragUntilVisible(
+          find.textContaining('Matthew Henry'),
+          sheet,
+          const Offset(0, -200),
+        );
+      }
+    }
+    await closeSheet(tester);
+
+    // Search. A verse hit is listed with its translation; a readings hit
+    // opens its chapter and the readings sheet on the verse.
+    await tester.tap(find.byTooltip('Search'));
+    await waitFor(tester, find.byType(TextField));
+    await tester.enterText(find.byType(TextField), 'beginning God created');
+    await waitFor(tester, find.textContaining('Genesis 1:1 \u00b7'));
+    await screenshot(tester, '04-search-verses');
+    await tester.tap(find.text('Readings'));
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.byType(DropdownButton<String?>));
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.tap(find.text('Matthew Henry').last);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.enterText(find.byType(TextField), 'creation');
+    final hit = find.textContaining('Matthew Henry \u00b7 Genesis');
+    await waitFor(tester, hit);
+    await screenshot(tester, '05-search-readings');
+    await tester.tap(hit.first);
+    await waitFor(tester, find.byKey(readingsSheetKey));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.textContaining(RegExp(r'^Genesis \d+:1$')), findsWidgets);
+    await closeSheet(tester);
+
+    // Bookmarks & notes, reached from the book picker.
+    await openPicker(tester);
+    await tester.dragUntilVisible(
+      find.text('Bookmarks & notes'),
+      find.byKey(bookPickerKey),
+      const Offset(0, -300),
+    );
+    await tester.tap(find.text('Bookmarks & notes'));
+    await waitFor(tester, find.text('Bookmarks'));
+    expect(find.text('Genesis 1:1'), findsWidgets);
+    expect(find.text(noteText), findsWidgets);
+    await screenshot(tester, '06-bookmarks-and-notes');
+    await tester.pageBack();
+    await waitFor(tester, find.byIcon(Icons.expand_more));
+
+    // About the texts: licenses and notices from the database.
+    await openPicker(tester);
+    await tester.dragUntilVisible(
+      find.text('About the texts'),
+      find.byKey(bookPickerKey),
+      const Offset(0, -300),
+    );
+    await tester.tap(find.text('About the texts'));
+    await waitFor(tester, find.text('Notices'));
+    await screenshot(tester, '07-about-the-texts');
+    await tester.pageBack();
+    await waitFor(tester, find.byIcon(Icons.expand_more));
+  });
+
+  // The binding unmounts the first app between tests, which closes both
+  // databases (SevenReadingsApp.dispose); this is a new app instance in
+  // the same process, reopening the copied content and the user database.
+  testWidgets('second launch: bookmark and note survive', (tester) async {
+    final ms = await launch(tester);
+    report('second_launch_ms', ms);
+    expect(find.text('WEB'), findsWidgets);
+    await openReadings(tester);
+    await waitFor(tester, find.byTooltip('Remove bookmark'));
+    expect(find.text(noteText), findsWidgets);
+    await screenshot(tester, '08-second-launch');
+    await closeSheet(tester);
+  });
+}
+
+/// Pumps a fresh app and waits for Genesis 1 with its verses on screen.
+/// Returns the milliseconds from the first frame to that; on a first launch
+/// it includes the content copy.
+Future<int> launch(WidgetTester tester) async {
+  // enterText goes through the test text input; the live binding may leave
+  // the real keyboard in charge, so register it when it is not.
+  if (!binding.testTextInput.isRegistered) binding.testTextInput.register();
+  final clock = Stopwatch()..start();
+  await tester.pumpWidget(const SevenReadingsApp());
+  await waitFor(
+    tester,
+    find.text('Genesis 1'),
+    timeout: const Duration(minutes: 10),
+  );
+  await waitFor(tester, find.textContaining('In the beginning'));
+  clock.stop();
+  await tester.pump(const Duration(milliseconds: 500));
+  return clock.elapsedMilliseconds;
+}
+
+/// Taps Genesis 1:1 (the first translation showing it) and waits for the
+/// readings sheet to load.
+Future<void> openReadings(WidgetTester tester) async {
+  await tester.tap(find.textContaining('In the beginning').first);
+  await waitFor(tester, find.byKey(readingsSheetKey));
+  await tester.pump(const Duration(milliseconds: 500));
+}
+
+Future<void> closeSheet(WidgetTester tester) async {
+  Navigator.of(tester.element(find.byKey(readingsSheetKey))).pop();
+  await tester.pump(const Duration(milliseconds: 500));
+  await waitFor(tester, find.byIcon(Icons.expand_more));
+}
+
+Future<void> openPicker(WidgetTester tester) async {
+  await tester.pump(const Duration(milliseconds: 400));
+  await tester.tap(find.byIcon(Icons.expand_more));
+  await waitFor(tester, find.byKey(bookPickerKey));
+  await tester.pump(const Duration(milliseconds: 500));
+}
+
+/// Pumps real frames until [finder] matches; fails after [timeout].
+Future<void> waitFor(
+  WidgetTester tester,
+  Finder finder, {
+  Duration timeout = const Duration(seconds: 60),
+}) async {
+  final clock = Stopwatch()..start();
+  while (finder.evaluate().isEmpty) {
+    if (clock.elapsed > timeout) {
+      fail('Timed out after ${timeout.inSeconds}s waiting for $finder');
+    }
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+}
+
+/// Captures the Flutter surface under [name]. Android needs the surface
+/// converted to an image once before the first capture.
+Future<void> screenshot(WidgetTester tester, String name) async {
+  final android = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+  if (android && !surfaceConverted) {
+    await binding.convertFlutterSurfaceToImage();
+    surfaceConverted = true;
+  }
+  await tester.pump(const Duration(milliseconds: 500));
+  await binding.takeScreenshot(name);
+}
+
+void report(String key, int ms) {
+  binding.reportData ??= <String, dynamic>{};
+  binding.reportData![key] = ms;
+  debugPrint('checklist: $key = $ms');
+}

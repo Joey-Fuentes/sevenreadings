@@ -121,6 +121,30 @@ Abandon conditions: none; all of this is free and standard. Risk: emulator
 jobs are slow (10-20 minutes) and occasionally flaky; run them on tags and
 weekly, and on demand, not on every push.
 
+### State
+
+- **T1 (2026-09-15): in the tree, not yet run.** `app/integration_test/app_test.dart`
+  walks the checklist in two tests, "first launch" and "second launch",
+  and takes eight screenshots (Genesis 1, the readings sheet, bookmark and
+  note, verse search, readings search, Bookmarks & notes, About, the second
+  launch). Written against what both contents actually hold (checked in the
+  sample database and a full offline build): WEB and BSB in Genesis 1,
+  Matthew Henry and Rashi on Genesis 1:1, the seven perspective headings,
+  Genesis 1:1 first for "beginning God created", a Matthew Henry Genesis
+  entry first for "creation". Two things differ from the spike as written:
+  `flutter test integration_test` runs the checks but has nowhere to put
+  screenshot bytes, so `flutter drive` with `app/test_driver/integration_test.dart`
+  is what saves them (and the launch timings, to
+  `build/integration_response_data.json`); and "restart" is a second app
+  instance in the same process, not a process restart: the binding unmounts
+  the first app between tests, `SevenReadingsApp.dispose` closes both
+  databases, and the second test reopens the copied content (the copy is
+  skipped when the file exists) and the user database, which is where the
+  bookmark and note come back from. Both launches are timed and reported;
+  the first number includes the content copy. Nothing here has run yet:
+  the AI cannot run Flutter, so the first `screenshots.yml` run (T2) is the
+  proof, and its log and artifact settle what the numbers are.
+
 ## 3. Donations
 
 Goal: a "Support this project" screen, reachable from About, that lets a

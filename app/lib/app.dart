@@ -16,9 +16,19 @@ class _SevenReadingsAppState extends State<SevenReadingsApp> {
   late final UserDb _user = UserDb.open();
 
   @override
+  void dispose() {
+    // A second app instance in the same process (the integration test's
+    // relaunch) must find both files closed.
+    _content.then((db) => db.close()).ignore();
+    _user.close().ignore();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'sevenreadings',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorSchemeSeed: const Color(0xFF5B4636),
         useMaterial3: true,
