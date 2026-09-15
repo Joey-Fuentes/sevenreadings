@@ -51,9 +51,9 @@ class SupportScreen extends StatelessWidget {
   const SupportScreen({super.key});
 
   Future<void> _open(BuildContext context, SupportLink link) async {
-    final mode = kIsWeb
-        ? LaunchMode.platformDefault
-        : LaunchMode.externalApplication;
+    // Desktop and mobile hand the address to the browser; web opens a tab.
+    const external = LaunchMode.externalApplication;
+    final mode = kIsWeb ? LaunchMode.platformDefault : external;
     final ok = await launchUrl(Uri.parse(link.url), mode: mode);
     if (ok || !context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
