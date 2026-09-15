@@ -24,8 +24,9 @@ Termux has no `/tmp`; write scratch output under `~/scratch`, never `/tmp`.
   `haydock` (Haydock's commentary and the Douay-Rheims text from the same
   pages), `ccel_mhc` (Matthew Henry), `ccel_thml` (Chrysostom from CCEL's
   ThML volumes), `sefaria` (Rashi, Ibn Ezra from Sefaria's export, chosen by
-  recorded license), `jsonl_commentary` (generic normalised commentary),
-  `stubs` (documented plans for the unwired commentaries).
+  recorded license), `ia_hocr` (the ICC from the Internet Archive's hOCR),
+  `jsonl_commentary` (generic normalised commentary), `stubs` (the plan for
+  Ibn Kathir).
 - `refs.py` — canon (books 1-75), verse-id encoding, reference parsing, book
   orders per tradition. Mirrors `packages/sr_core`.
 - `versification.py` — Masoretic, Septuagint and Vulgate renumbering to
@@ -69,6 +70,11 @@ Termux has no `/tmp`; write scratch output under `~/scratch`, never `/tmp`.
 - `index lists N pages; M archived pages not in the index were skipped` /
   `page titles disagree with the index` — Haydock: the site index is
   trusted; both lines are informational unless the numbers move.
+- `icc: Rom (...): N notes from P pages; S pages without a chapter head
+  skipped, K kept without one; notes per chapter: 1:32, 2:29, ...` — the
+  skipped pages are the introduction and indexes; "kept without one" are
+  commentary pages whose running head the OCR garbled (their text goes to
+  the open note). Sparse chapters mean the OCR lost bold verse numbers.
 - `rashi:   Gen: <version> [<license>] <n>` — Sefaria: the version chosen
   per book and its recorded license; `no English version with an allowed
   license` lists the books that got nothing.

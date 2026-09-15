@@ -30,13 +30,3 @@ class TafsirApiSource(NotWired):
     and insert Parallel rows pointing at entries; entries themselves anchor to
     the Bible range of the parallel.
     """
-
-
-class IccSource(NotWired):
-    plan = """
-    Upstream: Internet Archive / Wikisource OCR of pre-1929 ICC volumes.
-    Shape: per-volume text with verse-numbered notes; OCR quality varies.
-    Plan: one volume at a time, pinned by archive.org identifier; segment on
-    verse headings; keep volume + page as citation. Exclude volumes published
-    1929 or later.
-    """

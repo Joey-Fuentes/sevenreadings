@@ -229,8 +229,17 @@ license_status = "blocked"
 kind = "icc"
 perspective = "academic"
 author = "International Critical Commentary"
-title = "ICC (pre-1929 volumes)"
-url = "https://archive.org"
-sha256 = "TODO"
-license = "Public domain in the US for volumes published before 1929; later volumes excluded"
-license_status = "review"
+title = "The International Critical Commentary (volumes of 1895-1928)"
+# One Internet Archive hOCR file per volume; books/authors are parallel lists.
+# Only volumes published before 1929 (public domain in the US); the Toronto
+# scans (ids ending in "uoft") are the better-imaged copies.
+urls = [
+  "https://archive.org/download/criticalexegetic00sanduoft/criticalexegetic00sanduoft_hocr.html",
+]
+sha256 = [
+  "ad1201675090462a9a6a724f9a7981122dfaf991a5fbac04e2a6a5ed75fefe0d",
+]
+books = ["Rom"]
+authors = ["W. Sanday and A. C. Headlam (1895; 5th ed., 1902)"]
+license = "Public domain (published 1895-1928; Internet Archive OCR of public-domain scans, unproofread; see NOTICE)"
+license_status = "clear"

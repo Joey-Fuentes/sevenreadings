@@ -10,9 +10,10 @@ from .sources.base import Source
 from .sources.ccel_mhc import CcelMhcSource
 from .sources.ccel_thml import CcelThmlSource
 from .sources.haydock import DouayRheimsSource, HaydockSource
+from .sources.ia_hocr import IccSource
 from .sources.jsonl_commentary import JsonlCommentarySource
 from .sources.sefaria import SefariaExportSource
-from .sources.stubs import IccSource, TafsirApiSource
+from .sources.stubs import TafsirApiSource
 from .sources.swete_lxx import SweteLxxSource
 from .sources.usfm_bible import UsfmBibleSource
 
@@ -160,6 +161,17 @@ SAMPLE_SOURCES: dict[str, dict] = {
         "path": "fixture",
         "prefer": ["Sefaria Community Translation"],
         "reference": "web",
+    },
+    "icc": {
+        "kind": "icc",
+        "perspective": "academic",
+        "author": "International Critical Commentary",
+        "title": "The International Critical Commentary",
+        "license": "Public domain",
+        "license_status": "clear",
+        "url": "fixture",
+        "books": ["Rom"],
+        "authors": ["W. Sanday and A. C. Headlam"],
     },
     "sample": {
         "kind": "jsonl",

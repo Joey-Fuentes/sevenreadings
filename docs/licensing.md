@@ -45,13 +45,13 @@ written into its NOTICE so it is not re-argued.
 | rashi | Rashi on Tanakh | Hebrew: public domain | Sefaria export (Hugging Face, commit-pinned). Per book the largest English version whose Sefaria-recorded license is Public Domain / CC0 / CC BY / CC BY-SA; the Rosenbaum-Silbermann 1929-34 translation is recorded by Sefaria as Public Domain, the Community Translation as CC0; NC and copyrighted versions are never read | clear |
 | ibn_ezra | Ibn Ezra on Tanakh | Hebrew: public domain | As Rashi. Strickman-Silver (1988-2004) and any NC version never read; English coverage partial, the build lists it | clear |
 | matthew_henry | Matthew Henry's Commentary (1706-21) | Public domain | CCEL HTML edition: "Public domain text. No rights reserved. May be distributed freely." | clear |
+| icc | International Critical Commentary, volumes published before 1929 | Public domain (US by date; elsewhere authors d. before 1956) | Internet Archive hOCR of public-domain scans; the Archive asserts no rights and mechanical OCR has no originality. Unproofread, shipped labelled as OCR | clear |
 
 ## Planned
 
 | Source | Underlying text | Digitisation | Status and what stands in the way |
 |--------|-----------------|--------------|-----------------------------------|
-| ibn_kathir | Arabic: public domain | No public-domain or permissive (non-NC) English translation exists; the common English is the copyrighted Darussalam abridgement. spa5k/tafsir_api is MIT as software only; its English texts come from quran.com / QUL under their terms | blocked for English. Options: Arabic only, or another classical tafsir once a permissively licensed English is verified |
-| icc | ICC volumes published before 1929: public domain in the US (e.g. Driver, Deuteronomy 1895; Moore, Judges 1895; Sanday-Headlam, Romans 1895; Plummer, Luke 1896; Toy, Proverbs 1899; Gray, Numbers 1903) | Internet Archive OCR of public-domain scans is itself public domain (no originality); IA's terms govern site access, not the text. Wikisource has little of it | review: work, not permission — one volume at a time, proofread |
+| ibn_kathir | Arabic: public domain; Arabic Wikisource's digitisation is CC BY-SA (acceptable, as for Swete) | No open-licensed English exists (the common English is the copyrighted Darussalam abridgement). A machine translation of the CC BY-SA Arabic would ship CC BY-SA, labelled as machine translation. Independently of licensing, the app needs Bible-to-Qur'an `parallels` data before a Qur'an commentary can appear at a Bible verse | blocked on the parallels data and the translation decision |
 
 ## Open questions and whom to ask
 

@@ -26,7 +26,8 @@ Current content (see `pipeline/sources.toml` for pins and licenses):
 | haydock | Haydock's Catholic Bible Commentary (1859), JohnBlood GitLab transcription; notes anchored where the Douay verses land | live (Catholic reading); same pin as douay |
 | chrysostom | Chrysostom's NT homilies, CCEL ThML editions of NPNF 1/10-14 (files declare DC.Rights Public Domain); each homily anchored to its passage up to the next homily's | wired (Orthodox reading); needs `srp lock --write chrysostom`, then a build read |
 | rashi, ibn_ezra | Sefaria's database export on Hugging Face, pinned by commit; per book the largest English version whose recorded license is PD/CC0/CC BY/CC BY-SA, NC never read; Masoretic numbering followed through the WLC's ingest | wired (Jewish readings); needs a build with wlc in it, then the per-book version list read |
-| ibn_kathir, icc | documented stubs in `pipeline/sevenreadings_pipeline/sources/stubs.py` | not wired; ibn_kathir has no permissive English translation; icc is public-domain OCR work |
+| icc | International Critical Commentary, pre-1929 volumes, from the Internet Archive's hOCR (`_hocr.html`); chapter from each page's running head, notes split at bold verse numbers, sections at "I. 1-7." headings | wired (Academic reading), one volume so far (Sanday-Headlam, Romans); OCR unproofread by design; needs `srp lock --write icc`, then a build read |
+| ibn_kathir | documented stub in `pipeline/sevenreadings_pipeline/sources/stubs.py` | not wired: no permissive English translation; the Arabic (Arabic Wikisource, CC BY-SA) plus machine translation is possible but needs the Bible-Qur'an `parallels` data first |
 
 App: verse-by-verse phone layout, side-by-side on wide screens, translation
 chips, book/chapter picker with Protestant/Catholic/Tanakh order, readings
@@ -166,6 +167,11 @@ Rules that keep patches applying cleanly:
   from data: Haydock through the Douay's `trace`, Rashi and Ibn Ezra through
   `versification.translation_trace(conn, "wlc")`. Build them with that
   translation in `--only`, or the build says it fell back to the rule table.
+- ICC volumes: add one per `urls`/`sha256`/`books`/`authors` entry, prefer
+  the Toronto scans (`...uoft`), and read the build line for the volume:
+  `notes per chapter` should be dense and the "kept without one" count small.
+  Missing verses are usually the OCR losing the bold number, not the text;
+  the surrounding note absorbs it. Do not try to fix OCR in the parser.
 - Every shipped source has `pipeline/sources/<id>/NOTICE.md`; the build
   concatenates them into `meta.notices` and the app shows them. CC BY and
   CC BY-SA sources (sblgnt, wlc, lxx) require that attribution in what we
@@ -186,10 +192,12 @@ Rules that keep patches applying cleanly:
 
 ## Where to go next
 
-In rough order of value: pin and build Chrysostom, Rashi and Ibn Ezra (the
-loop in `docs/workflow.md`; read the per-book version list for the Jewish
-ones), Hebrew-only fallback for Ibn Ezra books without a usable English
-version (a decision, not code), ICC one volume at a time,
+In rough order of value: pin and build the ICC's first volume, then add
+volumes (Driver's Deuteronomy 1895, Plummer's Luke 1896, Skinner's Genesis
+1910, Briggs's Psalms 1906-07 — Psalms needs MT numbering through the
+WLC trace like Rashi), Hebrew-only fallback for Ibn Ezra books without a
+usable English version (a decision, not code), Ibn Kathir once the
+parallels data exists,
 scroll-to-verse in the wide layout, Exodus 36-40 and Proverbs 24-31 LXX
 tables, Play Asset Delivery if the AAB passes 200 MB. Each new source: verify
 the upstream and its license from the actual repository, write the parser
