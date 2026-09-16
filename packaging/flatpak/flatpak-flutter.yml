@@ -41,6 +41,10 @@ modules:
       prepend-ld-library-path: /usr/lib/sdk/llvm21/lib
       env:
         PUB_CACHE: /run/build/sevenreadings/.pub-cache
+        # A home inside the build: the runner's sandbox leaked the host's
+        # HOME=/home/runner, which does not exist in it, and the dart tool
+        # keeps its state under $HOME. Flathub's builders never see a host home.
+        HOME: /run/build/sevenreadings/.home
     build-commands:
       # The content database ships gzipped on the content release.
       - gunzip -c app/assets/content/sevenreadings.sqlite.gz > app/assets/content/sevenreadings.sqlite
@@ -62,9 +66,12 @@ modules:
       # verbose output: dart run runs native build hooks before codegen. The
       # timeout turns a silent hang (first sandboxed run, 2026-09-16: 22
       # minutes without a line) into a reported failure.
-      - ls -l third_party/sqlite3/sqlite3.c; which clang; tail -n 8 pubspec.yaml; env | grep -i -E 'proxy|^home=|pub_cache' || true
-      # On a timeout, the hook logs are the evidence (second sandboxed run,
-      # 2026-09-16: fifteen silent minutes even with --verbose).
+      - mkdir -p "$HOME"; ls -l third_party/sqlite3/sqlite3.c; which clang; tail -n 8 pubspec.yaml; env | grep -i -E 'proxy|^home=|pub_cache' || true
+      # The ladder: does dart start at all, does pub resolve, does codegen run.
+      # Third sandboxed run (2026-09-16): dart run was silent for ten minutes
+      # and never reached the hooks (no .dart_tool/hooks_runner appeared).
+      - timeout --foreground 120 dart --version
+      - timeout --foreground 300 dart pub get --offline
       - |
         cd packages/sr_data
         if ! timeout --foreground 600 dart run --verbose build_runner build --delete-conflicting-outputs; then
@@ -87,7 +94,7 @@ modules:
     sources:
       - type: git
         url: https://github.com/Joey-Fuentes/sevenreadings.git
-        commit: 6671451c40381972565938612a417da154a6fda4
+        commit: 030a0f94ddb5d3c66f64ff99bad92532aba76b37
       - type: git
         url: https://github.com/flutter/flutter.git
         tag: '3.47.4'
