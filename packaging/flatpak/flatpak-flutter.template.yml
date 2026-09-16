@@ -72,15 +72,32 @@ modules:
       # and never reached the hooks (no .dart_tool/hooks_runner appeared).
       - timeout --foreground 120 dart --version
       - timeout --foreground 300 dart pub get --offline
+      # Fourth sandboxed run (2026-09-16): dart --version and dart pub get
+      # both answered within a second; dart run build_runner alone was silent
+      # for ten minutes with no hooks_runner directory ever created. If it is
+      # still silent after five minutes, SIGQUIT makes the Dart VM print every
+      # isolate's stack, and the process tree says what it spawned.
       - |
         cd packages/sr_data
-        if ! timeout --foreground 600 dart run --verbose build_runner build --delete-conflicting-outputs; then
-          echo "--- codegen failed or timed out; hooks_runner state ---"
-          find /run/build/sevenreadings -path '*hooks_runner*' -type f 2>/dev/null | head -n 40
-          find /run/build/sevenreadings -path '*hooks_runner*' -type f \( -name '*.log' -o -name '*.txt' -o -name '*.json' \) 2>/dev/null \
-            | while read -r f; do echo "== $f"; tail -n 40 "$f"; done
+        dart run --verbose build_runner build --delete-conflicting-outputs &
+        pid=$!
+        for _ in $(seq 1 60); do
+          kill -0 "$pid" 2>/dev/null || break
+          sleep 5
+        done
+        if kill -0 "$pid" 2>/dev/null; then
+          echo "--- codegen still running after 5 minutes: process tree, then the VM's stacks (SIGQUIT) ---"
+          ps -eo pid,ppid,etime,stat,wchan:32,args 2>/dev/null || true
+          for p in "$pid" $(pgrep -P "$pid" 2>/dev/null); do
+            echo "== pid $p: $(tr '\0' ' ' < /proc/$p/cmdline 2>/dev/null)"
+            cat /proc/$p/wchan 2>/dev/null; echo
+            ls -l /proc/$p/fd 2>/dev/null | tail -n +2 | awk '{print $NF}' | sort | uniq -c | sort -rn | head -n 15
+          done
+          kill -QUIT "$pid" 2>/dev/null; sleep 15
+          kill -9 "$pid" 2>/dev/null
           exit 1
         fi
+        wait "$pid"
       - cd app && flutter build linux --release --no-pub --dart-define=SR_DISTRIBUTION=flathub
       - mkdir -p /app/lib/sevenreadings
       - cp -a app/build/linux/*/release/bundle/. /app/lib/sevenreadings/
