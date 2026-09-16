@@ -57,7 +57,13 @@ modules:
       # The pub workspace (root pubspec.yaml lists app and packages/*);
       # resolution is offline against the pub cache flatpak-flutter vendored.
       - cd app && flutter pub get --offline
-      - cd packages/sr_data && dart run build_runner build --delete-conflicting-outputs
+      # What the sqlite3 build hook will find (its user-define points at the
+      # amalgamation; the hook needs a C compiler), and the hook's own
+      # verbose output: dart run runs native build hooks before codegen. The
+      # timeout turns a silent hang (first sandboxed run, 2026-09-16: 22
+      # minutes without a line) into a reported failure.
+      - ls -l third_party/sqlite3/sqlite3.c; which clang; tail -n 8 pubspec.yaml
+      - cd packages/sr_data && timeout 900 dart run --verbose build_runner build --delete-conflicting-outputs
       - cd app && flutter build linux --release --no-pub --dart-define=SR_DISTRIBUTION=flathub
       - mkdir -p /app/lib/sevenreadings
       - cp -a app/build/linux/*/release/bundle/. /app/lib/sevenreadings/
@@ -71,7 +77,7 @@ modules:
     sources:
       - type: git
         url: https://github.com/Joey-Fuentes/sevenreadings.git
-        commit: 9597d2e9a4ac71e0092f26694765241b797198eb
+        commit: 096850b33c1ee2f54d5a0b1858891794a2dfa8a0
       - type: git
         url: https://github.com/flutter/flutter.git
         tag: '3.47.4'

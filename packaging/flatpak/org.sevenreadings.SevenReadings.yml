@@ -32,7 +32,8 @@ modules:
         \    source: source\n      path: third_party/sqlite3/sqlite3.c\nEOF\n"
       - setup-flutter.sh
       - cd app && flutter pub get --offline
-      - cd packages/sr_data && dart run build_runner build --delete-conflicting-outputs
+      - ls -l third_party/sqlite3/sqlite3.c; which clang; tail -n 8 pubspec.yaml
+      - cd packages/sr_data && timeout 900 dart run --verbose build_runner build --delete-conflicting-outputs
       - cd app && flutter build linux --release --no-pub --dart-define=SR_DISTRIBUTION=flathub
       - mkdir -p /app/lib/sevenreadings
       - cp -a app/build/linux/*/release/bundle/. /app/lib/sevenreadings/
@@ -48,7 +49,7 @@ modules:
     sources:
       - type: git
         url: https://github.com/Joey-Fuentes/sevenreadings.git
-        commit: 9597d2e9a4ac71e0092f26694765241b797198eb
+        commit: 096850b33c1ee2f54d5a0b1858891794a2dfa8a0
       - type: file
         url: https://github.com/Joey-Fuentes/sevenreadings/releases/download/content-v2026.09.15-4da78fc/sevenreadings.sqlite.gz
         sha256: 54f81d794f43919658791b0d5f00b01ad3aa689cc46f7d0d4b66efbea4977cf8
