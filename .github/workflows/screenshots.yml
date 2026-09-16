@@ -152,7 +152,7 @@ jobs:
           mode: ${{ env.CONTENT_MODE }}
           token: ${{ github.token }}
       - name: Build deps, flatpak, a virtual display
-        run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev flatpak ostree xvfb xdotool imagemagick python3-yaml
+        run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev flatpak ostree dbus xvfb xdotool imagemagick python3-yaml
       - uses: ./.github/actions/setup-flutter
       - name: Build the Linux bundle
         working-directory: app
@@ -177,12 +177,15 @@ jobs:
         # see the mirrored media; docs.flathub.org/docs/for-app-authors/linter).
         # --disable-rofiles-fuse: the runner has no FUSE. No --sandbox: the
         # build commands are copies and the runner's nested sandboxing is
-        # not Flathub's; their pipeline builds sandboxed.
+        # not Flathub's; their pipeline builds sandboxed. dbus-run-session:
+        # the builder runs in its own sandbox and reaches the host's flatpak
+        # (to install the result) over the session bus, which a headless
+        # runner does not have. The runtime and SDK are installed above.
         run: |
           mkdir -p build/flatpak
           python3 tools/flatpak-ci-manifest.py packaging/flatpak/org.sevenreadings.SevenReadings.yml app/build/linux/x64/release/bundle > build/flatpak/manifest.yml
-          flatpak run org.flatpak.Builder --force-clean --user --install \
-            --install-deps-from=flathub --disable-rofiles-fuse \
+          dbus-run-session -- flatpak run org.flatpak.Builder --force-clean --user --install \
+            --disable-rofiles-fuse \
             --mirror-screenshots-url=https://dl.flathub.org/media \
             --compose-url-policy=full --repo=build/flatpak/repo \
             build/flatpak/build build/flatpak/manifest.yml
