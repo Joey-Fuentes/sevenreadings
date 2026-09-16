@@ -18,9 +18,11 @@ rm -rf "$data"   # a first launch, every time
 start=$(date +%s%3N)
 flatpak run "$app" > app/build/flatpak-run.log 2>&1 &
 pid=$!
+# The app writes the copy as content/content-<version>.sqlite under its
+# application-support directory (packages/sr_data, open_native.dart).
 db=""
 for _ in $(seq 1 180); do
-  db=$(find "$data" -name 'sevenreadings.sqlite' 2>/dev/null | head -n1)
+  db=$(find "$data" -name 'content-*.sqlite' 2>/dev/null | head -n1)
   [ -n "$db" ] && break
   kill -0 "$pid" 2>/dev/null || break
   sleep 1

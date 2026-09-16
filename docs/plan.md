@@ -138,7 +138,12 @@ replace: a different design is a change to one function in that script.
   tarball is expected to be refused for a new Flutter app. The tarball
   manifest is what CI proves today; the manifest to submit is the
   source build, the next patch, proven the same way. The metainfo, icons,
-  permissions and launch smoke carry over unchanged. The Linux
+  permissions and launch smoke carry over unchanged. Fourth run
+  (2026-09-16), with that recipe plus a session bus for the sandboxed
+  builder: manifest, metainfo and repo lints pass, the Flatpak installs,
+  and the app launched in the sandbox on the virtual display with Genesis
+  1 rendered (the X screenshot shows it); the smoke's own check for the
+  copied database looked for the wrong file name, fixed. The Linux
   window is titled "Seven Readings" since. Submission is the maintainer's
   (docs/workflow.md, "Releasing") and needs the first tag; the tarball
   route is the one CI proves, and if Flathub's review asks for a build
