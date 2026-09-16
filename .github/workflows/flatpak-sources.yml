@@ -48,13 +48,16 @@ jobs:
           mkdir -p build/content
           gh release download "content-v${version}" -p manifest.json -D build/content --clobber
           sha=$(sha256sum build/content/manifest.json | cut -d' ' -f1)
-          # The SQLite amalgamation package:sqlite3 3.6.0 bundles (3.53.3);
-          # sqlite.org's download page gives the year directory of the file.
-          amalgamation=sqlite-amalgamation-3530300.zip
-          path=$(curl -fsSL https://sqlite.org/download.html | grep -o "[0-9]\{4\}/$amalgamation" | head -n1)
-          test -n "$path" || { echo "$amalgamation not on sqlite.org/download.html"; exit 1; }
-          curl -fsSL -o build/content/$amalgamation "https://sqlite.org/$path"
-          sqlite_sha=$(sha256sum build/content/$amalgamation | cut -d' ' -f1)
+          # The current SQLite amalgamation: sqlite.org's download page lists
+          # only the newest release (an exact older pin, 3.53.3, was not on
+          # it, 2026-09-16), and package:sqlite3 compiles whatever sqlite3.c
+          # it is given with its own options. The rendered manifest pins the
+          # version and checksum this run saw.
+          path=$(curl -fsSL https://sqlite.org/download.html | grep -o '[0-9]\{4\}/sqlite-amalgamation-[0-9]*\.zip' | head -n1)
+          test -n "$path" || { echo "no amalgamation on sqlite.org/download.html"; exit 1; }
+          echo "SQLite amalgamation: $path"
+          curl -fsSL -o build/content/amalgamation.zip "https://sqlite.org/$path"
+          sqlite_sha=$(sha256sum build/content/amalgamation.zip | cut -d' ' -f1)
           ref=(--commit "$GITHUB_SHA")
           [ -n "${{ inputs.tag }}" ] && ref=(--tag "${{ inputs.tag }}")
           python3 tools/flatpak-template.py "${ref[@]}" --manifest-sha256 "$sha" \

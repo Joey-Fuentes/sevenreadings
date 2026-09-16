@@ -186,8 +186,10 @@ replace: a different design is a change to one function in that script.
   registry: the `source: source` user-define compiles SQLite from its
   amalgamation with the package's compile-time options (FTS5 included).
   The sandbox build appends that to the workspace pubspec and the
-  manifest supplies the amalgamation (3.53.3, the version 3.6.0 bundles)
-  as a checksummed source from sqlite.org; a `foreign.json` beside the
+  manifest supplies the amalgamation (the current one on sqlite.org at
+  generation time, pinned with its checksum in the rendered manifest; the
+  exact 3.53.3 that 3.6.0 bundles is not on the download page and parity
+  is not needed) as a checksummed source; a `foreign.json` beside the
   template keeps the tool's registry entry out. Every other platform keeps
   the prebuilt library. `flathub.json` limits Flathub's builds to x86_64
   for now.
