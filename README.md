@@ -9,6 +9,11 @@ Live web build: https://sevenreadings.org/ (sevenreadings.com redirects there);
 installable, and offline after the first visit. Screenshots from every
 target's checklist run: https://sevenreadings.org/screenshots/.
 
+Linux: each release carries `sevenreadings.flatpak`, built from source in
+Flathub's sandbox by CI. `flatpak install --user sevenreadings.flatpak`
+(the runtime comes from Flathub). Not on the Flathub store yet; see
+docs/workflow.md, "Releasing".
+
 **Working on this project? Start with [`AGENTS.md`](AGENTS.md)** (handoff for
 AI sessions and new contributors), [`docs/workflow.md`](docs/workflow.md)
 (the day-to-day commands) and [`docs/plan.md`](docs/plan.md) (stores,

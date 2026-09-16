@@ -139,6 +139,16 @@ Rules that keep patches applying cleanly:
   `name-1.patch`; the `git apply` command then applies the stale one and
   the failure looks like a broken patch (2026-09-15: twice, an hour lost).
   The hand-over names the exact file in its `git apply` line.
+- **HARD RULE: nothing an AI writes goes to Flathub.** Flathub's
+  Generative AI policy (docs.flathub.org, Requirements) forbids AI tools
+  from opening or automating submission PRs or writing their descriptions,
+  commit messages, review comments or replies, and requires the submitter
+  to disclose AI-generated code and packaging with its extent, which for
+  this project is nearly all of it. The AI edits `packaging/flatpak/` and
+  the workflows; the maintainer alone writes every word posted to
+  flathub/flathub, and the disclosure. Violations can mean a permanent ban
+  (2026-09-16: one AI-drafted PR description is already on record there,
+  #10252, closed by their bot for another reason).
 - **HARD RULE: diff against the tree the maintainer has**, i.e. a copy
   unpacked from their tarball plus the patches they have confirmed
   applied; never against a scratch snapshot. A file that existed only in
@@ -402,10 +412,10 @@ test and the Android emulator job) is done and measured, T3 has Linux,
 D1 (the Support band and screen) and the icon are done, N1 (the
 narrator) is done by state, the PWA with its `web` job and the screenshots
 page (T4) are done, and the Flatpak builds from source in Flathub's sandbox, passes their
-lints and launches in CI: item 2 is complete on the AI's side. What is
-left is the maintainer's: the first `v*` tag, `flatpak-sources.yml -f
-tag=…`, and the PR to flathub/flathub (docs/workflow.md "Releasing").
-Then plan item 4. Content-side, below.
+lints and launches in CI: item 2 is complete on the AI's side. The Linux
+channel is the `.flatpak` bundle on each tagged release; the Flathub store
+waits, by decision, for history and a maintainer-written submission
+(docs/workflow.md "Releasing"). Then plan item 4. Content-side, below.
 
 In rough order of value: extend the Qur'an pairings (the file is the whole
 of the Islamic reading's coverage); more ICC volumes (Plummer's Luke 1896,

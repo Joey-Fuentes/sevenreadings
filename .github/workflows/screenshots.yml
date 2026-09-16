@@ -145,6 +145,8 @@ jobs:
     name: Flatpak (from source, freedesktop 25.08)
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    permissions:
+      contents: write # the .flatpak bundle goes on the release when this is a tag
     steps:
       - uses: actions/checkout@v7
       - name: The generated manifest must exist
@@ -188,6 +190,19 @@ jobs:
           flatpak run --command=flatpak-builder-lint org.flatpak.Builder repo build/flatpak/repo
       - name: Launch it in the sandbox
         run: xvfb-run -a -s "-screen 0 1280x800x24" bash tools/flatpak-smoke.sh
+      - name: The installable bundle
+        # One file a Linux user installs with `flatpak install`; it names
+        # Flathub as where the runtime comes from. This is the Linux
+        # channel (docs/plan.md, S3): the Flathub store is not, for now.
+        run: |
+          flatpak build-bundle --runtime-repo=https://dl.flathub.org/repo/flathub.flatpakrepo \
+            build/flatpak/repo build/flatpak/sevenreadings.flatpak org.sevenreadings.SevenReadings
+          ls -la build/flatpak/sevenreadings.flatpak
+      - name: Attach the bundle to the release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${GITHUB_REF_NAME}" build/flatpak/sevenreadings.flatpak --clobber
       - uses: actions/upload-artifact@v7
         if: always()
         with:
@@ -196,5 +211,6 @@ jobs:
             app/screenshots/
             app/build/integration_response_data.json
             app/build/flatpak-run.log
+            build/flatpak/sevenreadings.flatpak
           if-no-files-found: error
           retention-days: 30

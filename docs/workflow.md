@@ -175,25 +175,42 @@ until S1) and `screenshots.yml` (the checklist on every target with the
 release content). Per store, once the accounts exist, the console steps go
 here. Today:
 
-- **Flathub** (`packaging/flatpak/`): after tagging, run
+- **Linux, as a Flatpak** (`packaging/flatpak/`): after tagging, run
   `gh workflow run flatpak-sources.yml -f tag=v0.1.0`; it regenerates
   `org.sevenreadings.SevenReadings.yml` (built from source at that tag,
   offline, by `flatpak-flutter`) and commits it with its `generated/`
-  directory (the Flutter SDK module, the pub cache, the patches). Set the
-  same version and
-  date in the metainfo's `<releases>`, run `screenshots.yml` and confirm
-  the `flatpak` job is green (Flathub's own builder, sandboxed, and their
-  three lints), then open a PR to https://github.com/flathub/flathub (a
-  branch off `new-pr` on a fork). Three things go in it: the generated
-  manifest, its `generated/` directory, and `flathub.json`. The desktop
-  file, metainfo, icons and launcher are installed from the app's own git
-  checkout by the manifest's build commands, so they are not copied. Re-run `flatpak-sources.yml` whenever dependencies, Flutter
-  or the content release change. After acceptance, Flathub's bot opens an
-  update PR per release
-  from the manifest's `x-checker-data`. The metainfo's screenshots point at
-  the site's copies; make sure the last `screenshots.yml` run was with the
+  directory. Set the same version and date in the metainfo's
+  `<releases>`, then `gh workflow run screenshots.yml`: its `flatpak` job
+  builds the manifest in Flathub's sandbox, passes their three lints,
+  launches it, and, on a tag, attaches `sevenreadings.flatpak` to the
+  GitHub release. That file is the Linux channel: a user installs it with
+  `flatpak install --user sevenreadings.flatpak` (the runtime comes from
+  Flathub automatically). Re-run `flatpak-sources.yml` whenever
+  dependencies, Flutter or the content release change.
+- **Flathub, the store: not now.** Decided 2026-09-16 after a first PR
+  (flathub/flathub#10252, closed by their bot for a missing checklist)
+  and a reading of their requirements. Two of them apply to this project
+  today: the Generative AI policy, under which nearly all of this code and
+  packaging must be disclosed as AI-generated and reviewers "may reject a
+  submission, including without further review, based on the extent or
+  role of generated material"; and the development-history requirement,
+  under which "applications that have only existed for a very short
+  period of time will generally not be accepted", this repository being
+  two days old. The bundle above is the honest alternative. Conditions
+  for a future submission: months of tagged releases and real users; a
+  disclosure written by the maintainer naming the extent truthfully; the
+  PR description, commit messages, and every review reply written by the
+  maintainer, never by an AI (their policy forbids it, and `AGENTS.md`
+  now forbids it too); the AI touching nothing but the packaging when a
+  reviewer asks for a change. Also on record: #10252's description was
+  AI-drafted, before the policy had been read; a future submission should
+  not pretend otherwise. If accepted one day, updates are PRs to the
+  app's own Flathub repository (an `x-checker-data` entry on the git
+  source, not present today, would let their bot open them). The
+  metainfo's screenshots point at the site's copies; the last
+  `screenshots.yml` run before any submission must have been with the
   release content (the Monday run, or a dispatch without the sample
-  input) before submitting, or the store shows fixture texts.
+  input), or the store would show fixture texts.
 
 ## Dependabot
 

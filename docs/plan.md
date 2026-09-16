@@ -163,7 +163,20 @@ replace: a different design is a change to one function in that script.
   translations side by side, Hebrew right to left. The manifest to submit
   is `packaging/flatpak/org.sevenreadings.SevenReadings.yml` as the
   generator writes it; the tarball manifest is gone (git history has it).
-  How it got here:
+  **Flathub itself: not submitted, by decision (2026-09-16).** A first PR
+  (flathub/flathub#10252) was closed by their bot for a missing
+  checklist; reading the checklist and the requirements it points at
+  changed the plan. Their Generative AI policy requires disclosing
+  AI-generated code and packaging with its extent, lets reviewers reject
+  on that extent alone, and forbids AI-written PR descriptions, commit
+  messages and review replies; their development-history requirement
+  generally refuses apps that have existed only briefly. This project is
+  two days old and nearly all of it, this manifest included, was written
+  with an AI. So the Linux channel is the `.flatpak` bundle the `flatpak`
+  job now builds and attaches to every tagged release (installable with
+  one command, runtime from Flathub); the store waits for history and
+  users, and for a submission written entirely by the maintainer
+  (docs/workflow.md, "Releasing"). How it got here:
   `packaging/flatpak/flatpak-flutter.template.yml` is the manifest as
   written by hand: freedesktop 25.08 with the `llvm21` SDK extension
   (Flutter's Linux build needs clang, the base SDK has none, and the
@@ -536,8 +549,11 @@ Spikes:
 1. T1-T2 (integration test, Android emulator screenshots): the foundation
    every other item is checked against. Done 2026-09-15 (section 2, State).
 2. S3 (Flathub manifest, PWA) and D1 (donations screen, links only): free,
-   ship on the free channels. All done 2026-09-16; the Flathub submission
-   itself is the maintainer's (docs/workflow.md, "Releasing").
+   ship on the free channels. All done 2026-09-16, with one decision:
+   the Flatpak ships as a bundle on each release, not on the Flathub store,
+   until the project has the history and the maintainer-written submission
+   Flathub's policies require (section 1, S3 state; docs/workflow.md,
+   "Releasing").
 3. N1 (narrator with system voices). Done by state 2026-09-15 (section 5,
    State), by ear pending; item 2's PWA and Flatpak resume next.
 4. L1 and L2 (chat feasibility, web and Linux) — decide from the numbers.
