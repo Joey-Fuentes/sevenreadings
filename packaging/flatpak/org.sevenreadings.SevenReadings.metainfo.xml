@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- AppStream metadata for Flathub and desktop app stores (docs/plan.md, S3).
+     Screenshots are the ones the app's own checklist takes on every run,
+     published at https://sevenreadings.org/screenshots/; use a run with the
+     release content (the Monday run, or a dispatch without the sample
+     input), never the fixture texts. -->
+<component type="desktop-application">
+  <id>org.sevenreadings.SevenReadings</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Seven Readings</name>
+  <summary>Seven readings of Scripture</summary>
+  <developer id="org.sevenreadings">
+    <name>Seven Readings</name>
+  </developer>
+  <description>
+    <p>
+      Read the Bible in English, Hebrew and Greek, and beside every verse
+      what seven traditions have said about it: Jewish literal and
+      rationalist commentary (Rashi, Ibn Ezra), Roman Catholic (Haydock),
+      Eastern Orthodox (St. John Chrysostom), Protestant (Matthew Henry),
+      Islamic (the Qur'an's parallels), and academic (the International
+      Critical Commentary). Every text is public domain or openly
+      licensed; every notice is in the app.
+    </p>
+    <p>
+      Everything is on your device: no network is used, no account exists,
+      nothing is tracked, and there are no ads. Search verses and
+      commentary, keep bookmarks and notes, and have a chapter read aloud.
+    </p>
+  </description>
+  <launchable type="desktop-id">org.sevenreadings.SevenReadings.desktop</launchable>
+  <url type="homepage">https://sevenreadings.org/</url>
+  <url type="vcs-browser">https://github.com/Joey-Fuentes/sevenreadings</url>
+  <url type="bugtracker">https://github.com/Joey-Fuentes/sevenreadings/issues</url>
+  <url type="donation">https://buy.stripe.com/4gMcN5flk4MVfyG8oR1ck00</url>
+  <content_rating type="oars-1.1" />
+  <branding>
+    <color type="primary" scheme_preference="light">#f4e7ce</color>
+    <color type="primary" scheme_preference="dark">#5b4636</color>
+  </branding>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://sevenreadings.org/screenshots/linux/screenshots/01-genesis-1.png</image>
+      <caption>Genesis 1 in three translations, side by side</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://sevenreadings.org/screenshots/linux/screenshots/04-readings-genesis-1-1.png</image>
+      <caption>The seven readings of one verse</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://sevenreadings.org/screenshots/linux/screenshots/07-search-readings.png</image>
+      <caption>Searching the commentary</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://sevenreadings.org/screenshots/linux/screenshots/09-about-the-texts.png</image>
+      <caption>Every text's license and notice</caption>
+    </screenshot>
+  </screenshots>
+  <releases>
+    <release version="0.1.0" date="2026-09-16">
+      <description>
+        <p>First release.</p>
+      </description>
+    </release>
+  </releases>
+  <requires>
+    <display_length compare="ge">360</display_length>
+  </requires>
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+    <control>touch</control>
+  </supports>
+</component>

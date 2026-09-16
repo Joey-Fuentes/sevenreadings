@@ -110,6 +110,24 @@ replace: a different design is a change to one function in that script.
   app's first screen says what the wait is (native too: the copy). Proof
   is the `web` job (T3 web, above), not Lighthouse: its PWA category was
   removed in Lighthouse 12. The Pages bandwidth note stands: a demo host.
+- **S3, Flatpak (2026-09-16): in the tree, first run pending.**
+  `packaging/flatpak/`: the manifest Flathub receives (freedesktop 24.08,
+  no network permission, the Linux release tarball as the app module with
+  `x-checker-data` on the latest GitHub release), a launcher, the desktop
+  file, the AppStream metainfo (screenshots from the site, the Stripe link
+  as the donation URL) and the icon from `packaging/icon/`. The `flatpak`
+  job in `screenshots.yml` builds the Linux bundle, runs Flathub's linter
+  on the manifest and the metainfo, builds the Flatpak from that bundle
+  through the same manifest (`tools/flatpak-ci-manifest.py` swaps the
+  archive for the directory), lints the build, and launches it in the
+  sandbox under Xvfb (`tools/flatpak-smoke.sh`: the content database
+  appears in the sandbox's data directory, a window titled Seven Readings
+  exists, an X screenshot is kept as `screenshots-flatpak`). The Linux
+  window is titled "Seven Readings" since. Submission is the maintainer's
+  (docs/workflow.md, "Releasing") and needs the first tag; the tarball
+  route is the one CI proves, and if Flathub's review asks for a build
+  from source inside the sandbox, that is a second manifest and a new
+  entry here, not a silent change.
 - **S4. Store listings as code**: `fastlane/metadata`-style directories
   with descriptions, keywords, privacy answers, and the screenshots from
   section 2, so a listing is reproducible from the repo.

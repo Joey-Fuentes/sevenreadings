@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Seven Readings
+Comment=Scripture with seven traditions' commentary, side by side, offline
+Exec=sevenreadings
+Icon=org.sevenreadings.SevenReadings
+Terminal=false
+Categories=Education;Literature;
+Keywords=Bible;Scripture;Torah;Quran;Septuagint;Commentary;Rashi;Chrysostom;
+StartupNotify=true
+StartupWMClass=sevenreadings

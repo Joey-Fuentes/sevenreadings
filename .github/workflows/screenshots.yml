@@ -3,7 +3,9 @@ name: Screenshots
 # Runs the first-launch checklist (app/integration_test/app_test.dart) on
 # every target that can run it headless, and keeps what each saw: the
 # screenshots, the launch timings and (Android) the device log, as one
-# `screenshots-<target>` artifact per job. On demand, weekly (after the
+# `screenshots-<target>` artifact per job. The flatpak job builds the
+# Flathub manifest from the bundle it just made, lints it with Flathub's
+# linter and launches the sandboxed app once. On demand, weekly (after the
 # build canary), and on every release tag; not on every push, because the
 # emulator job takes about nine minutes. Remaining targets are docs/plan.md
 # T3; the contact sheet on Pages is T4.
@@ -136,5 +138,50 @@ jobs:
           path: |
             app/screenshots/
             app/build/integration_response_data.json
+          if-no-files-found: error
+          retention-days: 30
+
+  flatpak:
+    name: Flatpak (freedesktop 24.08)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/content
+        with:
+          mode: ${{ env.CONTENT_MODE }}
+          token: ${{ github.token }}
+      - name: Build deps, flatpak, a virtual display
+        run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev flatpak flatpak-builder xvfb xdotool imagemagick python3-yaml
+      - uses: ./.github/actions/setup-flutter
+      - name: Build the Linux bundle
+        working-directory: app
+        run: flutter build linux --release --dart-define=SR_DISTRIBUTION=flathub
+      - name: Runtime, SDK and Flathub's linter
+        run: |
+          flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+          flatpak install --user -y --noninteractive flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08 org.flatpak.Builder
+      - name: Lint the submission manifest and the metainfo (Flathub's checks)
+        run: |
+          flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest packaging/flatpak/org.sevenreadings.SevenReadings.yml
+          flatpak run --command=flatpak-builder-lint org.flatpak.Builder appstream packaging/flatpak/org.sevenreadings.SevenReadings.metainfo.xml
+      - name: Build the Flatpak from the bundle just built
+        # The same manifest with the archive source swapped for the bundle
+        # directory; --disable-rofiles-fuse because the runner has no FUSE.
+        run: |
+          mkdir -p build/flatpak
+          python3 tools/flatpak-ci-manifest.py packaging/flatpak/org.sevenreadings.SevenReadings.yml app/build/linux/x64/release/bundle > build/flatpak/manifest.yml
+          flatpak-builder --user --install --force-clean --disable-rofiles-fuse build/flatpak/build build/flatpak/manifest.yml
+          flatpak run --command=flatpak-builder-lint org.flatpak.Builder builddir build/flatpak/build
+      - name: Launch it in the sandbox
+        run: xvfb-run -a -s "-screen 0 1280x800x24" bash tools/flatpak-smoke.sh
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: screenshots-flatpak
+          path: |
+            app/screenshots/
+            app/build/integration_response_data.json
+            app/build/flatpak-run.log
           if-no-files-found: error
           retention-days: 30

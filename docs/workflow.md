@@ -167,6 +167,28 @@ screenshots travel with it, since they are written before the failure is
 reported. When a run has passed, its numbers go into `docs/plan.md`
 (section 2, State) and anything it found into `AGENTS.md`.
 
+## Releasing
+
+A release is a `v*` tag: `git tag v0.1.0 && git push origin v0.1.0` runs
+`release.yml` (every target's artifacts on the GitHub release, unsigned
+until S1) and `screenshots.yml` (the checklist on every target with the
+release content). Per store, once the accounts exist, the console steps go
+here. Today:
+
+- **Flathub** (`packaging/flatpak/`): after the first tagged release, put
+  its tarball URL and `sha256sum sevenreadings-linux-x64.tar.gz` into
+  `org.sevenreadings.SevenReadings.yml`, set the same version and date in
+  the metainfo's `<releases>`, and open a PR to
+  https://github.com/flathub/flathub (a new branch `new-pr` on a fork, the
+  manifest, the desktop file, the metainfo and the icon files). The
+  `flatpak` job in `screenshots.yml` is the same build and Flathub's own
+  linter, so a green job before the PR is the review's first question
+  answered. After acceptance, Flathub's bot opens an update PR per release
+  from the manifest's `x-checker-data`. The metainfo's screenshots point at
+  the site's copies; make sure the last `screenshots.yml` run was with the
+  release content (the Monday run, or a dispatch without the sample
+  input) before submitting, or the store shows fixture texts.
+
 ## Dependabot
 
 Merge GitHub Actions bumps when CI is green. Dart-group bumps get a look

@@ -386,9 +386,10 @@ App-side: `docs/plan.md`, in the order at its end. Item 1 (the integration
 test and the Android emulator job) is done and measured, T3 has Linux,
 D1 (the Support band and screen) and the icon are done, N1 (the
 narrator) is done by state, the PWA with its `web` job and the screenshots
-page (T4) are done; next is the Flatpak manifest with a `flatpak-builder`
-job and a launch smoke on the sandboxed app (the last of item 2), then
-plan item 4. Content-side, below.
+page (T4) are done, the Flatpak manifest and its CI job are in the tree
+pending their first run (the last of item 2; submission needs the first
+`v*` tag, docs/workflow.md "Releasing"); then plan item 4. Content-side,
+below.
 
 In rough order of value: extend the Qur'an pairings (the file is the whole
 of the Islamic reading's coverage); more ICC volumes (Plummer's Luke 1896,

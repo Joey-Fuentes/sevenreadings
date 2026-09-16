@@ -50,7 +50,8 @@ pipeline/           Python (uv). Ingests upstream sources → sevenreadings.sqli
 docs/               ADRs, licensing matrix, schema notes, workflow.
 tools/              Small scripts used by CI and developers (web assets, the
                     checklist run on a device, the icon generator).
-packaging/          The icon as SVG and PNGs (and, later, the Flatpak manifest).
+packaging/          The icon as SVG and PNGs; the Flatpak manifest, desktop file
+                    and AppStream metainfo.
 ```
 
 ## How content works
