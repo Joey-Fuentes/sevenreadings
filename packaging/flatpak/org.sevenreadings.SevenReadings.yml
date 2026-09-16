@@ -27,6 +27,7 @@ modules:
       env:
         PUB_CACHE: /run/build/sevenreadings/.pub-cache
         HOME: /run/build/sevenreadings/.home
+        CI: 'true'
     build-commands:
       - gunzip -c app/assets/content/sevenreadings.sqlite.gz > app/assets/content/sevenreadings.sqlite
       - "cat >> pubspec.yaml <<'EOF'\n\nhooks:\n  user_defines:\n    sqlite3:\n  \
@@ -37,17 +38,17 @@ modules:
         8 pubspec.yaml; env | grep -i -E 'proxy|^home=|pub_cache' || true
       - timeout --foreground 120 dart --version
       - timeout --foreground 300 dart pub get --offline
-      - "cd packages/sr_data\ndart run --verbose build_runner build --delete-conflicting-outputs\
-        \ &\npid=$!\nfor _ in $(seq 1 60); do\n  kill -0 \"$pid\" 2>/dev/null || break\n\
-        \  sleep 5\ndone\nif kill -0 \"$pid\" 2>/dev/null; then\n  echo \"--- codegen\
-        \ still running after 5 minutes: process tree, then the VM's stacks (SIGQUIT)\
-        \ ---\"\n  ps -eo pid,ppid,etime,stat,wchan:32,args 2>/dev/null || true\n\
-        \  for p in \"$pid\" $(pgrep -P \"$pid\" 2>/dev/null); do\n    echo \"== pid\
-        \ $p: $(tr '\\0' ' ' < /proc/$p/cmdline 2>/dev/null)\"\n    cat /proc/$p/wchan\
-        \ 2>/dev/null; echo\n    ls -l /proc/$p/fd 2>/dev/null | tail -n +2 | awk\
-        \ '{print $NF}' | sort | uniq -c | sort -rn | head -n 15\n  done\n  kill -QUIT\
-        \ \"$pid\" 2>/dev/null; sleep 15\n  kill -9 \"$pid\" 2>/dev/null\n  exit 1\n\
-        fi\nwait \"$pid\"\n"
+      - "cd packages/sr_data\ncat /etc/resolv.conf 2>/dev/null || echo \"no resolv.conf\"\
+        \ndart run build_runner build --delete-conflicting-outputs &\npid=$!\nfor\
+        \ _ in $(seq 1 36); do\n  kill -0 \"$pid\" 2>/dev/null || break\n  sleep 5\n\
+        done\nif kill -0 \"$pid\" 2>/dev/null; then\n  echo \"--- dart run still silent\
+        \ after 3 minutes (wchan: $(cat /proc/$pid/wchan 2>/dev/null)); trying the\
+        \ bare VM ---\"\n  kill -9 \"$pid\" 2>/dev/null\n  entry=$(ls -d \"$PUB_CACHE\"\
+        /hosted/pub.dev/build_runner-*/bin/build_runner.dart | head -n1)\n  echo \"\
+        entrypoint: $entry\"\n  timeout --foreground 600 dart --disable-dart-dev \\\
+        \n    --packages=/run/build/sevenreadings/.dart_tool/package_config.json \\\
+        \n    \"$entry\" build --delete-conflicting-outputs\nelse\n  wait \"$pid\"\
+        \nfi\n"
       - cd app && flutter build linux --release --no-pub --dart-define=SR_DISTRIBUTION=flathub
       - mkdir -p /app/lib/sevenreadings
       - cp -a app/build/linux/*/release/bundle/. /app/lib/sevenreadings/
@@ -63,7 +64,7 @@ modules:
     sources:
       - type: git
         url: https://github.com/Joey-Fuentes/sevenreadings.git
-        commit: 720f4e1538eadd3a62b40ece6e6dd037baab351a
+        commit: 97823ac923a96505f01fb4e39a040992a6701283
       - type: file
         url: https://github.com/Joey-Fuentes/sevenreadings/releases/download/content-v2026.09.15-4da78fc/sevenreadings.sqlite.gz
         sha256: 54f81d794f43919658791b0d5f00b01ad3aa689cc46f7d0d4b66efbea4977cf8
