@@ -96,7 +96,9 @@ replace: a different design is a change to one function in that script.
   console. Needs: the accounts.
 - **S3. Flathub manifest** and a PWA manifest: both free, both provable in
   CI (`flatpak-builder` in a job; Lighthouse's installability check).
-- **S3, PWA (2026-09-15): in the tree, first run pending.** `app/web/`:
+- **S3, PWA (2026-09-16): done**; the `web` job's offline proof passed:
+  reader up, service worker in control, network cut, reload, reader back.
+  On a phone: Chrome, Install app, airplane mode, open again. `app/web/`:
   `manifest.json` (name, icons incl. maskable, standalone, root scope),
   our `flutter_bootstrap.js` (keeps a loading line on screen through the
   white phase; Flutter's own service worker is gone from the template),
@@ -183,7 +185,9 @@ weekly, and on demand, not on every push.
   process after the first is unmounted and `SevenReadingsApp.dispose`
   has closed both databases, not a process restart. Triggers: on demand,
   Mondays at 06:00 UTC, every `v*` tag; never on plain pushes.
-- **T3, web (2026-09-15): in the tree, first run pending.** A `web` job in
+- **T3, web (2026-09-16): done.** Green on sample content: the checklist
+  on headless Chrome (first launch 2390 ms, 1600x881 dp, the column
+  layout), then the offline proof, then the page on the site. A `web` job in
   `screenshots.yml`: the runner's chromedriver drives a headless Chrome,
   `tools/checklist.sh chrome` runs the same test through `flutter drive
   -d web-server` (screenshots by WebDriver, the plugin path), artifact
@@ -193,7 +197,11 @@ weekly, and on demand, not on every push.
   network is cut with the DevTools protocol a reload must bring the
   reader back; it writes `web-offline.png` beside the ten. Windows, macOS
   and the iOS simulator remain.
-- **T4 (2026-09-15): in the tree, first run pending.** CI's smoke job puts
+- **T4 (2026-09-16): done**, https://sevenreadings.org/screenshots/ shows
+  android, linux and web, ten each, with their launch timings, and the
+  offline proof's screenshot. Its first deploy published an empty page
+  (a wrong `gh` call, swallowed); the script now fails rather than do
+  that. CI's smoke job puts
   the newest successful screenshots run's artifacts on the site
   (`tools/site-screenshots.sh`, `tools/screenshots-page.py`):
   https://sevenreadings.org/screenshots/ is the contact sheet, and
@@ -424,8 +432,8 @@ Spikes:
 1. T1-T2 (integration test, Android emulator screenshots): the foundation
    every other item is checked against. Done 2026-09-15 (section 2, State).
 2. S3 (Flathub manifest, PWA) and D1 (donations screen, links only): free,
-   ship on the free channels. D1 done 2026-09-15; S3 in progress (the
-   platform folders and the domain are in; icon, PWA and Flatpak remain).
+   ship on the free channels. D1, the icon, the PWA done; the Flatpak
+   remains (2026-09-16).
 3. N1 (narrator with system voices). Done by state 2026-09-15 (section 5,
    State), by ear pending; item 2's PWA and Flatpak resume next.
 4. L1 and L2 (chat feasibility, web and Linux) — decide from the numbers.
