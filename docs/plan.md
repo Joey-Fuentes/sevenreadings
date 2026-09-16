@@ -110,7 +110,10 @@ replace: a different design is a change to one function in that script.
   app's first screen says what the wait is (native too: the copy). Proof
   is the `web` job (T3 web, above), not Lighthouse: its PWA category was
   removed in Lighthouse 12. The Pages bandwidth note stands: a demo host.
-- **S3, Flatpak (2026-09-16): in the tree, first run pending.**
+- **S3, Flatpak, tarball route (2026-09-16): proven in CI end to end.**
+  Fifth run green: Flathub's builder, their manifest, metainfo and repo
+  lints, install, and the sandboxed first launch in 2011 ms with Genesis
+  1 rendered on the virtual display. Not the manifest to submit (below).
   `packaging/flatpak/`: the manifest Flathub receives (freedesktop 26.08,
   no network permission, the Linux release tarball as the app module with
   `x-checker-data` on the latest GitHub release), a launcher, the desktop
