@@ -122,7 +122,11 @@ replace: a different design is a change to one function in that script.
   archive for the directory), lints the build, and launches it in the
   sandbox under Xvfb (`tools/flatpak-smoke.sh`: the content database
   appears in the sandbox's data directory, a window titled Seven Readings
-  exists, an X screenshot is kept as `screenshots-flatpak`). The Linux
+  exists, an X screenshot is kept as `screenshots-flatpak`). Second run
+  (2026-09-16): manifest and metainfo pass Flathub's linter, the build
+  exports; the built-app lint wanted the screenshots mirrored the way
+  Flathub's build does it (`--mirror-screenshots-url`), which is why the
+  site's screenshot addresses must stay stable. The Linux
   window is titled "Seven Readings" since. Submission is the maintainer's
   (docs/workflow.md, "Releasing") and needs the first tag; the tarball
   route is the one CI proves, and if Flathub's review asks for a build

@@ -167,11 +167,16 @@ jobs:
           flatpak run --command=flatpak-builder-lint org.flatpak.Builder appstream packaging/flatpak/org.sevenreadings.SevenReadings.metainfo.xml
       - name: Build the Flatpak from the bundle just built
         # The same manifest with the archive source swapped for the bundle
-        # directory; --disable-rofiles-fuse because the runner has no FUSE.
+        # directory; --disable-rofiles-fuse because the runner has no FUSE;
+        # --mirror-screenshots-url fetches the metainfo's screenshots from
+        # the site into the build and rewrites their URLs the way Flathub's
+        # own build does, which its linter then checks for.
         run: |
           mkdir -p build/flatpak
           python3 tools/flatpak-ci-manifest.py packaging/flatpak/org.sevenreadings.SevenReadings.yml app/build/linux/x64/release/bundle > build/flatpak/manifest.yml
-          flatpak-builder --user --install --force-clean --disable-rofiles-fuse build/flatpak/build build/flatpak/manifest.yml
+          flatpak-builder --user --install --force-clean --disable-rofiles-fuse \
+            --mirror-screenshots-url=https://dl.flathub.org/media \
+            build/flatpak/build build/flatpak/manifest.yml
           flatpak run --command=flatpak-builder-lint org.flatpak.Builder builddir build/flatpak/build
       - name: Launch it in the sandbox
         run: xvfb-run -a -s "-screen 0 1280x800x24" bash tools/flatpak-smoke.sh
