@@ -55,16 +55,17 @@ jobs:
           fi
       - name: Generate the offline manifest
         working-directory: packaging/flatpak
-        # --app-pubspec and --extra-pubspecs: the pub workspace's members,
+        # A pub workspace: the one pubspec.lock is at the root, and the tool
+        # reads the lock from beside --app-pubspec (first run, 2026-09-16:
+        # "Expected to find pubspec.lock in: app/pubspec.yaml"). So the app
+        # pubspec is the workspace root's, and the members are the extras,
         # so the vendored pub cache covers every hosted dependency of all
-        # three packages. Whether the tool copes with the workspace layout
-        # (the lock is at the workspace root, not next to app/pubspec.yaml)
-        # is what the first run settles.
+        # three packages.
         run: |
           python3 "$HOME/flatpak-flutter/flatpak-flutter.py" \
             --app-module sevenreadings \
-            --app-pubspec app/pubspec.yaml \
-            --extra-pubspecs packages/sr_core/pubspec.yaml,packages/sr_data/pubspec.yaml \
+            --app-pubspec pubspec.yaml \
+            --extra-pubspecs app/pubspec.yaml,packages/sr_core/pubspec.yaml,packages/sr_data/pubspec.yaml \
             flatpak-flutter.yml
           echo "--- generated ---"; ls -la
       - name: Commit and push

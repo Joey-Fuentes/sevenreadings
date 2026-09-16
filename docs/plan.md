@@ -174,8 +174,10 @@ replace: a different design is a change to one function in that script.
   submittable. Two facts the first runs settle, both researched to the
   edge of what is documented: whether `flatpak-flutter` copes with a pub
   workspace whose lock file is at the root rather than next to
-  `app/pubspec.yaml` (nobody has documented it; `--app-pubspec` plus
-  `--extra-pubspecs` is the sound way in), and whether it vendors the
+  `app/pubspec.yaml` (first run: it reads the lock from beside
+  `--app-pubspec`, so that is the workspace root's pubspec and the
+  members are the extras; the second run says whether that suffices), and
+  whether it vendors the
   prebuilt SQLite that `sqlite3` 3.6.0's build hooks download (we are on
   `sqlite3_flutter_libs` 0.6.0, the version that no longer builds SQLite
   itself; if not, the runtime's own libsqlite3 is the documented fallback).
