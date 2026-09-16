@@ -32,8 +32,15 @@ modules:
         \    source: source\n      path: third_party/sqlite3/sqlite3.c\nEOF\n"
       - setup-flutter.sh
       - cd app && flutter pub get --offline
-      - ls -l third_party/sqlite3/sqlite3.c; which clang; tail -n 8 pubspec.yaml
-      - cd packages/sr_data && timeout 900 dart run --verbose build_runner build --delete-conflicting-outputs
+      - ls -l third_party/sqlite3/sqlite3.c; which clang; tail -n 8 pubspec.yaml;
+        env | grep -i -E 'proxy|^home=|pub_cache' || true
+      - "cd packages/sr_data\nif ! timeout --foreground 600 dart run --verbose build_runner\
+        \ build --delete-conflicting-outputs; then\n  echo \"--- codegen failed or\
+        \ timed out; hooks_runner state ---\"\n  find /run/build/sevenreadings -path\
+        \ '*hooks_runner*' -type f 2>/dev/null | head -n 40\n  find /run/build/sevenreadings\
+        \ -path '*hooks_runner*' -type f \\( -name '*.log' -o -name '*.txt' -o -name\
+        \ '*.json' \\) 2>/dev/null \\\n    | while read -r f; do echo \"== $f\"; tail\
+        \ -n 40 \"$f\"; done\n  exit 1\nfi\n"
       - cd app && flutter build linux --release --no-pub --dart-define=SR_DISTRIBUTION=flathub
       - mkdir -p /app/lib/sevenreadings
       - cp -a app/build/linux/*/release/bundle/. /app/lib/sevenreadings/
@@ -49,7 +56,7 @@ modules:
     sources:
       - type: git
         url: https://github.com/Joey-Fuentes/sevenreadings.git
-        commit: 096850b33c1ee2f54d5a0b1858891794a2dfa8a0
+        commit: 6671451c40381972565938612a417da154a6fda4
       - type: file
         url: https://github.com/Joey-Fuentes/sevenreadings/releases/download/content-v2026.09.15-4da78fc/sevenreadings.sqlite.gz
         sha256: 54f81d794f43919658791b0d5f00b01ad3aa689cc46f7d0d4b66efbea4977cf8
