@@ -3,10 +3,9 @@
 # tools/flatpak-template.py into flatpak-flutter.yml (the @PLACEHOLDERS@
 # come from app/content.lock and the commit or tag being packaged), then
 # processed by flatpak-flutter, which replaces the Flutter git source with
-# an offline SDK module, appends the offline pub cache
-# (pubspec-sources.json) and inserts setup-flutter.sh, and writes
-# org.sevenreadings.SevenReadings.yml. Both steps run in
-# .github/workflows/flatpak-sources.yml.
+# an offline SDK module, appends the offline pub cache and writes
+# org.sevenreadings.SevenReadings.yml with its files under generated/.
+# Both steps run in .github/workflows/flatpak-sources.yml.
 #
 # The build is entirely from source inside Flathub's sandbox, with no
 # network: the app at a pinned commit, Flutter at its pinned tag, the pub

@@ -164,19 +164,19 @@ replace: a different design is a change to one function in that script.
   checksummed files from the content release (from `app/content.lock`).
   `flatpak-sources.yml` renders it (`tools/flatpak-template.py`), runs
   `flatpak-flutter` (MIT; Flathub's de-facto tool for Flutter apps, which
-  replaces the Flutter source with an offline SDK module, vendors the pub
-  cache as `pubspec-sources.json` and inserts `setup-flutter.sh`) and
-  commits the generated `org.sevenreadings.SevenReadings.yml` and its
-  files. The `flatpak` job then builds that manifest with Flathub's
+  replaces the Flutter source with an offline SDK module and vendors the
+  pub cache, under `generated/`) and commits the generated
+  `org.sevenreadings.SevenReadings.yml` and its files. The `flatpak` job then builds that manifest with Flathub's
   builder under `--sandbox` (no network), lints it three ways, and
   launches it. The tarball manifest is kept as
   `org.sevenreadings.SevenReadings.tarball.yml`, proven but not
   submittable. Two facts the first runs settle, both researched to the
   edge of what is documented: whether `flatpak-flutter` copes with a pub
   workspace whose lock file is at the root rather than next to
-  `app/pubspec.yaml` (first run: it reads the lock from beside
-  `--app-pubspec`, so that is the workspace root's pubspec and the
-  members are the extras; the second run says whether that suffices), and
+  `app/pubspec.yaml` (runs 1 and 2 said no to both `--app-pubspec` forms;
+  reading the tool's code settled it: those flags name directories that
+  must hold a `pubspec.lock`, and with no flags it reads the root's, the
+  workspace's only lock, which names every member's packages), and
   whether it vendors the
   prebuilt SQLite that `sqlite3` 3.6.0's build hooks download (we are on
   `sqlite3_flutter_libs` 0.6.0, the version that no longer builds SQLite

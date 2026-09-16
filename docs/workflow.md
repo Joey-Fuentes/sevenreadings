@@ -178,8 +178,9 @@ here. Today:
 - **Flathub** (`packaging/flatpak/`): after tagging, run
   `gh workflow run flatpak-sources.yml -f tag=v0.1.0`; it regenerates
   `org.sevenreadings.SevenReadings.yml` (built from source at that tag,
-  offline, by `flatpak-flutter`) and commits it with `flutter-sdk-*.json`,
-  `pubspec-sources.json` and `setup-flutter.sh`. Set the same version and
+  offline, by `flatpak-flutter`) and commits it with its `generated/`
+  directory (the Flutter SDK module, the pub cache, the patches). Set the
+  same version and
   date in the metainfo's `<releases>`, run `screenshots.yml` and confirm
   the `flatpak` job is green (Flathub's own builder, sandboxed, and their
   three lints), then open a PR to https://github.com/flathub/flathub (a
