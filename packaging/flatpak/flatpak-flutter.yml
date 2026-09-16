@@ -1,0 +1,73 @@
+# The template flatpak-flutter turns into the manifest Flathub receives
+# (docs/plan.md, S3; docs/workflow.md, "Releasing"). Rendered by
+# tools/flatpak-template.py into flatpak-flutter.yml (the @PLACEHOLDERS@
+# come from app/content.lock and the commit or tag being packaged), then
+# processed by flatpak-flutter, which replaces the Flutter git source with
+# an offline SDK module, appends the offline pub cache and writes
+# org.sevenreadings.SevenReadings.yml with its files under generated/.
+# Both steps run in .github/workflows/flatpak-sources.yml.
+#
+# The build is entirely from source inside Flathub's sandbox, with no
+# network: the app at a pinned commit, Flutter at its pinned tag, the pub
+# cache from pubspec.lock, and the content database as a checksummed file.
+#
+# Runtime 25.08, not 26.08: Flutter's Linux build needs clang, which the
+# base SDK does not ship; the LLVM extension has no 26.08 branch yet
+# (flathub/org.freedesktop.Sdk.Extension.llvm21#9, September 2026). The
+# linter's "newer runtime available" is a warning.
+app-id: org.sevenreadings.SevenReadings
+runtime: org.freedesktop.Platform
+runtime-version: '25.08'
+sdk: org.freedesktop.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.llvm21
+command: sevenreadings
+finish-args:
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --device=dri
+  - --share=ipc
+  # No --share=network: every text is in the app, and stays on the device.
+modules:
+  - name: sevenreadings
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/llvm21/bin:/run/build/sevenreadings/flutter/bin
+      prepend-ld-library-path: /usr/lib/sdk/llvm21/lib
+      env:
+        PUB_CACHE: /run/build/sevenreadings/.pub-cache
+    build-commands:
+      # The content database ships gzipped on the content release.
+      - gunzip -c app/assets/content/sevenreadings.sqlite.gz > app/assets/content/sevenreadings.sqlite
+      # The pub workspace (root pubspec.yaml lists app and packages/*);
+      # resolution is offline against the pub cache flatpak-flutter vendored.
+      - cd app && flutter pub get --offline
+      - cd packages/sr_data && dart run build_runner build --delete-conflicting-outputs
+      - cd app && flutter build linux --release --no-pub --dart-define=SR_DISTRIBUTION=flathub
+      - mkdir -p /app/lib/sevenreadings
+      - cp -a app/build/linux/*/release/bundle/. /app/lib/sevenreadings/
+      - install -Dm755 packaging/flatpak/sevenreadings.sh /app/bin/sevenreadings
+      - install -Dm644 packaging/flatpak/org.sevenreadings.SevenReadings.desktop -t /app/share/applications
+      - install -Dm644 packaging/flatpak/org.sevenreadings.SevenReadings.metainfo.xml -t /app/share/metainfo
+      - install -Dm644 packaging/icon/org.sevenreadings.SevenReadings.svg -t /app/share/icons/hicolor/scalable/apps
+      - install -Dm644 packaging/icon/org.sevenreadings.SevenReadings-128.png /app/share/icons/hicolor/128x128/apps/org.sevenreadings.SevenReadings.png
+      - install -Dm644 packaging/icon/org.sevenreadings.SevenReadings-256.png /app/share/icons/hicolor/256x256/apps/org.sevenreadings.SevenReadings.png
+      - install -Dm644 packaging/icon/org.sevenreadings.SevenReadings-512.png /app/share/icons/hicolor/512x512/apps/org.sevenreadings.SevenReadings.png
+    sources:
+      - type: git
+        url: https://github.com/Joey-Fuentes/sevenreadings.git
+        commit: 12863d2090daed65909e649eb2d0f1ce0973f78b
+      - type: git
+        url: https://github.com/flutter/flutter.git
+        tag: '3.47.4'
+        dest: flutter
+      - type: file
+        url: https://github.com/Joey-Fuentes/sevenreadings/releases/download/content-v2026.09.15-4da78fc/sevenreadings.sqlite.gz
+        sha256: '54f81d794f43919658791b0d5f00b01ad3aa689cc46f7d0d4b66efbea4977cf8'
+        dest: app/assets/content
+        dest-filename: sevenreadings.sqlite.gz
+      - type: file
+        url: https://github.com/Joey-Fuentes/sevenreadings/releases/download/content-v2026.09.15-4da78fc/manifest.json
+        sha256: '006a3c985212fe5b4e1cba36278e4ac0cf4ad2054bc6613c82d5442e1a07000a'
+        dest: app/assets/content
+        dest-filename: manifest.json
