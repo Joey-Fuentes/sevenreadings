@@ -28,6 +28,8 @@ modules:
         PUB_CACHE: /run/build/sevenreadings/.pub-cache
     build-commands:
       - gunzip -c app/assets/content/sevenreadings.sqlite.gz > app/assets/content/sevenreadings.sqlite
+      - "cat >> pubspec.yaml <<'EOF'\n\nhooks:\n  user_defines:\n    sqlite3:\n  \
+        \    source: source\n      path: third_party/sqlite3/sqlite3.c\nEOF\n"
       - setup-flutter.sh
       - cd app && flutter pub get --offline
       - cd packages/sr_data && dart run build_runner build --delete-conflicting-outputs
@@ -46,7 +48,7 @@ modules:
     sources:
       - type: git
         url: https://github.com/Joey-Fuentes/sevenreadings.git
-        commit: 12863d2090daed65909e649eb2d0f1ce0973f78b
+        commit: 9597d2e9a4ac71e0092f26694765241b797198eb
       - type: file
         url: https://github.com/Joey-Fuentes/sevenreadings/releases/download/content-v2026.09.15-4da78fc/sevenreadings.sqlite.gz
         sha256: 54f81d794f43919658791b0d5f00b01ad3aa689cc46f7d0d4b66efbea4977cf8
@@ -57,6 +59,10 @@ modules:
         sha256: 006a3c985212fe5b4e1cba36278e4ac0cf4ad2054bc6613c82d5442e1a07000a
         dest: app/assets/content
         dest-filename: manifest.json
+      - type: archive
+        url: https://sqlite.org/2026/sqlite-amalgamation-3530400.zip
+        sha256: 1e71ddf93849c6a6ecf58b827c0692073d2dd7ee40196158068f7b29f422e87d
+        dest: third_party/sqlite3
       - generated/sources/pubspec.json
     modules:
       - generated/modules/flutter-sdk-3.47.4.json

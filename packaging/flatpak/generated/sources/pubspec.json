@@ -2384,30 +2384,5 @@
         "sha512": "ea4ad61eb636a3b6b0a4d8a1b57b51af187ac8724fe853bd9ce58c7ee4054bd62c4e6d7d11788c8af9ff8e95c6a52eb36a41062172022bc1cbc0567de0aec8c1",
         "dest": "./build/linux/arm64/release/plugins/sqlcipher_flutter_libs",
         "dest-filename": "sqlcipher.c"
-    },
-    {
-        "type": "file",
-        "only-arches": [
-            "x86_64"
-        ],
-        "url": "https://github.com/simolus3/sqlite3.dart/releases/download/sqlite3-3.3.1/libsqlite3.x64.linux.so",
-        "sha256": "148c51687ac3be3487873845690ddbf3d8ee099a5521a193c856008907fb7361",
-        "dest": "./.dart_tool/hooks_runner/shared/sqlite3/build/download-static",
-        "dest-filename": "libsqlite3.so"
-    },
-    {
-        "type": "file",
-        "only-arches": [
-            "aarch64"
-        ],
-        "url": "https://github.com/simolus3/sqlite3.dart/releases/download/sqlite3-3.3.1/libsqlite3.arm64.linux.so",
-        "sha256": "0541443d38cd79160f6262e6a59892657d640459fef8acdd1f4f29a4ed0d2612",
-        "dest": "./.dart_tool/hooks_runner/shared/sqlite3/build/download-static",
-        "dest-filename": "libsqlite3.so"
-    },
-    {
-        "type": "patch",
-        "path": "generated/patches/sqlite3/assets.dart.patch",
-        "dest": ".pub-cache/hosted/pub.dev/sqlite3-3.6.0"
     }
 ]
