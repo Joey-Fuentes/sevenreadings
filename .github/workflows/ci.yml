@@ -80,6 +80,8 @@ jobs:
         # would need --base-href "/<repo>/".
         run: flutter build web --release --base-href "/" --dart-define=SR_DISTRIBUTION=web
       - name: Service worker for the site
+        # Before the screenshots land in the folder, and web-sw.py skips
+        # screenshots/ regardless: the app's cache is the app, not the site.
         run: python3 tools/web-sw.py app/build/web
       - name: Latest screenshots onto the site (docs/plan.md, T4)
         if: github.event_name != 'pull_request'
