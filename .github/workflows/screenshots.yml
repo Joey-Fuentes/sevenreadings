@@ -142,7 +142,7 @@ jobs:
           retention-days: 30
 
   flatpak:
-    name: Flatpak (freedesktop 24.08)
+    name: Flatpak (freedesktop 26.08)
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -160,7 +160,7 @@ jobs:
       - name: Runtime, SDK and Flathub's linter
         run: |
           flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-          flatpak install --user -y --noninteractive flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08 org.flatpak.Builder
+          flatpak install --user -y --noninteractive flathub org.freedesktop.Platform//26.08 org.freedesktop.Sdk//26.08 org.flatpak.Builder
       - name: Lint the submission manifest and the metainfo (Flathub's checks)
         run: |
           flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest packaging/flatpak/org.sevenreadings.SevenReadings.yml

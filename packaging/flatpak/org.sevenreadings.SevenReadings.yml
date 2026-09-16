@@ -9,7 +9,7 @@
 # release's (docs/workflow.md, "Releasing").
 app-id: org.sevenreadings.SevenReadings
 runtime: org.freedesktop.Platform
-runtime-version: '24.08'
+runtime-version: '26.08'
 sdk: org.freedesktop.Sdk
 command: sevenreadings
 finish-args:
@@ -34,7 +34,9 @@ modules:
     sources:
       - type: archive
         url: https://github.com/Joey-Fuentes/sevenreadings/releases/download/v0.1.0/sevenreadings-linux-x64.tar.gz
-        sha256: 0000000000000000000000000000000000000000000000000000000000000000
+        # Quoted: unquoted, YAML reads a run of zeros as a number and the
+        # schema rejects it. Replace with the real checksum before submission.
+        sha256: '0000000000000000000000000000000000000000000000000000000000000000'
         dest: bundle
         x-checker-data:
           type: json

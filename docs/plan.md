@@ -111,7 +111,7 @@ replace: a different design is a change to one function in that script.
   is the `web` job (T3 web, above), not Lighthouse: its PWA category was
   removed in Lighthouse 12. The Pages bandwidth note stands: a demo host.
 - **S3, Flatpak (2026-09-16): in the tree, first run pending.**
-  `packaging/flatpak/`: the manifest Flathub receives (freedesktop 24.08,
+  `packaging/flatpak/`: the manifest Flathub receives (freedesktop 26.08,
   no network permission, the Linux release tarball as the app module with
   `x-checker-data` on the latest GitHub release), a launcher, the desktop
   file, the AppStream metainfo (screenshots from the site, the Stripe link
