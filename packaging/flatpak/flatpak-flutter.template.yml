@@ -45,6 +45,11 @@ modules:
         # HOME=/home/runner, which does not exist in it, and the dart tool
         # keeps its state under $HOME. Flathub's builders never see a host home.
         HOME: /run/build/sevenreadings/.home
+        # The Dart tools treat CI=true as "no telemetry"; in the sandbox the
+        # first run of `dart run` blocked before opening a single file, on a
+        # thread the telemetry layer waits for (fifth sandboxed run, 2026-09-16:
+        # one process, futex wait, no files, no children).
+        CI: 'true'
     build-commands:
       # The content database ships gzipped on the content release.
       - gunzip -c app/assets/content/sevenreadings.sqlite.gz > app/assets/content/sevenreadings.sqlite
@@ -72,32 +77,31 @@ modules:
       # and never reached the hooks (no .dart_tool/hooks_runner appeared).
       - timeout --foreground 120 dart --version
       - timeout --foreground 300 dart pub get --offline
-      # Fourth sandboxed run (2026-09-16): dart --version and dart pub get
-      # both answered within a second; dart run build_runner alone was silent
-      # for ten minutes with no hooks_runner directory ever created. If it is
-      # still silent after five minutes, SIGQUIT makes the Dart VM print every
-      # isolate's stack, and the process tree says what it spawned.
+      # Codegen, two ways. First `dart run` with telemetry off (CI=true above);
+      # if that is still silent after three minutes, the bare VM on
+      # build_runner's entrypoint with --disable-dart-dev, which skips the
+      # command-line layer whose start-up blocked in the sandbox (fifth run,
+      # 2026-09-16: one process in a futex wait, no files open, no children).
       - |
         cd packages/sr_data
-        dart run --verbose build_runner build --delete-conflicting-outputs &
+        cat /etc/resolv.conf 2>/dev/null || echo "no resolv.conf"
+        dart run build_runner build --delete-conflicting-outputs &
         pid=$!
-        for _ in $(seq 1 60); do
+        for _ in $(seq 1 36); do
           kill -0 "$pid" 2>/dev/null || break
           sleep 5
         done
         if kill -0 "$pid" 2>/dev/null; then
-          echo "--- codegen still running after 5 minutes: process tree, then the VM's stacks (SIGQUIT) ---"
-          ps -eo pid,ppid,etime,stat,wchan:32,args 2>/dev/null || true
-          for p in "$pid" $(pgrep -P "$pid" 2>/dev/null); do
-            echo "== pid $p: $(tr '\0' ' ' < /proc/$p/cmdline 2>/dev/null)"
-            cat /proc/$p/wchan 2>/dev/null; echo
-            ls -l /proc/$p/fd 2>/dev/null | tail -n +2 | awk '{print $NF}' | sort | uniq -c | sort -rn | head -n 15
-          done
-          kill -QUIT "$pid" 2>/dev/null; sleep 15
+          echo "--- dart run still silent after 3 minutes (wchan: $(cat /proc/$pid/wchan 2>/dev/null)); trying the bare VM ---"
           kill -9 "$pid" 2>/dev/null
-          exit 1
+          entry=$(ls -d "$PUB_CACHE"/hosted/pub.dev/build_runner-*/bin/build_runner.dart | head -n1)
+          echo "entrypoint: $entry"
+          timeout --foreground 600 dart --disable-dart-dev \
+            --packages=/run/build/sevenreadings/.dart_tool/package_config.json \
+            "$entry" build --delete-conflicting-outputs
+        else
+          wait "$pid"
         fi
-        wait "$pid"
       - cd app && flutter build linux --release --no-pub --dart-define=SR_DISTRIBUTION=flathub
       - mkdir -p /app/lib/sevenreadings
       - cp -a app/build/linux/*/release/bundle/. /app/lib/sevenreadings/
