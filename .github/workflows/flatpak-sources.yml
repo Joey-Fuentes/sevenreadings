@@ -72,7 +72,10 @@ jobs:
         # repository root, which is the right one (runs 1 and 2, 2026-09-16).
         # Outputs: org.sevenreadings.SevenReadings.yml and generated/
         # (modules/flutter-sdk-<tag>.json, sources/pubspec.json, patches/).
+        # generated/ is wiped first: the tool adds files but never removes
+        # them, and a patch from an earlier run stayed behind (2026-09-16).
         run: |
+          rm -rf generated
           python3 "$HOME/flatpak-flutter/flatpak-flutter.py" \
             --app-module sevenreadings \
             flatpak-flutter.yml
