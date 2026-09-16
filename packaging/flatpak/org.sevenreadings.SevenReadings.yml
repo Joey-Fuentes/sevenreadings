@@ -34,21 +34,10 @@ modules:
         \    source: source\n      path: third_party/sqlite3/sqlite3.c\nEOF\n"
       - setup-flutter.sh
       - cd app && flutter pub get --offline
-      - mkdir -p "$HOME"; ls -l third_party/sqlite3/sqlite3.c; which clang; tail -n
-        8 pubspec.yaml; env | grep -i -E 'proxy|^home=|pub_cache' || true
-      - timeout --foreground 120 dart --version
-      - timeout --foreground 300 dart pub get --offline
-      - "cd packages/sr_data\ncat /etc/resolv.conf 2>/dev/null || echo \"no resolv.conf\"\
-        \ndart run build_runner build --delete-conflicting-outputs &\npid=$!\nfor\
-        \ _ in $(seq 1 36); do\n  kill -0 \"$pid\" 2>/dev/null || break\n  sleep 5\n\
-        done\nif kill -0 \"$pid\" 2>/dev/null; then\n  echo \"--- dart run still silent\
-        \ after 3 minutes (wchan: $(cat /proc/$pid/wchan 2>/dev/null)); trying the\
-        \ bare VM ---\"\n  kill -9 \"$pid\" 2>/dev/null\n  entry=$(ls -d \"$PUB_CACHE\"\
-        /hosted/pub.dev/build_runner-*/bin/build_runner.dart | head -n1)\n  echo \"\
-        entrypoint: $entry\"\n  timeout --foreground 600 dart --disable-dart-dev \\\
-        \n    --packages=/run/build/sevenreadings/.dart_tool/package_config.json \\\
-        \n    \"$entry\" build --delete-conflicting-outputs\nelse\n  wait \"$pid\"\
-        \nfi\n"
+      - mkdir -p "$HOME"
+      - "cd packages/sr_data\nentry=$(ls -d \"$PUB_CACHE\"/hosted/pub.dev/build_runner-*/bin/build_runner.dart\
+        \ | head -n1)\ntimeout --foreground 900 dart --disable-dart-dev \\\n  --packages=/run/build/sevenreadings/.dart_tool/package_config.json\
+        \ \\\n  \"$entry\" build --delete-conflicting-outputs\n"
       - cd app && flutter build linux --release --no-pub --dart-define=SR_DISTRIBUTION=flathub
       - mkdir -p /app/lib/sevenreadings
       - cp -a app/build/linux/*/release/bundle/. /app/lib/sevenreadings/
@@ -64,7 +53,7 @@ modules:
     sources:
       - type: git
         url: https://github.com/Joey-Fuentes/sevenreadings.git
-        commit: 97823ac923a96505f01fb4e39a040992a6701283
+        commit: 92f07533fb1dab757990ab773752d5db985f2f88
       - type: file
         url: https://github.com/Joey-Fuentes/sevenreadings/releases/download/content-v2026.09.15-4da78fc/sevenreadings.sqlite.gz
         sha256: 54f81d794f43919658791b0d5f00b01ad3aa689cc46f7d0d4b66efbea4977cf8
