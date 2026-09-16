@@ -24,7 +24,8 @@ def main(argv: list[str]) -> int:
         shots = sorted((target / "screenshots").glob("*.png"))
         report_path = target / "build" / "integration_response_data.json"
         report = json.loads(report_path.read_text()) if report_path.exists() else {}
-        facts = ", ".join(f"{k} {v}" for k, v in report.items() if k != "screenshots")
+        skip = {"screenshots", "log"}
+        facts = ", ".join(f"{k} {v}" for k, v in report.items() if k not in skip)
         figures = "\n".join(
             f'<figure><a href="{target.name}/screenshots/{s.name}">'
             f'<img loading="lazy" src="{target.name}/screenshots/{s.name}" alt="{s.stem}"></a>'
