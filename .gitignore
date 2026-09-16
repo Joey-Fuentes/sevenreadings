@@ -20,6 +20,9 @@ app/web/drift_worker.js
 # Written by `flutter drive` (test_driver/integration_test.dart)
 app/screenshots/
 
+# flatpak-builder's cache when the manifest is built locally
+packaging/flatpak/.flatpak-builder/
+
 # Pipeline
 pipeline/.venv/
 pipeline/.cache/

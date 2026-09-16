@@ -175,18 +175,19 @@ until S1) and `screenshots.yml` (the checklist on every target with the
 release content). Per store, once the accounts exist, the console steps go
 here. Today:
 
-- **Flathub** (`packaging/flatpak/`): after the first tagged release, put
-  its tarball URL and `sha256sum sevenreadings-linux-x64.tar.gz` into
-  `org.sevenreadings.SevenReadings.yml`, set the same version and date in
-  the metainfo's `<releases>`, and open a PR to
-  https://github.com/flathub/flathub (a new branch `new-pr` on a fork, the
-  manifest, the desktop file, the metainfo and the icon files). The
-  `flatpak` job in `screenshots.yml` is Flathub's own builder and linter
-  with their pipeline's flags, so a green job before the PR is the
-  review's first question answered. Flathub requires open-source apps to
-  be built from source inside its sandbox; the manifest to submit is the
-  source build (`flatpak-flutter`), not the tarball one. After acceptance,
-  Flathub's bot opens an update PR per release
+- **Flathub** (`packaging/flatpak/`): after tagging, run
+  `gh workflow run flatpak-sources.yml -f tag=v0.1.0`; it regenerates
+  `org.sevenreadings.SevenReadings.yml` (built from source at that tag,
+  offline, by `flatpak-flutter`) and commits it with `flutter-sdk-*.json`,
+  `pubspec-sources.json` and `setup-flutter.sh`. Set the same version and
+  date in the metainfo's `<releases>`, run `screenshots.yml` and confirm
+  the `flatpak` job is green (Flathub's own builder, sandboxed, and their
+  three lints), then open a PR to https://github.com/flathub/flathub (a
+  branch off `new-pr` on a fork; the generated manifest and files,
+  `flathub.json`, the desktop file, the metainfo, the icon files, the
+  launcher). Re-run `flatpak-sources.yml` whenever dependencies, Flutter
+  or the content release change. After acceptance, Flathub's bot opens an
+  update PR per release
   from the manifest's `x-checker-data`. The metainfo's screenshots point at
   the site's copies; make sure the last `screenshots.yml` run was with the
   release content (the Monday run, or a dispatch without the sample

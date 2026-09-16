@@ -121,8 +121,8 @@ replace: a different design is a change to one function in that script.
   as the donation URL) and the icon from `packaging/icon/`. The `flatpak`
   job in `screenshots.yml` builds the Linux bundle, runs Flathub's linter
   on the manifest and the metainfo, builds the Flatpak from that bundle
-  through the same manifest (`tools/flatpak-ci-manifest.py` swaps the
-  archive for the directory), lints the build, and launches it in the
+  through the same manifest (a tool since retired swapped the archive
+  for the directory), lints the build, and launches it in the
   sandbox under Xvfb (`tools/flatpak-smoke.sh`: the content database
   appears in the sandbox's data directory, a window titled Seven Readings
   exists, an X screenshot is kept as `screenshots-flatpak`). Second run
@@ -152,6 +152,34 @@ replace: a different design is a change to one function in that script.
   route is the one CI proves, and if Flathub's review asks for a build
   from source inside the sandbox, that is a second manifest and a new
   entry here, not a silent change.
+- **S3, Flatpak, source route (2026-09-16): in the tree, first run pending.**
+  `packaging/flatpak/flatpak-flutter.template.yml` is the manifest as
+  written by hand: freedesktop 25.08 with the `llvm21` SDK extension
+  (Flutter's Linux build needs clang, the base SDK has none, and the
+  extension has no 26.08 branch yet), no network permission, and one
+  module that builds the app from source inside the sandbox: the repo at
+  a pinned commit or tag, Flutter at tag 3.47.4, `flutter pub get
+  --offline` for the workspace, drift's codegen, `flutter build linux
+  --release --no-pub`, the content database and its manifest as
+  checksummed files from the content release (from `app/content.lock`).
+  `flatpak-sources.yml` renders it (`tools/flatpak-template.py`), runs
+  `flatpak-flutter` (MIT; Flathub's de-facto tool for Flutter apps, which
+  replaces the Flutter source with an offline SDK module, vendors the pub
+  cache as `pubspec-sources.json` and inserts `setup-flutter.sh`) and
+  commits the generated `org.sevenreadings.SevenReadings.yml` and its
+  files. The `flatpak` job then builds that manifest with Flathub's
+  builder under `--sandbox` (no network), lints it three ways, and
+  launches it. The tarball manifest is kept as
+  `org.sevenreadings.SevenReadings.tarball.yml`, proven but not
+  submittable. Two facts the first runs settle, both researched to the
+  edge of what is documented: whether `flatpak-flutter` copes with a pub
+  workspace whose lock file is at the root rather than next to
+  `app/pubspec.yaml` (nobody has documented it; `--app-pubspec` plus
+  `--extra-pubspecs` is the sound way in), and whether it vendors the
+  prebuilt SQLite that `sqlite3` 3.6.0's build hooks download (we are on
+  `sqlite3_flutter_libs` 0.6.0, the version that no longer builds SQLite
+  itself; if not, the runtime's own libsqlite3 is the documented fallback).
+  `flathub.json` limits Flathub's builds to x86_64 for now.
 - **S4. Store listings as code**: `fastlane/metadata`-style directories
   with descriptions, keywords, privacy answers, and the screenshots from
   section 2, so a listing is reproducible from the repo.

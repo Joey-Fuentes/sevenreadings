@@ -1,0 +1,78 @@
+name: Flatpak sources
+
+# Generates the offline, build-from-source Flatpak manifest with
+# flatpak-flutter (docs/plan.md, S3) and commits it with the files it
+# produced: packaging/flatpak/org.sevenreadings.SevenReadings.yml, the
+# Flutter SDK module, the offline pub cache (pubspec-sources.json) and
+# setup-flutter.sh. Run after a dependency, Flutter or content change, and
+# before a release (with the tag). The `flatpak` job in screenshots.yml
+# then builds that manifest in Flathub's sandbox, with no network, exactly
+# as Flathub's own build will.
+#
+#   gh workflow run flatpak-sources.yml                  # pins the current commit
+#   gh workflow run flatpak-sources.yml -f tag=v0.1.0    # pins a release tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to package (empty = the current commit)
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+concurrency:
+  group: flatpak-sources
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-flutter
+      - name: flatpak-flutter (TheAppgineer, MIT)
+        run: |
+          pip install --quiet packaging pyyaml tomlkit
+          git clone --depth 1 https://github.com/TheAppgineer/flatpak-flutter.git "$HOME/flatpak-flutter"
+          echo "flatpak-flutter $(git -C "$HOME/flatpak-flutter" rev-parse --short HEAD)"
+      - name: Render the template
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          version=$(jq -r .version app/content.lock)
+          mkdir -p build/content
+          gh release download "content-v${version}" -p manifest.json -D build/content --clobber
+          sha=$(sha256sum build/content/manifest.json | cut -d' ' -f1)
+          if [ -n "${{ inputs.tag }}" ]; then
+            python3 tools/flatpak-template.py --tag "${{ inputs.tag }}" --manifest-sha256 "$sha"
+          else
+            python3 tools/flatpak-template.py --commit "$GITHUB_SHA" --manifest-sha256 "$sha"
+          fi
+      - name: Generate the offline manifest
+        working-directory: packaging/flatpak
+        # --app-pubspec and --extra-pubspecs: the pub workspace's members,
+        # so the vendored pub cache covers every hosted dependency of all
+        # three packages. Whether the tool copes with the workspace layout
+        # (the lock is at the workspace root, not next to app/pubspec.yaml)
+        # is what the first run settles.
+        run: |
+          python3 "$HOME/flatpak-flutter/flatpak-flutter.py" \
+            --app-module sevenreadings \
+            --app-pubspec app/pubspec.yaml \
+            --extra-pubspecs packages/sr_core/pubspec.yaml,packages/sr_data/pubspec.yaml \
+            flatpak-flutter.yml
+          echo "--- generated ---"; ls -la
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add packaging/flatpak
+          if git diff --cached --quiet; then echo "nothing to commit"; exit 0; fi
+          git commit -m "Flatpak: offline sources from flatpak-flutter (${{ inputs.tag || github.sha }})"
+          git pull --rebase --autostash origin main
+          git push origin HEAD:main
