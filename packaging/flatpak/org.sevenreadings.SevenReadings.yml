@@ -37,13 +37,17 @@ modules:
         8 pubspec.yaml; env | grep -i -E 'proxy|^home=|pub_cache' || true
       - timeout --foreground 120 dart --version
       - timeout --foreground 300 dart pub get --offline
-      - "cd packages/sr_data\nif ! timeout --foreground 600 dart run --verbose build_runner\
-        \ build --delete-conflicting-outputs; then\n  echo \"--- codegen failed or\
-        \ timed out; hooks_runner state ---\"\n  find /run/build/sevenreadings -path\
-        \ '*hooks_runner*' -type f 2>/dev/null | head -n 40\n  find /run/build/sevenreadings\
-        \ -path '*hooks_runner*' -type f \\( -name '*.log' -o -name '*.txt' -o -name\
-        \ '*.json' \\) 2>/dev/null \\\n    | while read -r f; do echo \"== $f\"; tail\
-        \ -n 40 \"$f\"; done\n  exit 1\nfi\n"
+      - "cd packages/sr_data\ndart run --verbose build_runner build --delete-conflicting-outputs\
+        \ &\npid=$!\nfor _ in $(seq 1 60); do\n  kill -0 \"$pid\" 2>/dev/null || break\n\
+        \  sleep 5\ndone\nif kill -0 \"$pid\" 2>/dev/null; then\n  echo \"--- codegen\
+        \ still running after 5 minutes: process tree, then the VM's stacks (SIGQUIT)\
+        \ ---\"\n  ps -eo pid,ppid,etime,stat,wchan:32,args 2>/dev/null || true\n\
+        \  for p in \"$pid\" $(pgrep -P \"$pid\" 2>/dev/null); do\n    echo \"== pid\
+        \ $p: $(tr '\\0' ' ' < /proc/$p/cmdline 2>/dev/null)\"\n    cat /proc/$p/wchan\
+        \ 2>/dev/null; echo\n    ls -l /proc/$p/fd 2>/dev/null | tail -n +2 | awk\
+        \ '{print $NF}' | sort | uniq -c | sort -rn | head -n 15\n  done\n  kill -QUIT\
+        \ \"$pid\" 2>/dev/null; sleep 15\n  kill -9 \"$pid\" 2>/dev/null\n  exit 1\n\
+        fi\nwait \"$pid\"\n"
       - cd app && flutter build linux --release --no-pub --dart-define=SR_DISTRIBUTION=flathub
       - mkdir -p /app/lib/sevenreadings
       - cp -a app/build/linux/*/release/bundle/. /app/lib/sevenreadings/
@@ -59,7 +63,7 @@ modules:
     sources:
       - type: git
         url: https://github.com/Joey-Fuentes/sevenreadings.git
-        commit: 030a0f94ddb5d3c66f64ff99bad92532aba76b37
+        commit: 720f4e1538eadd3a62b40ece6e6dd037baab351a
       - type: file
         url: https://github.com/Joey-Fuentes/sevenreadings/releases/download/content-v2026.09.15-4da78fc/sevenreadings.sqlite.gz
         sha256: 54f81d794f43919658791b0d5f00b01ad3aa689cc46f7d0d4b66efbea4977cf8
