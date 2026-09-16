@@ -48,11 +48,17 @@ jobs:
           mkdir -p build/content
           gh release download "content-v${version}" -p manifest.json -D build/content --clobber
           sha=$(sha256sum build/content/manifest.json | cut -d' ' -f1)
-          if [ -n "${{ inputs.tag }}" ]; then
-            python3 tools/flatpak-template.py --tag "${{ inputs.tag }}" --manifest-sha256 "$sha"
-          else
-            python3 tools/flatpak-template.py --commit "$GITHUB_SHA" --manifest-sha256 "$sha"
-          fi
+          # The SQLite amalgamation package:sqlite3 3.6.0 bundles (3.53.3);
+          # sqlite.org's download page gives the year directory of the file.
+          amalgamation=sqlite-amalgamation-3530300.zip
+          path=$(curl -fsSL https://sqlite.org/download.html | grep -o "[0-9]\{4\}/$amalgamation" | head -n1)
+          test -n "$path" || { echo "$amalgamation not on sqlite.org/download.html"; exit 1; }
+          curl -fsSL -o build/content/$amalgamation "https://sqlite.org/$path"
+          sqlite_sha=$(sha256sum build/content/$amalgamation | cut -d' ' -f1)
+          ref=(--commit "$GITHUB_SHA")
+          [ -n "${{ inputs.tag }}" ] && ref=(--tag "${{ inputs.tag }}")
+          python3 tools/flatpak-template.py "${ref[@]}" --manifest-sha256 "$sha" \
+            --sqlite-path "$path" --sqlite-sha256 "$sqlite_sha"
       - name: Generate the offline manifest
         working-directory: packaging/flatpak
         # A pub workspace has one pubspec.lock, at the root, naming every

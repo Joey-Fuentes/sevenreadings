@@ -9,7 +9,12 @@
 #
 # The build is entirely from source inside Flathub's sandbox, with no
 # network: the app at a pinned commit, Flutter at its pinned tag, the pub
-# cache from pubspec.lock, and the content database as a checksummed file.
+# cache from pubspec.lock, the content database as a checksummed file, and
+# SQLite compiled from its amalgamation by package:sqlite3's own build hook
+# (its documented `source: source` user-define, appended to the workspace
+# pubspec by the build; everywhere else the app keeps the package's
+# prebuilt library). foreign.json beside this file tells flatpak-flutter
+# to leave sqlite3 to us: its registry patch targets another version.
 #
 # Runtime 25.08, not 26.08: Flutter's Linux build needs clang, which the
 # base SDK does not ship; the LLVM extension has no 26.08 branch yet
@@ -39,6 +44,16 @@ modules:
     build-commands:
       # The content database ships gzipped on the content release.
       - gunzip -c app/assets/content/sevenreadings.sqlite.gz > app/assets/content/sevenreadings.sqlite
+      # SQLite from source (pub.dev/documentation/sqlite3, "Build hook options").
+      - |
+        cat >> pubspec.yaml <<'EOF'
+
+        hooks:
+          user_defines:
+            sqlite3:
+              source: source
+              path: third_party/sqlite3/sqlite3.c
+        EOF
       # The pub workspace (root pubspec.yaml lists app and packages/*);
       # resolution is offline against the pub cache flatpak-flutter vendored.
       - cd app && flutter pub get --offline
@@ -71,3 +86,7 @@ modules:
         sha256: '@CONTENT_MANIFEST_SHA256@'
         dest: app/assets/content
         dest-filename: manifest.json
+      - type: archive
+        url: https://sqlite.org/@SQLITE_PATH@
+        sha256: '@SQLITE_SHA256@'
+        dest: third_party/sqlite3

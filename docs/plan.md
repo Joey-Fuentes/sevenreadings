@@ -178,10 +178,19 @@ replace: a different design is a change to one function in that script.
   must hold a `pubspec.lock`, and with no flags it reads the root's, the
   workspace's only lock, which names every member's packages), and
   whether it vendors the
-  prebuilt SQLite that `sqlite3` 3.6.0's build hooks download (we are on
-  `sqlite3_flutter_libs` 0.6.0, the version that no longer builds SQLite
-  itself; if not, the runtime's own libsqlite3 is the documented fallback).
-  `flathub.json` limits Flathub's builds to x86_64 for now.
+  prebuilt SQLite that `sqlite3` 3.6.0's build hooks download. Run 3
+  generated everything and the sandboxed build got as far as the tool's
+  own patch for `sqlite3`'s hook, written for another version, which did
+  not apply to 3.6.0 (the very thing the wger project warns about). The
+  answer is in `package:sqlite3`'s own documentation, not in anyone's
+  registry: the `source: source` user-define compiles SQLite from its
+  amalgamation with the package's compile-time options (FTS5 included).
+  The sandbox build appends that to the workspace pubspec and the
+  manifest supplies the amalgamation (3.53.3, the version 3.6.0 bundles)
+  as a checksummed source from sqlite.org; a `foreign.json` beside the
+  template keeps the tool's registry entry out. Every other platform keeps
+  the prebuilt library. `flathub.json` limits Flathub's builds to x86_64
+  for now.
 - **S4. Store listings as code**: `fastlane/metadata`-style directories
   with descriptions, keywords, privacy answers, and the screenshots from
   section 2, so a listing is reproducible from the repo.

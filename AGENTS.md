@@ -181,7 +181,9 @@ Rules that keep patches applying cleanly:
   the drawing there and regenerate; never edit a PNG by hand.
 - `packaging/flatpak/org.sevenreadings.SevenReadings.yml` and
   `packaging/flatpak/generated/` are written by `flatpak-sources.yml` from
-  `flatpak-flutter.template.yml`;
+  `flatpak-flutter.template.yml` (with `foreign.json`, which keeps the
+  tool's `sqlite3` patch out: the sandbox compiles SQLite from source
+  through the package's own user-define instead);
   edit the template, never the outputs, and rerun the workflow (it pins
   the commit or tag, the Flutter tag and the content release).
 - Verse ids: `book*1_000_000 + chapter*1_000 + verse`; verse 0 = chapter-level
