@@ -53,7 +53,8 @@ modules:
     sources:
       - type: git
         url: https://github.com/Joey-Fuentes/sevenreadings.git
-        commit: 92f07533fb1dab757990ab773752d5db985f2f88
+        tag: v0.1.0
+        commit: e7a828ae7731af02e5bc192869f13538800d166a
       - type: file
         url: https://github.com/Joey-Fuentes/sevenreadings/releases/download/content-v2026.09.15-4da78fc/sevenreadings.sqlite.gz
         sha256: 54f81d794f43919658791b0d5f00b01ad3aa689cc46f7d0d4b66efbea4977cf8
