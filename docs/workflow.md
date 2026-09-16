@@ -181,9 +181,12 @@ here. Today:
   the metainfo's `<releases>`, and open a PR to
   https://github.com/flathub/flathub (a new branch `new-pr` on a fork, the
   manifest, the desktop file, the metainfo and the icon files). The
-  `flatpak` job in `screenshots.yml` is the same build and Flathub's own
-  linter, so a green job before the PR is the review's first question
-  answered. After acceptance, Flathub's bot opens an update PR per release
+  `flatpak` job in `screenshots.yml` is Flathub's own builder and linter
+  with their pipeline's flags, so a green job before the PR is the
+  review's first question answered. Flathub requires open-source apps to
+  be built from source inside its sandbox; the manifest to submit is the
+  source build (`flatpak-flutter`), not the tarball one. After acceptance,
+  Flathub's bot opens an update PR per release
   from the manifest's `x-checker-data`. The metainfo's screenshots point at
   the site's copies; make sure the last `screenshots.yml` run was with the
   release content (the Monday run, or a dispatch without the sample

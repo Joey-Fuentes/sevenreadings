@@ -125,8 +125,20 @@ replace: a different design is a change to one function in that script.
   exists, an X screenshot is kept as `screenshots-flatpak`). Second run
   (2026-09-16): manifest and metainfo pass Flathub's linter, the build
   exports; the built-app lint wanted the screenshots mirrored the way
-  Flathub's build does it (`--mirror-screenshots-url`), which is why the
-  site's screenshot addresses must stay stable. The Linux
+  Flathub's build does it. Researched in Flathub's docs (2026-09-16):
+  mirroring needs `--mirror-screenshots-url` *and*
+  `--compose-url-policy=full`, its evidence is the `screenshots/x86_64`
+  ref of the exported OSTree repo, and the check Flathub runs is `repo`,
+  not `builddir`; both errors are "never granted" exceptions, so the build
+  is the fix, and the job now runs Flathub's own builder with those flags.
+  The same research changed the submission plan: Flathub requires
+  source-available apps to be built from source, and since offline
+  Flutter builds exist (`flatpak-flutter`: a pinned Flutter SDK module, a
+  generated offline pub cache, `flutter build linux --no-pub`), a prebuilt
+  tarball is expected to be refused for a new Flutter app. The tarball
+  manifest is what CI proves today; the manifest to submit is the
+  source build, the next patch, proven the same way. The metainfo, icons,
+  permissions and launch smoke carry over unchanged. The Linux
   window is titled "Seven Readings" since. Submission is the maintainer's
   (docs/workflow.md, "Releasing") and needs the first tag; the tarball
   route is the one CI proves, and if Flathub's review asks for a build

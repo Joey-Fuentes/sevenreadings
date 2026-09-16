@@ -152,7 +152,7 @@ jobs:
           mode: ${{ env.CONTENT_MODE }}
           token: ${{ github.token }}
       - name: Build deps, flatpak, a virtual display
-        run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev flatpak flatpak-builder xvfb xdotool imagemagick python3-yaml
+        run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev flatpak ostree xvfb xdotool imagemagick python3-yaml
       - uses: ./.github/actions/setup-flutter
       - name: Build the Linux bundle
         working-directory: app
@@ -165,19 +165,30 @@ jobs:
         run: |
           flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest packaging/flatpak/org.sevenreadings.SevenReadings.yml
           flatpak run --command=flatpak-builder-lint org.flatpak.Builder appstream packaging/flatpak/org.sevenreadings.SevenReadings.metainfo.xml
-      - name: Build the Flatpak from the bundle just built
+      - name: Build the Flatpak from the bundle just built, as Flathub does
         # The same manifest with the archive source swapped for the bundle
-        # directory; --disable-rofiles-fuse because the runner has no FUSE;
-        # --mirror-screenshots-url fetches the metainfo's screenshots from
-        # the site into the build and rewrites their URLs the way Flathub's
-        # own build does, which its linter then checks for.
+        # directory, built by Flathub's own builder (org.flatpak.Builder)
+        # with the flags its pipeline uses: screenshots and icons are
+        # mirrored into the build (--mirror-screenshots-url together with
+        # --compose-url-policy=full; the latter is what makes the former take
+        # effect), the result is exported to an OSTree repo, the mirrored
+        # media is committed as the screenshots/x86_64 ref, and the repo is
+        # linted, which is the check Flathub runs (the builddir check cannot
+        # see the mirrored media; docs.flathub.org/docs/for-app-authors/linter).
+        # --disable-rofiles-fuse: the runner has no FUSE. No --sandbox: the
+        # build commands are copies and the runner's nested sandboxing is
+        # not Flathub's; their pipeline builds sandboxed.
         run: |
           mkdir -p build/flatpak
           python3 tools/flatpak-ci-manifest.py packaging/flatpak/org.sevenreadings.SevenReadings.yml app/build/linux/x64/release/bundle > build/flatpak/manifest.yml
-          flatpak-builder --user --install --force-clean --disable-rofiles-fuse \
+          flatpak run org.flatpak.Builder --force-clean --user --install \
+            --install-deps-from=flathub --disable-rofiles-fuse \
             --mirror-screenshots-url=https://dl.flathub.org/media \
+            --compose-url-policy=full --repo=build/flatpak/repo \
             build/flatpak/build build/flatpak/manifest.yml
-          flatpak run --command=flatpak-builder-lint org.flatpak.Builder builddir build/flatpak/build
+          ostree commit --repo=build/flatpak/repo --canonical-permissions \
+            --branch=screenshots/x86_64 build/flatpak/build/files/share/app-info/media
+          flatpak run --command=flatpak-builder-lint org.flatpak.Builder repo build/flatpak/repo
       - name: Launch it in the sandbox
         run: xvfb-run -a -s "-screen 0 1280x800x24" bash tools/flatpak-smoke.sh
       - uses: actions/upload-artifact@v7
