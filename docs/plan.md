@@ -152,7 +152,18 @@ replace: a different design is a change to one function in that script.
   route is the one CI proves, and if Flathub's review asks for a build
   from source inside the sandbox, that is a second manifest and a new
   entry here, not a silent change.
-- **S3, Flatpak, source route (2026-09-16): in the tree, first run pending.**
+- **S3, Flatpak, source route (2026-09-16): proven in CI end to end**, in
+  Flathub's sandbox with no network: the vendored Flutter SDK built, the
+  offline `pub get` resolved the workspace, drift's codegen ran (42 s, on
+  the bare Dart VM, see below), SQLite compiled from its amalgamation by
+  `package:sqlite3`'s own hook, `flutter build linux` succeeded, install,
+  Flathub's manifest, metainfo and repo lints passed (the only warning:
+  runtime 26.08 available, the LLVM extension not having it yet), and the
+  app launched in the sandbox in 1011 ms with the release content, six
+  translations side by side, Hebrew right to left. The manifest to submit
+  is `packaging/flatpak/org.sevenreadings.SevenReadings.yml` as the
+  generator writes it; the tarball manifest is gone (git history has it).
+  How it got here:
   `packaging/flatpak/flatpak-flutter.template.yml` is the manifest as
   written by hand: freedesktop 25.08 with the `llvm21` SDK extension
   (Flutter's Linux build needs clang, the base SDK has none, and the
@@ -192,7 +203,17 @@ replace: a different design is a change to one function in that script.
   is not needed) as a checksummed source; a `foreign.json` beside the
   template keeps the tool's registry entry out. Every other platform keeps
   the prebuilt library. `flathub.json` limits Flathub's builds to x86_64
-  for now.
+  for now. Then codegen: `dart run build_runner build` blocked silently in
+  the sandbox, run after run (ten minutes, no output even verbose). A
+  ladder proved `dart --version` and `dart pub get --offline` answer within
+  a second; a process dump proved `dart run` was one process in a futex
+  wait with no files open and no children, i.e. its command-line layer
+  blocking at start-up before touching the project; a home inside the
+  sandbox and telemetry off (`CI=true`) changed nothing. Running the bare
+  VM on build_runner's entrypoint (`dart --disable-dart-dev --packages=…`)
+  did the same work in 42 s, and that is what the manifest does. Why
+  `dart run`'s layer blocks in this nested sandbox is not known; it is
+  written down in `AGENTS.md` as a trap, not solved.
 - **S4. Store listings as code**: `fastlane/metadata`-style directories
   with descriptions, keywords, privacy answers, and the screenshots from
   section 2, so a listing is reproducible from the repo.
@@ -515,8 +536,8 @@ Spikes:
 1. T1-T2 (integration test, Android emulator screenshots): the foundation
    every other item is checked against. Done 2026-09-15 (section 2, State).
 2. S3 (Flathub manifest, PWA) and D1 (donations screen, links only): free,
-   ship on the free channels. D1, the icon, the PWA done; the Flatpak
-   remains (2026-09-16).
+   ship on the free channels. All done 2026-09-16; the Flathub submission
+   itself is the maintainer's (docs/workflow.md, "Releasing").
 3. N1 (narrator with system voices). Done by state 2026-09-15 (section 5,
    State), by ear pending; item 2's PWA and Flatpak resume next.
 4. L1 and L2 (chat feasibility, web and Linux) — decide from the numbers.

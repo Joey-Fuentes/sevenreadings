@@ -51,7 +51,8 @@ docs/               ADRs, licensing matrix, schema notes, workflow.
 tools/              Small scripts used by CI and developers (web assets, the
                     checklist run on a device, the icon generator).
 packaging/          The icon as SVG and PNGs; the Flatpak: a template, the
-                    generated offline manifest, desktop file, AppStream metainfo.
+                    generated offline source-build manifest, desktop file,
+                    AppStream metainfo.
 ```
 
 ## How content works

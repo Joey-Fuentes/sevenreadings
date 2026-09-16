@@ -184,9 +184,10 @@ here. Today:
   date in the metainfo's `<releases>`, run `screenshots.yml` and confirm
   the `flatpak` job is green (Flathub's own builder, sandboxed, and their
   three lints), then open a PR to https://github.com/flathub/flathub (a
-  branch off `new-pr` on a fork; the generated manifest and files,
-  `flathub.json`, the desktop file, the metainfo, the icon files, the
-  launcher). Re-run `flatpak-sources.yml` whenever dependencies, Flutter
+  branch off `new-pr` on a fork; the generated manifest with its
+  `generated/` directory, `foreign.json`, `flathub.json`, the desktop
+  file, the metainfo, the icon files, the launcher — everything the
+  manifest's `type: file` and `path:` entries name). Re-run `flatpak-sources.yml` whenever dependencies, Flutter
   or the content release change. After acceptance, Flathub's bot opens an
   update PR per release
   from the manifest's `x-checker-data`. The metainfo's screenshots point at

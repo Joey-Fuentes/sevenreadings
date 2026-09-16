@@ -45,10 +45,7 @@ modules:
         # HOME=/home/runner, which does not exist in it, and the dart tool
         # keeps its state under $HOME. Flathub's builders never see a host home.
         HOME: /run/build/sevenreadings/.home
-        # The Dart tools treat CI=true as "no telemetry"; in the sandbox the
-        # first run of `dart run` blocked before opening a single file, on a
-        # thread the telemetry layer waits for (fifth sandboxed run, 2026-09-16:
-        # one process, futex wait, no files, no children).
+        # No telemetry from the Dart and Flutter tools in the sandbox.
         CI: 'true'
     build-commands:
       # The content database ships gzipped on the content release.
@@ -71,37 +68,21 @@ modules:
       # verbose output: dart run runs native build hooks before codegen. The
       # timeout turns a silent hang (first sandboxed run, 2026-09-16: 22
       # minutes without a line) into a reported failure.
-      - mkdir -p "$HOME"; ls -l third_party/sqlite3/sqlite3.c; which clang; tail -n 8 pubspec.yaml; env | grep -i -E 'proxy|^home=|pub_cache' || true
-      # The ladder: does dart start at all, does pub resolve, does codegen run.
-      # Third sandboxed run (2026-09-16): dart run was silent for ten minutes
-      # and never reached the hooks (no .dart_tool/hooks_runner appeared).
-      - timeout --foreground 120 dart --version
-      - timeout --foreground 300 dart pub get --offline
-      # Codegen, two ways. First `dart run` with telemetry off (CI=true above);
-      # if that is still silent after three minutes, the bare VM on
-      # build_runner's entrypoint with --disable-dart-dev, which skips the
-      # command-line layer whose start-up blocked in the sandbox (fifth run,
-      # 2026-09-16: one process in a futex wait, no files open, no children).
+      - mkdir -p "$HOME"
+      # drift's code generation, on the bare Dart VM. `dart run` cannot be used
+      # here: in this sandbox its command-line layer blocks at start-up before
+      # opening a single file (one process, futex wait, no children; six runs
+      # on 2026-09-16 pinned it down, and telemetry off did not change it),
+      # while the same SDK's `dart --version` and `dart pub get` answer at once.
+      # --disable-dart-dev runs the VM directly on build_runner's entrypoint
+      # with the workspace's package config; that took 42 s and wrote every
+      # output the normal command does.
       - |
         cd packages/sr_data
-        cat /etc/resolv.conf 2>/dev/null || echo "no resolv.conf"
-        dart run build_runner build --delete-conflicting-outputs &
-        pid=$!
-        for _ in $(seq 1 36); do
-          kill -0 "$pid" 2>/dev/null || break
-          sleep 5
-        done
-        if kill -0 "$pid" 2>/dev/null; then
-          echo "--- dart run still silent after 3 minutes (wchan: $(cat /proc/$pid/wchan 2>/dev/null)); trying the bare VM ---"
-          kill -9 "$pid" 2>/dev/null
-          entry=$(ls -d "$PUB_CACHE"/hosted/pub.dev/build_runner-*/bin/build_runner.dart | head -n1)
-          echo "entrypoint: $entry"
-          timeout --foreground 600 dart --disable-dart-dev \
-            --packages=/run/build/sevenreadings/.dart_tool/package_config.json \
-            "$entry" build --delete-conflicting-outputs
-        else
-          wait "$pid"
-        fi
+        entry=$(ls -d "$PUB_CACHE"/hosted/pub.dev/build_runner-*/bin/build_runner.dart | head -n1)
+        timeout --foreground 900 dart --disable-dart-dev \
+          --packages=/run/build/sevenreadings/.dart_tool/package_config.json \
+          "$entry" build --delete-conflicting-outputs
       - cd app && flutter build linux --release --no-pub --dart-define=SR_DISTRIBUTION=flathub
       - mkdir -p /app/lib/sevenreadings
       - cp -a app/build/linux/*/release/bundle/. /app/lib/sevenreadings/

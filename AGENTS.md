@@ -288,6 +288,14 @@ Rules that keep patches applying cleanly:
   fails unless ten screenshots and both timings came out of the run. A
   workflow that can pass without doing its work is a bug of the same kind
   as untested code.
+- In the Flatpak sandbox, `dart run` blocks at start-up: one process in a
+  futex wait, no files open, no children, silent even with `--verbose`,
+  while the same SDK's `dart --version` and `dart pub get` answer at once
+  (six sandboxed runs, 2026-09-16; a home inside the sandbox and
+  telemetry off changed nothing). Codegen there runs the bare VM on
+  build_runner's entrypoint with `--disable-dart-dev` and `--packages=`.
+  Cause unknown; if a future Flutter changes it, try `dart run` once and
+  record the result here.
 - `setState(() => _x = _load())` returns the Future to `setState`, which
   asserts in debug builds only; the phone's release APK ran it for days,
   the emulator test failed on it at the first bookmark. Write the block
@@ -308,7 +316,7 @@ weekly cron had never fired). Results and state:
 | target | built (2026-09-15) | signed | run by a person | needs |
 |--------|--------------------|--------|-----------------|-------|
 | Web | yes; every push (smoke) and Pages deploy | n/a | yes, daily, on Pages; the checklist and an offline proof are green in `screenshots.yml` (2026-09-16); installable PWA at https://sevenreadings.org/ | — |
-| Linux x64 | yes, tar.gz 80 MB; every push (smoke); and as a Flatpak in `screenshots.yml` (Flathub's builder and lints, sandbox launch 2.0 s) | n/a | no person; the checklist is green under Xvfb in `screenshots.yml` (2026-09-15, sample content: first launch 2.5 s, second 0.25 s, the side-by-side layout) | a person to run the tarball once; then Flatpak if wanted. Linux arm64 was dropped: Flutter publishes no arm64 Linux SDK |
+| Linux x64 | yes, tar.gz 80 MB; every push (smoke); and as a Flatpak built from source in Flathub's sandbox in `screenshots.yml` (their builder and lints, sandbox launch 1.0 s) | n/a | no person; the checklist is green under Xvfb in `screenshots.yml` (2026-09-15, sample content: first launch 2.5 s, second 0.25 s, the side-by-side layout) | a person to run the tarball once; then Flatpak if wanted. Linux arm64 was dropped: Flutter publishes no arm64 Linux SDK |
 | Android | yes: APK 126.5 MB, AAB 125.4 MB — under Play's 200 MB cap, so no Play Asset Delivery at this content size (ADR 0004) | debug key | yes (2026-09-15: the APK installed on the maintainer's phone; first-launch copy, readings, search, a bookmark surviving restart all worked). The same checklist is `app/integration_test/app_test.dart`, run on an emulator by `screenshots.yml`: green 2026-09-15 on sample and on release content; release: first launch 5.0 s (the 167 MB copy included, debug build), second 0.16 s, eight screenshots | a signing key (`app/android/key.properties`, never committed); Play account for the store |
 | Windows | yes, zip 82 MB | no | no | a person to run it once; code signing is optional (SmartScreen warns without it) |
 | macOS | yes, .app 214.6 MB, zip 89 MB | no | no | Developer ID certificate and notarization in the workflow (the comment in build.yml marks the spot); a person to run it once |
@@ -393,12 +401,11 @@ App-side: `docs/plan.md`, in the order at its end. Item 1 (the integration
 test and the Android emulator job) is done and measured, T3 has Linux,
 D1 (the Support band and screen) and the icon are done, N1 (the
 narrator) is done by state, the PWA with its `web` job and the screenshots
-page (T4) are done, and the Flatpak builds, lints and launches in CI on
-the tarball route; the source route (`flatpak-flutter`, required by
-Flathub) is in the tree pending its first `flatpak-sources.yml` run and
-the `flatpak` job on its output — the last of item 2 (then the first
-`v*` tag and the PR, docs/workflow.md "Releasing"); then plan item 4.
-Content-side, below.
+page (T4) are done, and the Flatpak builds from source in Flathub's sandbox, passes their
+lints and launches in CI: item 2 is complete on the AI's side. What is
+left is the maintainer's: the first `v*` tag, `flatpak-sources.yml -f
+tag=…`, and the PR to flathub/flathub (docs/workflow.md "Releasing").
+Then plan item 4. Content-side, below.
 
 In rough order of value: extend the Qur'an pairings (the file is the whole
 of the Islamic reading's coverage); more ICC volumes (Plummer's Luke 1896,
