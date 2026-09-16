@@ -62,8 +62,18 @@ modules:
       # verbose output: dart run runs native build hooks before codegen. The
       # timeout turns a silent hang (first sandboxed run, 2026-09-16: 22
       # minutes without a line) into a reported failure.
-      - ls -l third_party/sqlite3/sqlite3.c; which clang; tail -n 8 pubspec.yaml
-      - cd packages/sr_data && timeout 900 dart run --verbose build_runner build --delete-conflicting-outputs
+      - ls -l third_party/sqlite3/sqlite3.c; which clang; tail -n 8 pubspec.yaml; env | grep -i -E 'proxy|^home=|pub_cache' || true
+      # On a timeout, the hook logs are the evidence (second sandboxed run,
+      # 2026-09-16: fifteen silent minutes even with --verbose).
+      - |
+        cd packages/sr_data
+        if ! timeout --foreground 600 dart run --verbose build_runner build --delete-conflicting-outputs; then
+          echo "--- codegen failed or timed out; hooks_runner state ---"
+          find /run/build/sevenreadings -path '*hooks_runner*' -type f 2>/dev/null | head -n 40
+          find /run/build/sevenreadings -path '*hooks_runner*' -type f \( -name '*.log' -o -name '*.txt' -o -name '*.json' \) 2>/dev/null \
+            | while read -r f; do echo "== $f"; tail -n 40 "$f"; done
+          exit 1
+        fi
       - cd app && flutter build linux --release --no-pub --dart-define=SR_DISTRIBUTION=flathub
       - mkdir -p /app/lib/sevenreadings
       - cp -a app/build/linux/*/release/bundle/. /app/lib/sevenreadings/
