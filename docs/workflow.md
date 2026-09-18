@@ -295,6 +295,53 @@ which is what the Store wants (it signs on submission); its version is
 the pubspec version with revision 0, as the Store requires. Submitting it
 is S2 (the `msstore` CLI or the Partner Center upload page).
 
+**Uploads on a release tag (S2).** `release.yml` sends the signed AAB to
+Google Play's internal testing track when `PLAY_SERVICE_ACCOUNT_JSON`
+exists, and, when the Apple secrets exist, the iOS archive goes straight
+to App Store Connect (TestFlight) instead of into an `.ipa`. Play first
+needs the app created in the console and its first AAB uploaded by hand
+(Google's rule for a new app), then a service account: Google Cloud
+Console › IAM › Service accounts › create, Keys › Add key › JSON; Play
+Console › Users and permissions › Invite new users › the service
+account's email, with "Release to testing tracks" and "View app
+information" on this app. Then:
+
+```
+gh secret set PLAY_SERVICE_ACCOUNT_JSON < ~/storage/downloads/<key>.json
+```
+
+Promotion from internal testing to production is a console click; the
+Microsoft Store upload waits for its account (docs/plan.md, S2 state).
+
+## Tips (in-app purchases in the store builds)
+
+Store builds (`SR_DISTRIBUTION=play|appstore`) sell three consumable
+tips through the store's own billing (`app/lib/features/support/tips.dart`)
+and show the Support band once the store answers with products. The
+product ids are fixed in code: `tip_small`, `tip_medium`, `tip_large`.
+Create them, with those exact ids, as consumables (a suggestion: $2.99,
+$9.99, $24.99; the stores localize the price), after a build with the
+plugin is on a testing track:
+
+- Play Console: Setup › Payments profile first (merchant account, tax
+  form, bank); then Monetize › Products › In-app products › Create, one
+  per id, Active. Settings › License testing › add your own Google
+  account, then a tester install from the internal track can buy
+  without being charged.
+- App Store Connect: Agreements, Tax, and Banking › Paid Apps in effect
+  first; then the app › In-App Purchases › Consumable, one per id, with a
+  name, a description and a review screenshot; submit them with the first
+  build that uses them. Users and Access › Sandbox › a tester account,
+  then a TestFlight install on the iPad buys against the sandbox.
+
+What the app does with a purchase: opens the store's sheet, waits on the
+purchase stream, acknowledges every purchase (on Android consuming it, so
+it can be bought again), shows a thank-you or the store's error, and
+never gives anything in return: the app is complete for everyone. The
+Support screen's wording stays "tip" and "support", never "donation"
+(docs/plan.md, D4). Without products (every CI emulator and simulator)
+the band does not appear and the checklist proves that on a store build.
+
 None of the Apple steps has run yet: they are written from Apple's and
 Flutter's documentation and wait for the account (docs/plan.md, S1 state).
 The first signed run is the proof, and its log is the thing to send.

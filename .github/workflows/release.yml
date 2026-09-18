@@ -12,7 +12,31 @@ jobs:
     uses: ./.github/workflows/build.yml
     with:
       content: release
+      upload: true
     secrets: inherit
+
+  play:
+    name: Google Play, internal testing
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      # docs/workflow.md, "Signing": a service account with release rights
+      # on the app. Without it nothing is uploaded and the job says so.
+      PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+    steps:
+      - uses: actions/download-artifact@v8
+        with: { name: android, path: android }
+      - name: Upload the AAB to the internal track (when the secret exists)
+        if: env.PLAY_SERVICE_ACCOUNT_JSON != ''
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: org.sevenreadings.SevenReadings
+          releaseFiles: android/bundle/release/app-release.aab
+          track: internal
+          status: completed
+      - if: env.PLAY_SERVICE_ACCOUNT_JSON == ''
+        run: echo "No PLAY_SERVICE_ACCOUNT_JSON secret; nothing uploaded to Google Play."
 
   publish:
     needs: build
@@ -28,9 +52,11 @@ jobs:
           cp "$(find artifacts/android -name '*.apk' | head -n1)" release/sevenreadings-android.apk
           cp "$(find artifacts/android -name '*.aab' | head -n1)" release/sevenreadings-android.aab
           cp artifacts/linux-x64/*.tar.gz release/
-          cp artifacts/windows-x64/*.zip artifacts/macos/*.zip artifacts/ios/*.zip release/
-          # Present only on signed runs (build.yml: Developer ID, App Store key).
-          for f in artifacts/macos/*.dmg artifacts/ios/*.ipa artifacts/windows-x64/*.msix; do if [ -e "$f" ]; then cp "$f" release/; fi; done
+          cp artifacts/windows-x64/*.zip artifacts/macos/*.zip release/
+          # Present only on some runs: the unsigned iOS .app (no Apple
+          # secrets; with them the archive goes to App Store Connect), the
+          # notarized DMG (Developer ID), the MSIX.
+          for f in artifacts/ios/*.zip artifacts/macos/*.dmg artifacts/windows-x64/*.msix; do if [ -e "$f" ]; then cp "$f" release/; fi; done
           (cd artifacts/web && zip -qr ../../release/sevenreadings-web.zip .)
           (cd release && sha256sum -- * > SHA256SUMS)
           ls -la release

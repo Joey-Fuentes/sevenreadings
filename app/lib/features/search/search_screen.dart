@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:sr_core/sr_core.dart';
 import 'package:sr_data/sr_data.dart';
 
-import '../support/support_links.dart';
 import '../support/support_screen.dart';
 
 /// Where the reader should go after a result is tapped.
@@ -167,7 +166,7 @@ class _SearchScreenState extends State<SearchScreen> {
             },
           ),
         ],
-        bottom: showsSupportLinks ? const SupportBar() : null,
+        bottom: SupportBar.ifShown,
       ),
       body: FutureBuilder<_Filters>(
         future: _filters,

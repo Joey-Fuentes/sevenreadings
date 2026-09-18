@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:sr_data/sr_data.dart';
 
 import '../reader/markdown_text.dart';
-import '../support/support_links.dart';
 import '../support/support_screen.dart';
 
 /// The screen's list, for the integration test to scroll to the notices.
@@ -66,7 +65,7 @@ class AboutScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('About the texts'),
-        bottom: showsSupportLinks ? const SupportBar() : null,
+        bottom: SupportBar.ifShown,
       ),
       body: FutureBuilder<_About>(
         future: _load(),
@@ -88,7 +87,7 @@ class AboutScreen extends StatelessWidget {
                 'give the terms and the attribution each requires.',
                 style: theme.textTheme.bodyMedium,
               ),
-              if (showsSupportLinks)
+              if (SupportBar.shown)
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.favorite_outline),

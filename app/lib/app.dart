@@ -3,6 +3,8 @@ import 'package:sr_data/sr_data.dart';
 
 import 'content/content_loader.dart';
 import 'features/reader/reader_screen.dart';
+import 'features/support/support_screen.dart';
+import 'features/support/tips.dart';
 
 class SevenReadingsApp extends StatefulWidget {
   const SevenReadingsApp({super.key});
@@ -14,6 +16,14 @@ class SevenReadingsApp extends StatefulWidget {
 class _SevenReadingsAppState extends State<SevenReadingsApp> {
   late final Future<ContentDb> _content = loadContentDb();
   late final UserDb _user = UserDb.open();
+
+  @override
+  void initState() {
+    super.initState();
+    // Store builds ask the store for the tips once per process; the
+    // Support band appears when it answers (SupportBar.shown).
+    TipStore.instance.load();
+  }
 
   @override
   void dispose() {
@@ -38,9 +48,11 @@ class _SevenReadingsAppState extends State<SevenReadingsApp> {
         brightness: Brightness.dark,
         useMaterial3: true,
       ),
-      home: FutureBuilder<ContentDb>(
-        future: _content,
-        builder: (context, snapshot) {
+      home: ListenableBuilder(
+        listenable: TipStore.instance,
+        builder: (context, _) => FutureBuilder<ContentDb>(
+          future: _content,
+          builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Scaffold(
               body: Center(
@@ -73,8 +85,9 @@ class _SevenReadingsAppState extends State<SevenReadingsApp> {
               ),
             );
           }
-          return ReaderScreen(db: snapshot.data!, user: _user);
-        },
+            return ReaderScreen(db: snapshot.data!, user: _user);
+          },
+        ),
       ),
     );
   }

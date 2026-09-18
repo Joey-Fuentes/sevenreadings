@@ -37,6 +37,7 @@ import 'package:sevenreadings/features/about/about_screen.dart';
 import 'package:sevenreadings/features/narrator/narrator_bar.dart';
 import 'package:sevenreadings/features/reader/reader_screen.dart';
 import 'package:sevenreadings/features/support/support_links.dart';
+import 'package:sevenreadings/features/support/tips.dart';
 
 late final IntegrationTestWidgetsFlutterBinding binding;
 var surfaceConverted = false;
@@ -98,9 +99,12 @@ void main() {
     // Support Seven Readings: the band under the title row, on every
     // screen of builds that may show outside payment links. A store build
     // (--dart-define=SR_DISTRIBUTION=play|appstore|msstore, the store
-    // screenshots run) has neither the band nor the screen, and the
-    // checklist proves that instead: nine screenshots then, not ten.
+    // screenshots run) shows the band only once the store has tips to
+    // sell, which no emulator or simulator in CI has (no products, no
+    // account), so there the checklist proves the band absent instead:
+    // nine screenshots then, not ten. The tips' state goes in the report.
     report('distribution', distribution);
+    report('tips', TipStore.instance.status.name);
     if (showsSupportLinks) {
       await tester.tap(find.text('Support Seven Readings'));
       await waitFor(tester, find.text('Support'));

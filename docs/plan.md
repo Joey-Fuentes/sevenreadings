@@ -252,6 +252,24 @@ replace: a different design is a change to one function in that script.
   signed run's log (notarytool "Accepted", `spctl` "accepted", the
   `.ipa`); until then they are code written against the documentation,
   and any failure there is a new entry here, not a surprise.
+- **D2 and D3 (2026-09-18): written, testable only with the accounts.**
+  Store builds (`play`, `appstore`) sell three consumable tips through
+  `in_app_purchase` (BSD-3; `features/support/tips.dart`): one process-wide
+  `TipStore` listens to the purchase stream from launch (a purchase
+  interrupted or pending is delivered on the next start), asks the store
+  for `tip_small`, `tip_medium`, `tip_large`, shows them with the store's
+  price on the Support screen, buys through the store's sheet,
+  acknowledges and (Android) consumes, and shows a thank-you or the
+  store's error. The Support band appears in a store build only once the
+  store has products, so a store build with nothing configured looks
+  exactly as before; the store-build checklist run proves that (no
+  products on any CI emulator or simulator) and reports the tips' state.
+  The Microsoft Store build has neither links nor tips: the plugin has no
+  Windows implementation. Proof of a purchase is a person with a license
+  tester account (Play) or a sandbox account (App Store) on a device;
+  Apple's StoreKit test configuration would let the simulator do it
+  without an account, but `flutter drive` cannot load one, so that stays
+  a person's step. Wording: "tip", never "donation" (D4).
 - **S4. Store listings as code**: `fastlane/metadata`-style directories
   with descriptions, keywords, privacy answers, and the screenshots from
   section 2, so a listing is reproducible from the repo.
@@ -302,7 +320,20 @@ replace: a different design is a change to one function in that script.
   inspected in the log, not a channel); with them it carries the Store
   identity unsigned, version `a.b.c.0`. It joins the `windows-x64`
   artifact and the release assets. The lockfile workflow will commit the
-  new dependency's resolution on the push.
+  new dependency's resolution on the push. First run (2026-09-18): green;
+  an 86 MB `sevenreadings-windows.msix` with the placeholder identity and
+  the test certificate, display names right in its manifest. The Store
+  form waits for the Partner Center secrets.
+- **S2 (2026-09-18): written, unrun.** On a `v*` tag `release.yml` uploads
+  the AAB to Play's internal track (`r0adkll/upload-google-play`, MIT)
+  when `PLAY_SERVICE_ACCOUNT_JSON` exists, and the ios job's export
+  destination becomes `upload`, so the signed archive goes to App Store
+  Connect for TestFlight when the Apple secrets exist. Both say what they
+  skipped when the secret is absent. The Microsoft Store upload (`msstore`
+  CLI) is not written: it needs the Partner Center app id and tenant
+  credentials, which do not exist yet; when they do, it is one job in
+  `release.yml` next to `play`, and its absence is recorded here rather
+  than papered over.
 
 Order: S3 first (no cost, no gate), S1, S2, S4. Documented output: this
 file's tables kept current, and `docs/workflow.md` gains a "Releasing"

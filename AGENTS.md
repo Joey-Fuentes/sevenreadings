@@ -179,6 +179,10 @@ Rules that keep patches applying cleanly:
   default would have been `org.sevenreadings.sevenreadings`); the Android
   and iOS ids are permanent after the first store upload. The Dart package
   stays `sevenreadings`.
+- Store builds sell tips through `in_app_purchase` (`features/support/
+  tips.dart`); product ids are fixed in code and mirrored in the consoles
+  (docs/workflow.md, "Tips"). The Support band shows in a store build only
+  when the store has products; direct builds show it always.
 - `store/` is the listings as code (texts, privacy answers and policy,
   captions); the policy is also `app/web/privacy/index.html`, and the two
   say the same thing. Store screenshots come from
@@ -442,8 +446,12 @@ chat work. Plan item 4 (T3 on every target) is done with release-content
 numbers. Item 5 is in progress: S1 signing as code is written (Android
 proven for Android on 2026-09-17, the Apple half waits for the Developer
 Program), S4 listings as code is done (`store/`, framed from a store-build run),
-Windows MSIX is written (first run pending), next D2-D3 in-app tips,
-then S2 uploads and the store submissions; the chat spikes come after. Content-side, below.
+Windows MSIX builds (test-signed until Partner Center exists), D2-D3
+in-app tips are written (proof needs a person with a tester account),
+S2 uploads to Play and TestFlight are written behind secrets. What is
+left is the maintainer's: the Play app record, merchant profile and
+products; the Apple program; Partner Center; then the console
+submissions. The chat spikes come after publishing. Content-side, below.
 
 In rough order of value: extend the Qur'an pairings (the file is the whole
 of the Islamic reading's coverage); more ICC volumes (Plummer's Luke 1896,

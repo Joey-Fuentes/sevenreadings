@@ -8,7 +8,6 @@ import '../narrator/narrator.dart';
 import '../narrator/narrator_bar.dart';
 import '../notes/notes_screen.dart';
 import '../search/search_screen.dart';
-import '../support/support_links.dart';
 import '../support/support_screen.dart';
 import 'markdown_text.dart';
 
@@ -273,7 +272,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
             onPressed: () => _step(1),
           ),
         ],
-        bottom: showsSupportLinks ? const SupportBar() : null,
+        bottom: SupportBar.ifShown,
       ),
       bottomNavigationBar: NarratorBar(narrator: _narrator),
       body: FutureBuilder<_ChapterData>(

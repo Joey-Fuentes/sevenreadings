@@ -2,13 +2,16 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!-- Export options for the App Store archive (build.yml, ios job). The
      team id is filled in from the APPLE_TEAM_ID secret at build time;
-     signing is automatic through the App Store Connect API key. -->
+     signing is automatic through the App Store Connect API key. The
+     destination is `export` (an .ipa artifact) on ordinary builds and
+     `upload` (straight to App Store Connect, for TestFlight) on a release
+     tag. -->
 <plist version="1.0">
 <dict>
 	<key>method</key>
 	<string>app-store-connect</string>
 	<key>destination</key>
-	<string>export</string>
+	<string>@DESTINATION@</string>
 	<key>teamID</key>
 	<string>@TEAM_ID@</string>
 	<key>signingStyle</key>

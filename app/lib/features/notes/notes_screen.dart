@@ -3,7 +3,6 @@ import 'package:sr_core/sr_core.dart';
 import 'package:sr_data/sr_data.dart';
 
 import '../search/search_screen.dart';
-import '../support/support_links.dart';
 import '../support/support_screen.dart';
 
 /// Everything the reader has bookmarked or written, newest first. Tapping
@@ -70,7 +69,7 @@ class _NotesScreenState extends State<NotesScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Bookmarks & notes'),
-        bottom: showsSupportLinks ? const SupportBar() : null,
+        bottom: SupportBar.ifShown,
       ),
       body: FutureBuilder<_Items>(
         future: _items,

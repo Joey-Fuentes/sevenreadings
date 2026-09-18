@@ -13,6 +13,10 @@ on:
       content:
         type: string
         default: release
+      upload:
+        description: Send the signed iOS archive to App Store Connect (TestFlight) instead of exporting an .ipa
+        type: boolean
+        default: false
   schedule:
     - cron: "0 5 * * 1" # weekly canary against latest stable Flutter
 
@@ -309,19 +313,28 @@ jobs:
           # Flutter writes the Xcode configuration (Generated.xcconfig, the
           # dart defines); xcodebuild then archives with the team's signing.
           flutter build ios --release --config-only --dart-define=SR_DISTRIBUTION=appstore
-          sed "s/@TEAM_ID@/$TEAM_ID/" ios/ExportOptions.plist > build/ExportOptions.plist
+          destination=$([ "${{ inputs.upload }}" = "true" ] && echo upload || echo export)
+          sed -e "s/@TEAM_ID@/$TEAM_ID/" -e "s/@DESTINATION@/$destination/" ios/ExportOptions.plist > build/ExportOptions.plist
+          echo "export destination: $destination"
           xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner -configuration Release \
             -destination generic/platform=iOS -archivePath build/ios/Runner.xcarchive archive \
             DEVELOPMENT_TEAM="$TEAM_ID" CODE_SIGN_STYLE=Automatic "${auth[@]}"
           xcodebuild -exportArchive -archivePath build/ios/Runner.xcarchive \
             -exportOptionsPlist build/ExportOptions.plist -exportPath build/ios/ipa "${auth[@]}"
           rm -f "$key"
-          ls -la build/ios/ipa
-          cp build/ios/ipa/*.ipa ../sevenreadings-ios.ipa
+          if [ "$destination" = export ]; then
+            ls -la build/ios/ipa
+            cp build/ios/ipa/*.ipa ../sevenreadings-ios.ipa
+          else
+            echo "uploaded to App Store Connect; it appears under TestFlight after processing"
+          fi
           codesign -dv --verbose=2 build/ios/Runner.xcarchive/Products/Applications/Runner.app 2>&1 | grep -E '^(Authority|TeamIdentifier)'
       - uses: actions/upload-artifact@v7
+        # Empty on a release tag with the Apple secrets: the archive went
+        # to App Store Connect instead of into a file.
         with:
           name: ios
           path: |
             sevenreadings-ios-unsigned.zip
             sevenreadings-ios.ipa
+          if-no-files-found: ignore
