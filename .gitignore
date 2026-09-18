@@ -36,6 +36,8 @@ app/android/key.properties
 *.jks
 *.keystore
 *.p12
+*.p8
+*.b64
 *.mobileprovision
 
 .DS_Store

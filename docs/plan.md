@@ -227,6 +227,28 @@ replace: a different design is a change to one function in that script.
   did the same work in 42 s, and that is what the manifest does. Why
   `dart run`'s layer blocks in this nested sandbox is not known; it is
   written down in `AGENTS.md` as a trap, not solved.
+- **S1 (2026-09-17): written, Android provable now, Apple waits for the
+  account.** `build.yml` reads the secrets named in docs/workflow.md
+  ("Signing") and builds unsigned without them: Android writes
+  `key.properties` and the keystore from `ANDROID_KEYSTORE_*`, and a step
+  after the build prints the certificate of the APK and the AAB
+  (`apksigner`, `keytool`) and fails if it is the debug key while secrets
+  exist, or not the debug key while they do not (that half ran on the next
+  build: pending). macOS imports a Developer ID `.p12` into a temporary
+  keychain (`.github/actions/apple-keychain`), signs frameworks then app
+  with the hardened runtime and `Release.entitlements`, makes a DMG, signs
+  it, notarizes it with the App Store Connect API key, staples and checks
+  it with `spctl`. iOS uses only the API key: `flutter build ios
+  --config-only`, then `xcodebuild archive` and `-exportArchive` with
+  `-allowProvisioningUpdates` and the key, `app/ios/ExportOptions.plist`
+  (`app-store-connect`, automatic signing, team id from a secret), which
+  is Apple's cloud signing and creates the managed distribution
+  certificate; Developer ID cannot be cloud-managed (Apple bug
+  FB16835802), which is why macOS needs the `.p12`. The Apple steps have
+  not run: no account yet. Their proof, when it exists, is the first
+  signed run's log (notarytool "Accepted", `spctl` "accepted", the
+  `.ipa`); until then they are code written against the documentation,
+  and any failure there is a new entry here, not a surprise.
 - **S4. Store listings as code**: `fastlane/metadata`-style directories
   with descriptions, keywords, privacy answers, and the screenshots from
   section 2, so a listing is reproducible from the repo.
@@ -359,7 +381,15 @@ weekly, and on demand, not on every push.
   left of the verse, mid-slide, and was absorbed. The test now pops a
   screen and waits until it is gone from the tree (`goBack`), at all
   three places it goes back; the other targets' fade transitions had
-  hidden the race. Third run pending for macOS.
+  hidden the race. Third run (sample): all seven green, macOS 4070/268.
+- **T3: done on every target, 2026-09-17**, release content (the pinned
+  167 MB database, debug builds): Android emulator 6285 / 186 ms; iPhone
+  Air simulator 4480 / 151; macOS 5333 / 218 at 1024x642; Windows 3900 /
+  177 at 1028x681; Linux 2588 / 312 at 1280x720; web 8589 / 2190 at
+  1600x881 (the database streamed into the browser, then the offline
+  proof); Flatpak launched in the sandbox. Ten screenshots each, on
+  https://sevenreadings.org/screenshots/ after the next deploy. Section 2
+  is complete; the store-ready framed versions are S4.
 - **T4 (2026-09-16): done**, https://sevenreadings.org/screenshots/ shows
   android, linux and web, ten each, with their launch timings, and the
   offline proof's screenshot. Its first deploy published an empty page

@@ -173,11 +173,91 @@ screenshots travel with it, since they are written before the failure is
 reported. When a run has passed, its numbers go into `docs/plan.md`
 (section 2, State) and anything it found into `AGENTS.md`.
 
+## Signing (secrets, never files in git)
+
+`build.yml` signs what it can with what it finds in the repository's
+Actions secrets and builds unsigned when a secret is absent, saying which
+in the log; forks and canaries never need any of this. Every secret name
+below is exact. `gh secret set NAME < file` reads a value from a file,
+`gh secret set NAME` prompts for it.
+
+**Android (upload key; needed for Play and for a real release APK).**
+Play App Signing keeps the app signing key on Google's side; what this key
+signs is the upload. Create it once, on the phone, and back it up somewhere
+that is not the phone (a lost upload key is a support ticket with Google;
+a leaked one is a reset):
+
+```
+pkg install openjdk-17          # Termux; keytool comes with it
+keytool -genkey -v -keystore ~/upload-keystore.jks -keyalg RSA \
+  -keysize 2048 -validity 10000 -alias upload
+base64 -w0 ~/upload-keystore.jks > ~/upload-keystore.b64
+cd ~/sevenreadings
+gh secret set ANDROID_KEYSTORE_BASE64 < ~/upload-keystore.b64
+gh secret set ANDROID_KEYSTORE_PASSWORD   # the store password you typed
+gh secret set ANDROID_KEY_ALIAS --body upload
+gh secret set ANDROID_KEY_PASSWORD        # the key password (same, if you pressed Enter)
+rm ~/upload-keystore.b64
+gh workflow run build.yml && gh run watch
+```
+
+The android job then writes `app/android/key.properties` and the
+keystore (both gitignored), builds, and its "Which key signed them" step
+prints the certificate of the APK and the AAB and fails if it is the debug
+key. The SHA-256 fingerprint it prints is what Play asks for when you
+register the upload key. Until the secrets exist the same step prints
+"debug-signed" and passes.
+
+**macOS (Developer ID, for the DMG outside the App Store).** Needs the
+Apple Developer Program ($99/year) and the Mac mini once. In Xcode
+(Settings > Accounts > Manage Certificates) create a *Developer ID
+Application* certificate; in Keychain Access export it, with its private
+key, as a `.p12` with a password. Then, on the Mac:
+
+```
+base64 -i DeveloperID.p12 | tr -d '\n' > developer-id.b64
+gh secret set APPLE_DEVELOPER_ID_P12_BASE64 < developer-id.b64
+gh secret set APPLE_DEVELOPER_ID_P12_PASSWORD
+```
+
+Notarization and the iOS build use an App Store Connect API key: App
+Store Connect > Users and Access > Integrations > App Store Connect API >
+Team keys, role **Admin** (cloud signing for iOS needs Admin; a lesser
+role fails with a 403). Download the `.p8` once (it cannot be downloaded
+again), note the Key ID and the Issuer ID on that page, and the Team ID
+from the developer account's Membership page:
+
+```
+base64 -i AuthKey_XXXXXXXXXX.p8 | tr -d '\n' > authkey.b64
+gh secret set APPLE_API_KEY_P8_BASE64 < authkey.b64
+gh secret set APPLE_API_KEY_ID        # e.g. XXXXXXXXXX
+gh secret set APPLE_API_ISSUER_ID     # a UUID
+gh secret set APPLE_TEAM_ID           # ten characters
+rm developer-id.b64 authkey.b64
+```
+
+With those, the macos job signs the frameworks and the app (hardened
+runtime, `Release.entitlements`), builds `sevenreadings-macos.dmg`, signs
+it, submits it to `notarytool --wait`, staples the ticket and checks it
+with `spctl` (the log shows "accepted" and "source=Notarized Developer
+ID"); the DMG joins the release assets. The ios job runs `flutter build
+ios --config-only` and then `xcodebuild archive` and `-exportArchive` with
+the API key (`app/ios/ExportOptions.plist`, team id filled in), which
+creates the managed Apple Distribution certificate and the App Store
+profile on Apple's side; the `.ipa` is the artifact. The Developer ID
+certificate cannot be cloud-managed that way (Apple bug FB16835802),
+which is why macOS needs the `.p12` and iOS does not. Uploading the `.ipa`
+to TestFlight is S2, the next step in docs/plan.md.
+
+None of the Apple steps has run yet: they are written from Apple's and
+Flutter's documentation and wait for the account (docs/plan.md, S1 state).
+The first signed run is the proof, and its log is the thing to send.
+
 ## Releasing
 
 A release is a `v*` tag: `git tag v0.1.0 && git push origin v0.1.0` runs
-`release.yml` (every target's artifacts on the GitHub release, unsigned
-until S1) and `screenshots.yml` (the checklist on every target with the
+`release.yml` (every target's artifacts on the GitHub release, signed
+where the secrets above exist) and `screenshots.yml` (the checklist on every target with the
 release content). Per store, once the accounts exist, the console steps go
 here. Today:
 

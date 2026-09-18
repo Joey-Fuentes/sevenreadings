@@ -179,6 +179,10 @@ Rules that keep patches applying cleanly:
   default would have been `org.sevenreadings.sevenreadings`); the Android
   and iOS ids are permanent after the first store upload. The Dart package
   stays `sevenreadings`.
+- Signing lives in Actions secrets only (docs/workflow.md, "Signing");
+  `build.yml` builds unsigned when they are absent and its log says which
+  key signed each output. `app/android/key.properties`, `*.jks`, `.p12`
+  and `.p8` files never enter the tree; the ignore rules exist, keep them.
 - Every build carries `--dart-define=SR_DISTRIBUTION=<direct|web|flathub|
   play|appstore|msstore>` (default `direct`; `app/lib/features/support/
   support_links.dart`). Store builds never show the Support screen's
@@ -341,9 +345,9 @@ weekly cron had never fired). Results and state:
 | Web | yes; every push (smoke) and Pages deploy | n/a | yes, daily, on Pages; the checklist and an offline proof are green in `screenshots.yml` (2026-09-16); installable PWA at https://sevenreadings.org/ | — |
 | Linux x64 | yes, tar.gz 80 MB; every push (smoke); and as a Flatpak built from source in Flathub's sandbox in `screenshots.yml` (their builder and lints, sandbox launch 1.0 s) | n/a | no person; the checklist is green under Xvfb in `screenshots.yml` (2026-09-15, sample content: first launch 2.5 s, second 0.25 s, the side-by-side layout) | a person to run the tarball once; then Flatpak if wanted. Linux arm64 was dropped: Flutter publishes no arm64 Linux SDK |
 | Android | yes: APK 126.5 MB, AAB 125.4 MB — under Play's 200 MB cap, so no Play Asset Delivery at this content size (ADR 0004) | debug key | yes (2026-09-15: the APK installed on the maintainer's phone; first-launch copy, readings, search, a bookmark surviving restart all worked). The same checklist is `app/integration_test/app_test.dart`, run on an emulator by `screenshots.yml`: green 2026-09-15 on sample and on release content; release: first launch 5.0 s (the 167 MB copy included, debug build), second 0.16 s, eight screenshots | a signing key (`app/android/key.properties`, never committed); Play account for the store |
-| Windows | yes, zip 82 MB | no | no person; the checklist is green on the hosted runner's desktop in `screenshots.yml` (2026-09-17, sample content: first launch 1.8 s, second 0.16 s, the side-by-side layout) | a person to run it once (the maintainer's Windows laptop); the Store route packages it as MSIX; code signing outside the Store is optional (SmartScreen warns without it) |
-| macOS | yes, .app 214.6 MB, zip 89 MB | no | no; the `macos` job in `screenshots.yml` launched it (3.1 s) and failed at a tap mid-transition, fixed in the test; rerun pending (2026-09-17) | Developer ID certificate and notarization in the workflow (the comment in build.yml marks the spot); a person to run it once (the maintainer's 2018 Intel Mac mini, Sequoia) |
-| iOS | yes, `--no-codesign` .app 185.7 MB | no | no person; the checklist is green on an iPhone simulator in `screenshots.yml` (2026-09-17, sample content: first launch 7.1 s on the simulator, second 0.15 s, the phone layout) | Apple developer account, provisioning, App Store or TestFlight; cannot be installed on the maintainer's iPad as built |
+| Windows | yes, zip 82 MB | no | no person; the checklist is green on the hosted runner's desktop in `screenshots.yml` (2026-09-17, release content: first launch 3.9 s, second 0.18 s, the side-by-side layout in a 1028x681 window) | a person to run it once (the maintainer's Windows laptop); the Store route packages it as MSIX; code signing outside the Store is optional (SmartScreen warns without it) |
+| macOS | yes, .app 214.6 MB, zip 89 MB | no; Developer ID signing, notarization and a DMG are in `build.yml` behind secrets, unrun | no person; the checklist is green on the hosted runner in `screenshots.yml` (2026-09-17, release content: first launch 5.3 s, second 0.22 s, the side-by-side layout in a 1024x642 window) | Developer ID certificate and notarization in the workflow (the comment in build.yml marks the spot); a person to run it once (the maintainer's 2018 Intel Mac mini, Sequoia) |
+| iOS | yes, `--no-codesign` .app 185.7 MB | no; App Store archive and `.ipa` through the API key are in `build.yml` behind secrets, unrun | no person; the checklist is green on an iPhone simulator in `screenshots.yml` (2026-09-17, release content: first launch 4.5 s on the simulator, second 0.15 s, the phone layout) | Apple developer account, provisioning, App Store or TestFlight; cannot be installed on the maintainer's iPad as built |
 
 What "run by a person" checks, per target: the app opens, the content
 database copies out of the bundle on first launch (native targets) or
@@ -430,10 +434,12 @@ channel is the `.flatpak` bundle on each tagged release; the Flathub store
 waits, by decision, for history and a maintainer-written submission
 (docs/workflow.md "Releasing"). The order changed on 2026-09-17, at the
 maintainer's direction: publish on every supported platform before any
-chat work. So next is plan item 4 as reordered (T3 on Windows, macOS and
-the iOS simulator: jobs written, first runs pending), then item 5
-(signing as code, listings as code, MSIX, in-app tips, the store
-submissions); the chat spikes come after. Content-side, below.
+chat work. Plan item 4 (T3 on every target) is done with release-content
+numbers. Item 5 is in progress: S1 signing as code is written (Android
+provable as soon as the maintainer sets the keystore secrets; the Apple
+half waits for the Developer Program), next S4 listings as code, Windows
+MSIX, D2-D3 in-app tips, then S2 uploads and the store submissions; the
+chat spikes come after. Content-side, below.
 
 In rough order of value: extend the Qur'an pairings (the file is the whole
 of the Islamic reading's coverage); more ICC volumes (Plummer's Luke 1896,

@@ -40,6 +40,11 @@ jobs:
     name: Android
     needs: content
     runs-on: ubuntu-latest
+    env:
+      # Signing secrets (docs/workflow.md, "Signing"). Absent on forks and
+      # until the maintainer sets them: the build is then debug-signed and
+      # says so. Job-level so the steps' `if` can see them.
+      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/download-artifact@v8
@@ -47,13 +52,49 @@ jobs:
       - uses: actions/setup-java@v6
         with: { distribution: temurin, java-version: "17" }
       - uses: ./.github/actions/setup-flutter
-      # Signing: see README. Without key.properties these are debug-signed.
+      - name: Release signing key (when the secret exists)
+        if: env.ANDROID_KEYSTORE_BASE64 != ''
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          for v in KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            [ -n "${!v}" ] || { echo "ANDROID_KEYSTORE_BASE64 is set but ANDROID_$v is not" >&2; exit 1; }
+          done
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > app/android/upload-keystore.jks
+          # Both files are gitignored; build.gradle.kts reads the second.
+          cat > app/android/key.properties <<EOF
+          storeFile=upload-keystore.jks
+          storePassword=$KEYSTORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          EOF
+          echo "release signing: upload key '$KEY_ALIAS'"
       # SR_DISTRIBUTION decides whether the Support screen shows outside
       # payment links: the APK is a direct download, the AAB goes to Play.
       - working-directory: app
         run: flutter build apk --release --dart-define=SR_DISTRIBUTION=direct
       - working-directory: app
         run: flutter build appbundle --release --dart-define=SR_DISTRIBUTION=play
+      - name: Which key signed them
+        # Prints the signing certificate of both outputs. With the secrets
+        # present it must not be the debug key; without them it must be.
+        run: |
+          set -euo pipefail
+          apksigner="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -n1)/apksigner"
+          apk=app/build/app/outputs/flutter-apk/app-release.apk
+          aab=app/build/app/outputs/bundle/release/app-release.aab
+          "$apksigner" verify --print-certs "$apk" | tee build-apk-cert.txt
+          keytool -printcert -jarfile "$aab" | tee build-aab-cert.txt
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
+            ! grep -q "Android Debug" build-apk-cert.txt build-aab-cert.txt || { echo "secrets present but the outputs are debug-signed" >&2; exit 1; }
+            echo "signed with the upload key"
+          else
+            grep -q "Android Debug" build-apk-cert.txt || { echo "no secrets, yet not debug-signed?" >&2; exit 1; }
+            echo "debug-signed (no ANDROID_KEYSTORE_BASE64 secret)"
+          fi
       - uses: actions/upload-artifact@v7
         with:
           name: android
@@ -125,33 +166,125 @@ jobs:
     name: macOS
     needs: content
     runs-on: macos-latest
+    env:
+      # Developer ID signing and notarization (docs/workflow.md, "Signing").
+      # Without the certificate secret the .app ships ad-hoc signed, as
+      # before, and Gatekeeper will warn. Developer ID certificates cannot
+      # be cloud-managed through an API key (Apple bug FB16835802), hence a
+      # .p12 here where the ios job needs only the key.
+      APPLE_DEVELOPER_ID_P12_BASE64: ${{ secrets.APPLE_DEVELOPER_ID_P12_BASE64 }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/download-artifact@v8
         with: { name: content, path: app/assets/content }
       - uses: ./.github/actions/setup-flutter
-      # Unsigned. Add Developer ID signing + notarization once certificates exist.
       - working-directory: app
         run: flutter build macos --release --dart-define=SR_DISTRIBUTION=direct
+      - name: Developer ID certificate (when the secret exists)
+        if: env.APPLE_DEVELOPER_ID_P12_BASE64 != ''
+        id: keychain
+        uses: ./.github/actions/apple-keychain
+        with:
+          p12-base64: ${{ secrets.APPLE_DEVELOPER_ID_P12_BASE64 }}
+          password: ${{ secrets.APPLE_DEVELOPER_ID_P12_PASSWORD }}
+      - name: Sign, notarize, staple, DMG (when the secret exists)
+        if: env.APPLE_DEVELOPER_ID_P12_BASE64 != ''
+        env:
+          API_KEY_P8_BASE64: ${{ secrets.APPLE_API_KEY_P8_BASE64 }}
+          API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+          app=app/build/macos/Build/Products/Release/sevenreadings.app
+          identity=$(security find-identity -v -p codesigning "${{ steps.keychain.outputs.keychain }}"             | grep -o '"Developer ID Application: [^"]*"' | head -n1 | tr -d '"')
+          [ -n "$identity" ] || { echo "no Developer ID Application identity in the certificate" >&2; exit 1; }
+          echo "signing as: $identity"
+          # Inside out: every framework and dylib, then the app with the
+          # hardened runtime and the release entitlements.
+          find "$app/Contents/Frameworks" -maxdepth 1 \( -name '*.framework' -o -name '*.dylib' \) -print0 \
+            | xargs -0 -I{} codesign --force --timestamp --options runtime --sign "$identity" "{}"
+          codesign --force --timestamp --options runtime \
+            --entitlements app/macos/Runner/Release.entitlements --sign "$identity" "$app"
+          codesign --verify --deep --strict --verbose=2 "$app"
+          # The DMG is what people download; it is signed, notarized and
+          # stapled as a whole, with the signed app inside.
+          mkdir -p dmg && cp -R "$app" dmg/ && ln -s /Applications dmg/Applications
+          hdiutil create -volname "Seven Readings" -srcfolder dmg -ov -format UDZO sevenreadings-macos.dmg
+          codesign --force --timestamp --sign "$identity" sevenreadings-macos.dmg
+          echo "$API_KEY_P8_BASE64" | base64 --decode > "$RUNNER_TEMP/AuthKey.p8"
+          xcrun notarytool submit sevenreadings-macos.dmg --wait \
+            --key "$RUNNER_TEMP/AuthKey.p8" --key-id "$API_KEY_ID" --issuer "$API_ISSUER_ID"
+          xcrun stapler staple sevenreadings-macos.dmg
+          spctl -a -vv -t open --context context:primary-signature sevenreadings-macos.dmg
+          rm -f "$RUNNER_TEMP/AuthKey.p8"
       - name: Package
-        run: ditto -c -k --keepParent app/build/macos/Build/Products/Release/sevenreadings.app sevenreadings-macos.zip
+        # The zip is the unsigned-or-signed .app either way; the DMG exists
+        # only on a signed run.
+        run: |
+          ditto -c -k --keepParent app/build/macos/Build/Products/Release/sevenreadings.app sevenreadings-macos.zip
+          codesign -dv --verbose=2 app/build/macos/Build/Products/Release/sevenreadings.app 2>&1 | grep -E '^(Authority|Signature|TeamIdentifier)' || true
+      - name: Remove the temporary keychain
+        if: always() && steps.keychain.outputs.keychain != ''
+        run: security delete-keychain "${{ steps.keychain.outputs.keychain }}"
       - uses: actions/upload-artifact@v7
-        with: { name: macos, path: sevenreadings-macos.zip }
+        with:
+          name: macos
+          path: |
+            sevenreadings-macos.zip
+            sevenreadings-macos.dmg
 
   ios:
     name: iOS
     needs: content
     runs-on: macos-latest
+    env:
+      # App Store signing through an App Store Connect API key with the
+      # Admin role (docs/workflow.md, "Signing"): xcodebuild's cloud signing
+      # creates the managed Apple Distribution certificate and the profile.
+      # Without the key: an unsigned .app, as before.
+      APPLE_API_KEY_P8_BASE64: ${{ secrets.APPLE_API_KEY_P8_BASE64 }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/download-artifact@v8
         with: { name: content, path: app/assets/content }
       - uses: ./.github/actions/setup-flutter
-      # --no-codesign proves the build; switch to `flutter build ipa` with an
-      # export options plist once an Apple Developer account is wired in.
-      - working-directory: app
-        run: flutter build ios --release --no-codesign --dart-define=SR_DISTRIBUTION=appstore
-      - name: Package
-        run: ditto -c -k --keepParent app/build/ios/iphoneos/Runner.app sevenreadings-ios-unsigned.zip
+      - name: Unsigned build (no API key secret)
+        if: env.APPLE_API_KEY_P8_BASE64 == ''
+        run: |
+          cd app && flutter build ios --release --no-codesign --dart-define=SR_DISTRIBUTION=appstore && cd ..
+          ditto -c -k --keepParent app/build/ios/iphoneos/Runner.app sevenreadings-ios-unsigned.zip
+      - name: Signed archive and App Store .ipa (when the API key exists)
+        if: env.APPLE_API_KEY_P8_BASE64 != ''
+        env:
+          API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -euo pipefail
+          for v in API_KEY_ID API_ISSUER_ID TEAM_ID; do
+            [ -n "${!v}" ] || { echo "APPLE_API_KEY_P8_BASE64 is set but APPLE_$v is not" >&2; exit 1; }
+          done
+          key="$RUNNER_TEMP/AuthKey.p8"
+          echo "$APPLE_API_KEY_P8_BASE64" | base64 --decode > "$key"
+          auth=(-allowProvisioningUpdates -authenticationKeyPath "$key" \
+                -authenticationKeyID "$API_KEY_ID" -authenticationKeyIssuerID "$API_ISSUER_ID")
+          cd app
+          # Flutter writes the Xcode configuration (Generated.xcconfig, the
+          # dart defines); xcodebuild then archives with the team's signing.
+          flutter build ios --release --config-only --dart-define=SR_DISTRIBUTION=appstore
+          sed "s/@TEAM_ID@/$TEAM_ID/" ios/ExportOptions.plist > build/ExportOptions.plist
+          xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner -configuration Release \
+            -destination generic/platform=iOS -archivePath build/ios/Runner.xcarchive archive \
+            DEVELOPMENT_TEAM="$TEAM_ID" CODE_SIGN_STYLE=Automatic "${auth[@]}"
+          xcodebuild -exportArchive -archivePath build/ios/Runner.xcarchive \
+            -exportOptionsPlist build/ExportOptions.plist -exportPath build/ios/ipa "${auth[@]}"
+          rm -f "$key"
+          ls -la build/ios/ipa
+          cp build/ios/ipa/*.ipa ../sevenreadings-ios.ipa
+          codesign -dv --verbose=2 build/ios/Runner.xcarchive/Products/Applications/Runner.app 2>&1 | grep -E '^(Authority|TeamIdentifier)'
       - uses: actions/upload-artifact@v7
-        with: { name: ios-unsigned, path: sevenreadings-ios-unsigned.zip }
+        with:
+          name: ios
+          path: |
+            sevenreadings-ios-unsigned.zip
+            sevenreadings-ios.ipa

@@ -104,10 +104,11 @@ Flutter, which is why CI does all Flutter work; see `docs/workflow.md`.
 - Septuagint reorder tables for Exodus 36-40 and Proverbs 24-31.
 - Every target builds in CI; Android and Web have been run by a person, and
   the first-launch checklist runs on an Android emulator in CI
-  (`app/integration_test/`, `screenshots.yml`). Signing (Android release
-  key, Apple Developer ID and notarization, iOS provisioning) and a first
-  launch on the other platforms are open. Per-target state: `AGENTS.md`,
-  "Targets".
+  (`app/integration_test/`, `screenshots.yml`) and on every other target
+  too, with screenshots at https://sevenreadings.org/screenshots/. Signing
+  is in the workflows behind secrets (`docs/workflow.md`, "Signing");
+  the Android key is the maintainer's next step, the Apple half waits for
+  the developer account. Per-target state: `AGENTS.md`, "Targets".
 
 ## Decisions
 
