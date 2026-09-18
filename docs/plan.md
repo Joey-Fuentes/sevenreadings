@@ -343,7 +343,23 @@ weekly, and on demand, not on every push.
   (the script now uses the portable form). The simulator itself booted
   (iPhone Air, iOS 26 on the macOS 26 runner image; `bootstatus` ended
   with "Data Migration Failed", which the next run will show to matter
-  or not). Second run pending.
+  or not). Second run (2026-09-17, sample content): six of seven green.
+  **iOS simulator: done**, iPhone Air on iOS 26, 420x912 dp, first launch
+  7079 ms (a simulator running a debug build on the hosted Mac; the
+  number to read is the phone's), second 152 ms, ten plugin screenshots
+  of the phone layout. **Windows: done**, first launch 1771 ms, second
+  160 ms, ten screenshots; the hosted desktop is small, so the 1280x720
+  window was clamped to 1028x681 dp, still the side-by-side layout. The
+  other four held (Android 2768/216, Linux 2298/302, web 2621/749,
+  Flatpak). **macOS: red at the fourth step**, with three screenshots
+  and a first launch of 3097 ms at 1024x642 dp (clamped, as on Windows).
+  The test tapped Genesis 1:1 right after leaving the Support screen,
+  and on macOS (and iOS) the page transition slides the reader in from
+  the left while absorbing pointers: the tap landed a third of a screen
+  left of the verse, mid-slide, and was absorbed. The test now pops a
+  screen and waits until it is gone from the tree (`goBack`), at all
+  three places it goes back; the other targets' fade transitions had
+  hidden the race. Third run pending for macOS.
 - **T4 (2026-09-16): done**, https://sevenreadings.org/screenshots/ shows
   android, linux and web, ten each, with their launch timings, and the
   offline proof's screenshot. Its first deploy published an empty page

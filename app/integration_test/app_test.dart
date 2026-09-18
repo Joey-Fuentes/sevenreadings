@@ -101,7 +101,7 @@ void main() {
     await waitFor(tester, find.text('Support'));
     expect(find.textContaining('buy.stripe.com'), findsWidgets);
     await screenshot(tester, '03-support');
-    await tester.pageBack();
+    await goBack(tester, leaving: find.text('Support'));
     await waitFor(tester, find.textContaining('In the beginning'));
 
     // A verse's readings: the sheet opens on Genesis 1:1.
@@ -167,7 +167,7 @@ void main() {
     expect(find.text('Genesis 1:1'), findsWidgets);
     expect(find.text(noteText), findsWidgets);
     await screenshot(tester, '08-bookmarks-and-notes');
-    await tester.pageBack();
+    await goBack(tester, leaving: find.text('Bookmarks'));
     await waitFor(tester, find.byIcon(Icons.expand_more));
 
     // About the texts: licenses and notices from the database.
@@ -181,7 +181,7 @@ void main() {
     await waitFor(tester, find.text('Bibles'));
     await screenshot(tester, '09-about-the-texts');
     await scrollTo(tester, find.text('Notices'), find.byKey(aboutListKey));
-    await tester.pageBack();
+    await goBack(tester, leaving: find.text('Bibles'));
     await waitFor(tester, find.byIcon(Icons.expand_more));
 
     // Second launch: a new app instance in the same process. Unmounting the
@@ -229,6 +229,19 @@ Future<void> openReadings(WidgetTester tester) async {
   await tester.tap(find.textContaining('In the beginning').first);
   await waitFor(tester, find.byKey(readingsSheetKey));
   await tester.pump(const Duration(milliseconds: 500));
+}
+
+/// Pops the current screen and waits until it is really gone: the route
+/// stays in the tree while its exit animates, and on macOS and iOS that
+/// transition slides the screen underneath in from the left while
+/// absorbing pointers. The first macOS run (2026-09-17) tapped Genesis
+/// 1:1 mid-slide, a third of a screen to the left of where it would end
+/// up, and the tap was absorbed. [leaving] is a widget only the popped
+/// screen shows.
+Future<void> goBack(WidgetTester tester, {required Finder leaving}) async {
+  await tester.pageBack();
+  await waitGone(tester, leaving);
+  await tester.pump(const Duration(milliseconds: 100));
 }
 
 Future<void> closeSheet(WidgetTester tester) async {
