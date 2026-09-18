@@ -1,0 +1,20 @@
+Read the Bible in English, Hebrew and Greek, and beside every verse what seven traditions have said about it.
+
+THE TEXTS
+Berean Standard Bible, World English Bible and its Catholic Edition (with the deuterocanon), Douay-Rheims (Challoner), the SBL Greek New Testament, the Byzantine Majority Text, the Westminster Leningrad Codex in Hebrew, and Swete's Septuagint.
+
+THE SEVEN READINGS
+• Jewish, literal (Rashi)
+• Jewish, rationalist (Ibn Ezra)
+• Roman Catholic (Haydock)
+• Eastern Orthodox (St. John Chrysostom)
+• Protestant / Reformed (Matthew Henry)
+• Islamic (the Qur'an's parallel passages, Pickthall's translation)
+• Secular / academic (the International Critical Commentary)
+
+Every text is public domain or openly licensed, and every source's license and notice is in the app, under "About the texts".
+
+ON YOUR DEVICE
+Everything is installed with the app. It uses no network, has no account, tracks nothing and shows no ads. Search every verse and every reading, keep bookmarks and notes, pick books in Protestant, Catholic or Tanakh order, and have a chapter or a reading read aloud by your device's own voice.
+
+Seven Readings is free and open source: https://sevenreadings.org/

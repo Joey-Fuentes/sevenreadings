@@ -179,6 +179,10 @@ Rules that keep patches applying cleanly:
   default would have been `org.sevenreadings.sevenreadings`); the Android
   and iOS ids are permanent after the first store upload. The Dart package
   stays `sevenreadings`.
+- `store/` is the listings as code (texts, privacy answers and policy,
+  captions); the policy is also `app/web/privacy/index.html`, and the two
+  say the same thing. Store screenshots come from
+  `tools/store-screenshots.py` in the `store` job, never by hand.
 - Signing lives in Actions secrets only (docs/workflow.md, "Signing");
   `build.yml` builds unsigned when they are absent and its log says which
   key signed each output. `app/android/key.properties`, `*.jks`, `.p12`
@@ -436,10 +440,10 @@ waits, by decision, for history and a maintainer-written submission
 maintainer's direction: publish on every supported platform before any
 chat work. Plan item 4 (T3 on every target) is done with release-content
 numbers. Item 5 is in progress: S1 signing as code is written (Android
-provable as soon as the maintainer sets the keystore secrets; the Apple
-half waits for the Developer Program), next S4 listings as code, Windows
-MSIX, D2-D3 in-app tips, then S2 uploads and the store submissions; the
-chat spikes come after. Content-side, below.
+proven for Android on 2026-09-17, the Apple half waits for the Developer
+Program), S4 listings as code is written (`store/`, first `store` and iPad
+runs pending), next Windows MSIX, D2-D3 in-app tips, then S2 uploads and
+the store submissions; the chat spikes come after. Content-side, below.
 
 In rough order of value: extend the Qur'an pairings (the file is the whole
 of the Islamic reading's coverage); more ICC volumes (Plummer's Luke 1896,

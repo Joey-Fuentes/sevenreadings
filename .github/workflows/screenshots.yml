@@ -198,9 +198,17 @@ jobs:
           retention-days: 30
 
   ios:
-    name: iOS simulator (iPhone)
+    name: iOS simulator (${{ matrix.device }})
     runs-on: macos-latest
     timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        # iPhone for the phone layout; iPad because the app runs there too
+        # and the App Store then requires 13" iPad screenshots (S4).
+        include:
+          - { device: iPhone, target: iphone }
+          - { device: iPad, target: ipad }
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/content
@@ -209,16 +217,18 @@ jobs:
           token: ${{ github.token }}
       - uses: ./.github/actions/setup-flutter
       - name: Boot a simulator
-        # The newest available iPhone of the runner's newest iOS runtime.
-        # Its udid is what flutter drive takes as the device.
+        # The newest available device of this kind on the runner's newest
+        # iOS runtime. Its udid is what flutter drive takes as the device.
         id: sim
+        env:
+          DEVICE: ${{ matrix.device }}
         run: |
           set -euo pipefail
           udid=$(xcrun simctl list devices available --json \
-            | jq -r '[.devices | to_entries[] | select(.key | test("iOS")) | .value[]
-                      | select(.isAvailable and (.name | startswith("iPhone")))]
+            | jq -r --arg d "$DEVICE" '[.devices | to_entries[] | select(.key | test("iOS")) | .value[]
+                      | select(.isAvailable and (.name | startswith($d)))]
                      | sort_by(.name) | last | .udid')
-          [ -n "$udid" ] && [ "$udid" != null ] || { echo "no available iPhone simulator"; xcrun simctl list devices; exit 1; }
+          [ -n "$udid" ] && [ "$udid" != null ] || { echo "no available $DEVICE simulator"; xcrun simctl list devices; exit 1; }
           xcrun simctl list devices available | grep "$udid"
           xcrun simctl boot "$udid"
           xcrun simctl bootstatus "$udid" -b
@@ -233,11 +243,35 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: screenshots-ios
+          name: screenshots-${{ matrix.target }}
           path: |
             app/screenshots/
             app/build/integration_response_data.json
             app/build/simulator-log.txt
+          if-no-files-found: error
+          retention-days: 30
+
+  store:
+    name: Store listing screenshots
+    needs: [android, linux, web, windows, macos, ios]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: screenshots-*
+          path: shots
+      - name: Frame them at the sizes the stores accept
+        # store/README.md lists the surfaces; store/captions.json the words.
+        run: |
+          sudo apt-get install -y --no-install-recommends fonts-dejavu-core > /dev/null
+          pip install --quiet pillow
+          python3 tools/store-screenshots.py shots store-listing
+      - uses: actions/upload-artifact@v7
+        with:
+          name: store-listing
+          path: store-listing/
           if-no-files-found: error
           retention-days: 30
 

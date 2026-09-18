@@ -1,0 +1,9 @@
+Notes for App Review
+
+The app is entirely offline: every text ships inside the app, it makes no network requests, and there is no sign-in. Nothing to configure and no test account is needed.
+
+Text-to-speech uses the system voice (AVSpeechSynthesizer); nothing is sent anywhere.
+
+There are no in-app purchases in this build. The Support screen that appears in the direct-download builds (a link to an outside payment page) is compiled out of App Store builds (SR_DISTRIBUTION=appstore).
+
+Sources and licenses: every text is public domain or CC BY / CC BY-SA, listed with its notice under the book picker > "About the texts".

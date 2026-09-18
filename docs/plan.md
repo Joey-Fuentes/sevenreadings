@@ -233,8 +233,11 @@ replace: a different design is a change to one function in that script.
   `key.properties` and the keystore from `ANDROID_KEYSTORE_*`, and a step
   after the build prints the certificate of the APK and the AAB
   (`apksigner`, `keytool`) and fails if it is the debug key while secrets
-  exist, or not the debug key while they do not (that half ran on the next
-  build: pending). macOS imports a Developer ID `.p12` into a temporary
+  exist, or not the debug key while they do not. **Android proven the same
+  day**: the maintainer made the upload key with openssl (Termux's JDK
+  crashes on `keytool`) and set the four secrets; the next build printed
+  `CN=Seven Readings upload key` for both the APK and the AAB, SHA-256
+  `d6e5a602…5914a2`. macOS imports a Developer ID `.p12` into a temporary
   keychain (`.github/actions/apple-keychain`), signs frameworks then app
   with the hardened runtime and `Release.entitlements`, makes a DMG, signs
   it, notarizes it with the App Store Connect API key, staples and checks
@@ -252,6 +255,24 @@ replace: a different design is a change to one function in that script.
 - **S4. Store listings as code**: `fastlane/metadata`-style directories
   with descriptions, keywords, privacy answers, and the screenshots from
   section 2, so a listing is reproducible from the repo.
+- **S4 (2026-09-18): done as code, first `store` run pending.** `store/`
+  holds the Play, App Store and Microsoft Store texts in the fastlane
+  layouts (within each field's limit, checked), the App Review notes, the
+  privacy questionnaire answers with the facts behind them, and the
+  privacy policy, which both stores require as a URL: it is served at
+  https://sevenreadings.org/privacy/ (`app/web/privacy/index.html`).
+  `tools/store-screenshots.py` frames the checklist's screenshots
+  (captions from `store/captions.json`, the Support screen and the
+  duplicate second launch left out) at sizes each store accepts, checked
+  against Apple's specification page on 2026-09-17: Play phone 1080x1920
+  and feature graphic 1024x500, iPhone 6.9" 1260x2736 (the iPhone Air
+  simulator's own size), iPad 13" 2048x2732, Mac 2560x1600, Microsoft
+  Store 1920x1080. Because the iOS project targets iPad too, Apple
+  requires iPad screenshots, so the `ios` job became a matrix (iPhone,
+  iPad; artifacts `screenshots-iphone`, `screenshots-ipad`) and a `store`
+  job after every target frames them all into the `store-listing`
+  artifact. The script ran here on synthetic images of the real sizes;
+  the iPad job and the store job have not run in CI yet.
 
 Order: S3 first (no cost, no gate), S1, S2, S4. Documented output: this
 file's tables kept current, and `docs/workflow.md` gains a "Releasing"

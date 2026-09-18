@@ -1,0 +1,7 @@
+bible
+commentary
+hebrew
+greek
+septuagint
+scripture
+study

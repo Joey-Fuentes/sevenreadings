@@ -143,8 +143,9 @@ maintainer has no Flutter locally, so in practice this runs in CI, below.
 an Android emulator (API 34, Pixel 6; about nine minutes: boot 40 s, debug
 APK 4 min, the test 27 s), on the Linux build under Xvfb, on headless
 Chrome (which then also builds the site and proves it works offline), on
-the hosted Windows and macOS runners' desktops, and on a booted iPhone
-simulator (the three added 2026-09-17, first runs pending),
+the hosted Windows and macOS runners' desktops, and on booted iPhone and
+iPad simulators; a last `store` job frames every target's screenshots at
+the sizes the stores accept (`store/README.md`) into `store-listing`,
 with the pinned release content, on demand, every Monday, and on every
 `v*` tag. The newest successful run's screenshots are published by the
 next site deploy at https://sevenreadings.org/screenshots/ (T4).
@@ -160,7 +161,9 @@ gh run download -n screenshots-linux -D ~/storage/downloads/screenshots-linux
 gh run download -n screenshots-web -D ~/storage/downloads/screenshots-web
 gh run download -n screenshots-windows -D ~/storage/downloads/screenshots-windows
 gh run download -n screenshots-macos -D ~/storage/downloads/screenshots-macos
-gh run download -n screenshots-ios -D ~/storage/downloads/screenshots-ios
+gh run download -n screenshots-iphone -D ~/storage/downloads/screenshots-iphone
+gh run download -n screenshots-ipad -D ~/storage/downloads/screenshots-ipad
+gh run download -n store-listing -D ~/storage/downloads/store-listing
 ```
 
 Each artifact holds the ten PNGs and `integration_response_data.json`
@@ -188,15 +191,19 @@ that is not the phone (a lost upload key is a support ticket with Google;
 a leaked one is a reset):
 
 ```
-pkg install openjdk-17          # Termux; keytool comes with it
-keytool -genkey -v -keystore ~/upload-keystore.jks -keyalg RSA \
-  -keysize 2048 -validity 10000 -alias upload
+pkg install openssl-tool        # Termux's JDK crashes on keytool (2026-09-17); openssl does the same job
+cd ~
+openssl req -x509 -newkey rsa:2048 -sha256 -days 10000 -noenc \
+  -keyout upload-key.pem -out upload-cert.pem -subj "/CN=Seven Readings upload key"
+openssl pkcs12 -export -inkey upload-key.pem -in upload-cert.pem \
+  -name upload -out upload-keystore.jks -passout 'pass:YOURPASS'
+rm upload-key.pem upload-cert.pem
 base64 -w0 ~/upload-keystore.jks > ~/upload-keystore.b64
 cd ~/sevenreadings
 gh secret set ANDROID_KEYSTORE_BASE64 < ~/upload-keystore.b64
-gh secret set ANDROID_KEYSTORE_PASSWORD   # the store password you typed
+gh secret set ANDROID_KEYSTORE_PASSWORD --body 'YOURPASS'
 gh secret set ANDROID_KEY_ALIAS --body upload
-gh secret set ANDROID_KEY_PASSWORD        # the key password (same, if you pressed Enter)
+gh secret set ANDROID_KEY_PASSWORD --body 'YOURPASS'   # PKCS12: key and store share one password
 rm ~/upload-keystore.b64
 gh workflow run build.yml && gh run watch
 ```
@@ -206,7 +213,21 @@ keystore (both gitignored), builds, and its "Which key signed them" step
 prints the certificate of the APK and the AAB and fails if it is the debug
 key. The SHA-256 fingerprint it prints is what Play asks for when you
 register the upload key. Until the secrets exist the same step prints
-"debug-signed" and passes.
+"debug-signed" and passes. Done 2026-09-17: the first signed build printed
+`CN=Seven Readings upload key`, SHA-256 `d6e5a602…5914a2`. (GitHub masks
+every secret's value in logs, the alias included, so the word "upload"
+shows as `***` there; harmless.)
+
+To change the password later (the key itself stays the same, so nothing
+about Play or installed apps changes):
+
+```
+openssl pkcs12 -in ~/upload-keystore.jks -passin 'pass:OLDPASS' -noenc -out /tmp/k.pem
+openssl pkcs12 -export -in /tmp/k.pem -name upload -out ~/upload-keystore.jks -passout 'pass:NEWPASS'
+rm /tmp/k.pem
+```
+
+then set the two password secrets and the base64 one again as above.
 
 **macOS (Developer ID, for the DMG outside the App Store).** Needs the
 Apple Developer Program ($99/year) and the Mac mini once. In Xcode
