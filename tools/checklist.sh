@@ -11,6 +11,13 @@
 #   xvfb-run -a -s "-screen 0 1280x800x24" bash tools/checklist.sh linux
 #   "$CHROMEWEBDRIVER/chromedriver" --port=4444 &
 #   bash tools/checklist.sh chrome                              # headless web
+#   bash tools/checklist.sh windows                             # Git Bash
+#   bash tools/checklist.sh macos
+#   bash tools/checklist.sh <simulator udid>                    # iOS, booted
+#
+# Desktop devices render their own screenshots (no integration_test plugin
+# there); Android, iOS and web get them from the plugin. Either way the
+# driver writes the same files.
 #
 # One script, invoked as one command, because reactivecircus/android-
 # emulator-runner runs each line of its `script` in a separate shell: a

@@ -7,8 +7,9 @@ name: Screenshots
 # Flathub manifest from the bundle it just made, lints it with Flathub's
 # linter and launches the sandboxed app once. On demand, weekly (after the
 # build canary), and on every release tag; not on every push, because the
-# emulator job takes about nine minutes. Remaining targets are docs/plan.md
-# T3; the contact sheet on Pages is T4.
+# emulator job takes about nine minutes. Every target has a job here
+# (docs/plan.md T3); the contact sheet on Pages is T4 and picks up every
+# `screenshots-<target>` artifact by name.
 
 on:
   workflow_dispatch:
@@ -138,6 +139,105 @@ jobs:
           path: |
             app/screenshots/
             app/build/integration_response_data.json
+          if-no-files-found: error
+          retention-days: 30
+
+  windows:
+    name: Windows desktop
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/content
+        with:
+          mode: ${{ env.CONTENT_MODE }}
+          token: ${{ github.token }}
+      - uses: ./.github/actions/setup-flutter
+      - name: Run the checklist on the desktop
+        # The hosted Windows runner has an interactive desktop, so the app's
+        # 1280x720 window (windows/runner/main.cpp) opens as it would for a
+        # person; screenshots are rendered by the test, as on Linux. Git
+        # Bash runs the same script; Flutter's bin/flutter is a bash script.
+        shell: bash
+        run: bash tools/checklist.sh windows
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: screenshots-windows
+          path: |
+            app/screenshots/
+            app/build/integration_response_data.json
+          if-no-files-found: error
+          retention-days: 30
+
+  macos:
+    name: macOS desktop
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/content
+        with:
+          mode: ${{ env.CONTENT_MODE }}
+          token: ${{ github.token }}
+      - uses: ./.github/actions/setup-flutter
+      - name: Run the checklist on the desktop
+        # Unsigned debug build in the app sandbox (DebugProfile.entitlements
+        # allows the VM service's local server, which flutter drive needs).
+        # The window is 1280x720 (macos/Runner/Base.lproj/MainMenu.xib), the
+        # same layout as Linux and Windows.
+        run: bash tools/checklist.sh macos
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: screenshots-macos
+          path: |
+            app/screenshots/
+            app/build/integration_response_data.json
+          if-no-files-found: error
+          retention-days: 30
+
+  ios:
+    name: iOS simulator (iPhone)
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/content
+        with:
+          mode: ${{ env.CONTENT_MODE }}
+          token: ${{ github.token }}
+      - uses: ./.github/actions/setup-flutter
+      - name: Boot a simulator
+        # The newest available iPhone of the runner's newest iOS runtime.
+        # Its udid is what flutter drive takes as the device.
+        id: sim
+        run: |
+          set -euo pipefail
+          udid=$(xcrun simctl list devices available --json \
+            | jq -r '[.devices | to_entries[] | select(.key | test("iOS")) | .value[]
+                      | select(.isAvailable and (.name | startswith("iPhone")))]
+                     | sort_by(.name) | last | .udid')
+          [ -n "$udid" ] && [ "$udid" != null ] || { echo "no available iPhone simulator"; xcrun simctl list devices; exit 1; }
+          xcrun simctl list devices available | grep "$udid"
+          xcrun simctl boot "$udid"
+          xcrun simctl bootstatus "$udid" -b
+          echo "udid=$udid" >> "$GITHUB_OUTPUT"
+      - name: Run the checklist on the simulator
+        # Screenshots come from the integration_test plugin, as on Android;
+        # no code signing is needed for a simulator build.
+        run: bash tools/checklist.sh "${{ steps.sim.outputs.udid }}"
+      - name: Device log
+        if: always()
+        run: xcrun simctl spawn "${{ steps.sim.outputs.udid }}" log show --last 30m --predicate 'process == "Runner"' > app/build/simulator-log.txt || true
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: screenshots-ios
+          path: |
+            app/screenshots/
+            app/build/integration_response_data.json
+            app/build/simulator-log.txt
           if-no-files-found: error
           retention-days: 30
 

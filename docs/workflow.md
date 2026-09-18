@@ -141,8 +141,10 @@ maintainer has no Flutter locally, so in practice this runs in CI, below.
 
 `screenshots.yml` runs the same `flutter drive` (`tools/checklist.sh`) on
 an Android emulator (API 34, Pixel 6; about nine minutes: boot 40 s, debug
-APK 4 min, the test 27 s), on the Linux build under Xvfb, and on headless
-Chrome (which then also builds the site and proves it works offline),
+APK 4 min, the test 27 s), on the Linux build under Xvfb, on headless
+Chrome (which then also builds the site and proves it works offline), on
+the hosted Windows and macOS runners' desktops, and on a booted iPhone
+simulator (the three added 2026-09-17, first runs pending),
 with the pinned release content, on demand, every Monday, and on every
 `v*` tag. The newest successful run's screenshots are published by the
 next site deploy at https://sevenreadings.org/screenshots/ (T4).
@@ -156,12 +158,16 @@ gh run watch
 gh run download -n screenshots-android -D ~/storage/downloads/screenshots-android
 gh run download -n screenshots-linux -D ~/storage/downloads/screenshots-linux
 gh run download -n screenshots-web -D ~/storage/downloads/screenshots-web
+gh run download -n screenshots-windows -D ~/storage/downloads/screenshots-windows
+gh run download -n screenshots-macos -D ~/storage/downloads/screenshots-macos
+gh run download -n screenshots-ios -D ~/storage/downloads/screenshots-ios
 ```
 
 Each artifact holds the ten PNGs and `integration_response_data.json`
 (`first_launch_ms` with the content copy, `second_launch_ms` without, and
 `view`, the window size in dp, which says whether the phone or the
-side-by-side layout was exercised); the Android one adds `logcat.txt`. A
+side-by-side layout was exercised); the Android one adds `logcat.txt`,
+the iOS one `simulator-log.txt`. A
 red run gets its log zip uploaded to the AI like any other; the
 screenshots travel with it, since they are written before the failure is
 reported. When a run has passed, its numbers go into `docs/plan.md`

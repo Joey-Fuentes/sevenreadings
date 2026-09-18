@@ -28,7 +28,7 @@ release in each store's console, and to the one-time setup.
 | Apple App Store (iOS) and Mac App Store | Apple Developer Program | $99/year | App Store Connect API key (issuer, key id, .p8); distribution certificate and provisioning profiles (or fastlane match with a private repo) |
 | macOS outside the store (notarized DMG) | same Apple account | included | Developer ID Application certificate + notarytool credentials |
 | Microsoft Store | Partner Center individual account | ~$19 once | Partner Center tenant/client/secret for the `msstore` CLI; an MSIX signing certificate (Store-signed on submission) |
-| Flathub (Linux) | Flathub is free; a GitHub account | free | none in this repo: Flathub builds from a manifest in its own repo |
+| Linux | none: the `.flatpak` bundle on each release is the channel; Flathub deferred (S3 state) | free | none |
 | Web | GitHub Pages (already live) | free | none |
 
 Nothing else costs money. If the maintainer chooses not to pay for the
@@ -312,8 +312,28 @@ weekly, and on demand, not on every push.
   service worker and runs `tools/web-offline-check.py` (Selenium): the
   reader must come up, the worker must control the page, and after the
   network is cut with the DevTools protocol a reload must bring the
-  reader back; it writes `web-offline.png` beside the ten. Windows, macOS
-  and the iOS simulator remain.
+  reader back; it writes `web-offline.png` beside the ten.
+- **T3, Windows, macOS, iOS simulator (2026-09-17): written, not yet
+  run.** Three more jobs in `screenshots.yml`, the same script and test:
+  `windows` on the hosted Windows runner (it has an interactive desktop;
+  Git Bash runs `tools/checklist.sh windows`), `macos` on the hosted
+  macOS runner (`checklist.sh macos`; the debug app runs in the app
+  sandbox, whose profile already allows the VM service's local server),
+  and `ios` on the same runner image: the newest available iPhone
+  simulator is booted by udid and `checklist.sh <udid>` drives it, with
+  the plugin's screenshots as on Android and the simulator's log kept.
+  Artifacts `screenshots-windows`, `screenshots-macos`, `screenshots-ios`;
+  the site's page picks them up by name. For the desktop pair the macOS
+  window was set to 1280x720 in `MainMenu.xib` (Windows already was), so
+  all three desktops show the same side-by-side layout. Two things only
+  the first run can tell: whether `flutter drive -d windows` gets a
+  window on the hosted runner (it is documented to have a desktop
+  session, and this is the first time this project asks for one), and
+  the simulator's first-launch time with the release content, which is
+  the number the App Store screenshots will show. The display name was
+  also corrected to "Seven Readings" where the platform folders still
+  said `sevenreadings` (Android label, iOS and macOS bundle display
+  names, the Windows window title and version resource).
 - **T4 (2026-09-16): done**, https://sevenreadings.org/screenshots/ shows
   android, linux and web, ten each, with their launch timings, and the
   offline proof's screenshot. Its first deploy published an empty page
@@ -556,10 +576,22 @@ Spikes:
    "Releasing").
 3. N1 (narrator with system voices). Done by state 2026-09-15 (section 5,
    State), by ear pending; item 2's PWA and Flatpak resume next.
-4. L1 and L2 (chat feasibility, web and Linux) — decide from the numbers.
-5. T3-T4 (remaining targets' screenshots, the contact sheet).
-6. S1-S2 and D2-D3 as the maintainer opens accounts; S4 with the
-   screenshots.
+4. T3 for the remaining targets (Windows, macOS, the iOS simulator), so
+   every target the stores will see has been walked through in CI. In
+   `screenshots.yml` since 2026-09-17; first runs pending (section 2,
+   State).
+5. Publishing, all of it, before any chat work (the maintainer's
+   direction, 2026-09-17: "no chat feasibility spikes until the app is
+   properly published across all supported platforms"): S1 signing as
+   code, S4 listings as code, Windows packaged as MSIX, D2-D3 in-app tips
+   behind `SR_DISTRIBUTION`, then S2 uploads and the store submissions as
+   the accounts open. The maintainer's hardware for the parts CI cannot
+   do: a Windows laptop, an iPad, an Android phone, and a 2018 Intel Mac
+   mini on macOS Sequoia (Xcode 16 runs there, so it can sign, run the
+   iOS simulator, and run the macOS app once, which the Mac App Store
+   requires before a listing; Tahoe and later Xcodes need Apple silicon,
+   so this Mac's ceiling is whatever the last Sequoia Xcode supports).
+6. L1 and L2 (chat feasibility, web and Linux) — decide from the numbers.
 7. L3-L5, N2-N3 if the spikes justified them.
 
 Each finished spike updates this file: what was measured, what was decided.
