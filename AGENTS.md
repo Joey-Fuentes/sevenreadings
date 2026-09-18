@@ -314,6 +314,13 @@ Rules that keep patches applying cleanly:
   controller (`_NoteDialog`). The integration test runs a debug build, so
   it sees every assert the release build hides; treat its failures as real
   even when the phone disagrees.
+- Two runner facts, from the first Windows and macOS checklist runs
+  (2026-09-17). macOS's `/bin/bash` is 3.2, where `"${arr[@]}"` on an
+  empty array is an "unbound variable" under `set -u`; scripts that run
+  there write `${arr[@]+"${arr[@]}"}`. Python on the Windows runner
+  encodes stdout as cp1252 and raises on the first Greek or Hebrew
+  character it prints; every Python step that may run there sets
+  `PYTHONUTF8=1`.
 
 
 

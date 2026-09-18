@@ -333,7 +333,17 @@ weekly, and on demand, not on every push.
   the number the App Store screenshots will show. The display name was
   also corrected to "Seven Readings" where the platform folders still
   said `sevenreadings` (Android label, iOS and macOS bundle display
-  names, the Windows window title and version resource).
+  names, the Windows window title and version resource). First run
+  (2026-09-17, sample content): the four existing jobs green (Android
+  2175/151 ms, Linux 2113/279, web 2701/796, Flatpak); the three new ones
+  red before the test started, each on the runner, not the app: on
+  Windows the pipeline's sample build died printing a Greek file name
+  through cp1252 (`PYTHONUTF8=1` on that step now), on macOS and the iOS
+  simulator the script hit bash 3.2's empty-array bug under `set -u`
+  (the script now uses the portable form). The simulator itself booted
+  (iPhone Air, iOS 26 on the macOS 26 runner image; `bootstatus` ended
+  with "Data Migration Failed", which the next run will show to matter
+  or not). Second run pending.
 - **T4 (2026-09-16): done**, https://sevenreadings.org/screenshots/ shows
   android, linux and web, ten each, with their launch timings, and the
   offline proof's screenshot. Its first deploy published an empty page

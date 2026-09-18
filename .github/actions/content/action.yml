@@ -37,6 +37,11 @@ runs:
       if: steps.resolve.outputs.mode == 'sample'
       shell: bash
       working-directory: pipeline
+      env:
+        # The pipeline logs Greek and Hebrew file names; Python on the
+        # Windows runner would encode stdout as cp1252 and die on them
+        # (first Windows run, 2026-09-17).
+        PYTHONUTF8: "1"
       run: |
         uv sync --frozen 2>/dev/null || uv sync
         uv run srp build --sample --version 0.0.0-sample \

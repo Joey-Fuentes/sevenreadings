@@ -22,6 +22,9 @@
 # One script, invoked as one command, because reactivecircus/android-
 # emulator-runner runs each line of its `script` in a separate shell: a
 # `cd` or a variable set on one line is gone on the next.
+# macOS ships bash 3.2, where "${extra[@]}" on an empty array is an
+# "unbound variable" under set -u (fixed in bash 4.4); hence the
+# ${extra[@]+...} form below. First macOS run, 2026-09-17.
 set -uo pipefail
 cd "$(dirname "$0")/../app"
 device="${1:-emulator-5554}"
@@ -36,7 +39,8 @@ case "$device" in
 esac
 status=0
 flutter drive --driver=test_driver/integration_test.dart \
-  --target=integration_test/app_test.dart -d "$device" "${extra[@]}" || status=$?
+  --target=integration_test/app_test.dart -d "$device" \
+  ${extra[@]+"${extra[@]}"} || status=$?
 
 case "$device" in
   emulator-*) adb -s "$device" logcat -d -v time > build/logcat.txt || true ;;
