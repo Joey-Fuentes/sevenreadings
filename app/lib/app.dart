@@ -3,7 +3,6 @@ import 'package:sr_data/sr_data.dart';
 
 import 'content/content_loader.dart';
 import 'features/reader/reader_screen.dart';
-import 'features/support/support_screen.dart';
 import 'features/support/tips.dart';
 
 class SevenReadingsApp extends StatefulWidget {
@@ -53,38 +52,38 @@ class _SevenReadingsAppState extends State<SevenReadingsApp> {
         builder: (context, _) => FutureBuilder<ContentDb>(
           future: _content,
           builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Scaffold(
-              body: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text('Could not open content:\n${snapshot.error}'),
-                ),
-              ),
-            );
-          }
-          if (!snapshot.hasData) {
-            return const Scaffold(
-              body: Center(
-                child: Padding(
-                  padding: EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircularProgressIndicator(),
-                      SizedBox(height: 16),
-                      Text(
-                        'Preparing the texts. The first launch copies about '
-                        '170 MB once; after that, everything is on this '
-                        'device and needs no network.',
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
+            if (snapshot.hasError) {
+              return Scaffold(
+                body: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Text('Could not open content:\n${snapshot.error}'),
                   ),
                 ),
-              ),
-            );
-          }
+              );
+            }
+            if (!snapshot.hasData) {
+              return const Scaffold(
+                body: Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircularProgressIndicator(),
+                        SizedBox(height: 16),
+                        Text(
+                          'Preparing the texts. The first launch copies about '
+                          '170 MB once; after that, everything is on this '
+                          'device and needs no network.',
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }
             return ReaderScreen(db: snapshot.data!, user: _user);
           },
         ),
