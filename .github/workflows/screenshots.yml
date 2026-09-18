@@ -19,6 +19,14 @@ on:
         type: choice
         options: [release, sample]
         default: release
+      distribution:
+        description: >-
+          SR_DISTRIBUTION of the build under test. A store value hides the
+          Support band (as the store builds do) and makes the store job
+          frame the screenshots for the listings.
+        type: choice
+        options: [direct, appstore]
+        default: direct
   push:
     tags: ["v*"]
   schedule:
@@ -26,6 +34,7 @@ on:
 
 env:
   CONTENT_MODE: ${{ inputs.content || 'release' }}
+  SR_DISTRIBUTION: ${{ inputs.distribution || 'direct' }}
 
 jobs:
   android:
@@ -181,6 +190,13 @@ jobs:
           mode: ${{ env.CONTENT_MODE }}
           token: ${{ github.token }}
       - uses: ./.github/actions/setup-flutter
+      - name: Skia for this run's captures
+        # The test's offscreen render (RepaintBoundary.toImage) garbled the
+        # app bar's glyphs on macOS with Impeller, the default renderer,
+        # while the window itself and the same capture on Windows and Linux
+        # were fine (release run, 2026-09-18). This switches the debug build
+        # under test to Skia; the shipped app keeps its Info.plist.
+        run: plutil -replace FLTEnableImpeller -bool NO app/macos/Runner/Info.plist
       - name: Run the checklist on the desktop
         # Unsigned debug build in the app sandbox (DebugProfile.entitlements
         # allows the VM service's local server, which flutter drive needs).
@@ -253,6 +269,10 @@ jobs:
 
   store:
     name: Store listing screenshots
+    # Only from a store build's run: the listings must show what the store
+    # build shows (no Support band). gh workflow run screenshots.yml
+    # -f distribution=appstore
+    if: inputs.distribution == 'appstore'
     needs: [android, linux, web, windows, macos, ios]
     runs-on: ubuntu-latest
     timeout-minutes: 10

@@ -4,7 +4,7 @@
 # app/build/integration_response_data.json via
 # app/test_driver/integration_test.dart, then checks that the run produced
 # what it should. Exits non-zero if the test failed, or if fewer than ten
-# screenshots or either launch timing came out of it: a job that passes
+# screenshots (nine for a store build) or either launch timing came out of it: a job that passes
 # having run nothing is a bug (2026-09-15, the first run).
 #
 #   bash tools/checklist.sh emulator-5554                       # Android
@@ -28,6 +28,11 @@
 set -uo pipefail
 cd "$(dirname "$0")/../app"
 device="${1:-emulator-5554}"
+# SR_DISTRIBUTION (env, default direct) is passed to the build; a store
+# value hides the Support band and screen, and the test then takes nine
+# screenshots instead of ten (the store listings' run).
+distribution="${SR_DISTRIBUTION:-direct}"
+case "$distribution" in play|appstore|msstore) expected=9 ;; *) expected=10 ;; esac
 rm -rf screenshots
 mkdir -p build
 
@@ -40,6 +45,7 @@ esac
 status=0
 flutter drive --driver=test_driver/integration_test.dart \
   --target=integration_test/app_test.dart -d "$device" \
+  --dart-define=SR_DISTRIBUTION="$distribution" \
   ${extra[@]+"${extra[@]}"} || status=$?
 
 case "$device" in
@@ -52,6 +58,6 @@ echo "screenshots: $n"
 report=build/integration_response_data.json
 if [ -f "$report" ]; then cat "$report"; else echo "no report written"; fi
 if [ "$status" -ne 0 ]; then exit "$status"; fi
-[ "$n" -eq 10 ] || { echo "expected 10 screenshots, found $n"; exit 1; }
+[ "$n" -eq "$expected" ] || { echo "expected $expected screenshots ($distribution build), found $n"; exit 1; }
 jq -e '.first_launch_ms and .second_launch_ms' "$report" > /dev/null \
   || { echo "launch timings missing from $report"; exit 1; }

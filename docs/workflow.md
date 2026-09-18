@@ -155,6 +155,7 @@ timings came out of its run; the script checks and says so.
 ```
 gh workflow run screenshots.yml                       # release content
 gh workflow run screenshots.yml -f content=sample     # fixture content, faster
+gh workflow run screenshots.yml -f distribution=appstore   # a store build: no Support band; frames the store listing
 gh run watch
 gh run download -n screenshots-android -D ~/storage/downloads/screenshots-android
 gh run download -n screenshots-linux -D ~/storage/downloads/screenshots-linux
@@ -166,6 +167,9 @@ gh run download -n screenshots-ipad -D ~/storage/downloads/screenshots-ipad
 gh run download -n store-listing -D ~/storage/downloads/store-listing
 ```
 
+A store-build run (`distribution=appstore`) proves the Support band and
+screen are absent and takes nine screenshots; only such a run produces
+`store-listing`, so the listings never show what the store builds hide.
 Each artifact holds the ten PNGs and `integration_response_data.json`
 (`first_launch_ms` with the content copy, `second_launch_ms` without, and
 `view`, the window size in dp, which says whether the phone or the

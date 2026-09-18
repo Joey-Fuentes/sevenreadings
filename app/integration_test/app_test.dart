@@ -36,6 +36,7 @@ import 'package:sevenreadings/app.dart';
 import 'package:sevenreadings/features/about/about_screen.dart';
 import 'package:sevenreadings/features/narrator/narrator_bar.dart';
 import 'package:sevenreadings/features/reader/reader_screen.dart';
+import 'package:sevenreadings/features/support/support_links.dart';
 
 late final IntegrationTestWidgetsFlutterBinding binding;
 var surfaceConverted = false;
@@ -95,14 +96,21 @@ void main() {
     await waitGone(tester, find.byKey(narratorBarKey));
 
     // Support Seven Readings: the band under the title row, on every
-    // screen of builds that may show outside payment links (all the
-    // checklist's builds are direct ones, see support_links.dart).
-    await tester.tap(find.text('Support Seven Readings'));
-    await waitFor(tester, find.text('Support'));
-    expect(find.textContaining('buy.stripe.com'), findsWidgets);
-    await screenshot(tester, '03-support');
-    await goBack(tester, leaving: find.text('Support'));
-    await waitFor(tester, find.textContaining('In the beginning'));
+    // screen of builds that may show outside payment links. A store build
+    // (--dart-define=SR_DISTRIBUTION=play|appstore|msstore, the store
+    // screenshots run) has neither the band nor the screen, and the
+    // checklist proves that instead: nine screenshots then, not ten.
+    report('distribution', distribution);
+    if (showsSupportLinks) {
+      await tester.tap(find.text('Support Seven Readings'));
+      await waitFor(tester, find.text('Support'));
+      expect(find.textContaining('buy.stripe.com'), findsWidgets);
+      await screenshot(tester, '03-support');
+      await goBack(tester, leaving: find.text('Support'));
+      await waitFor(tester, find.textContaining('In the beginning'));
+    } else {
+      expect(find.text('Support Seven Readings'), findsNothing);
+    }
 
     // A verse's readings: the sheet opens on Genesis 1:1.
     await openReadings(tester);
@@ -342,8 +350,11 @@ Future<List<int>> renderRoot(WidgetTester tester) async {
   for (var i = 0; i < 5 && boundary.debugNeedsPaint; i++) {
     await tester.pump();
   }
+  // At least 2x: the hosted desktop runners have 1x displays, and the
+  // stores want Retina-sized pictures; toImage rasterizes afresh at the
+  // ratio, so this is sharp, not upscaled.
   final ratio = tester.view.devicePixelRatio;
-  final image = await boundary.toImage(pixelRatio: ratio);
+  final image = await boundary.toImage(pixelRatio: ratio < 2 ? 2 : ratio);
   final data = await image.toByteData(format: ui.ImageByteFormat.png);
   image.dispose();
   return data!.buffer.asUint8List();

@@ -271,8 +271,22 @@ replace: a different design is a change to one function in that script.
   requires iPad screenshots, so the `ios` job became a matrix (iPhone,
   iPad; artifacts `screenshots-iphone`, `screenshots-ipad`) and a `store`
   job after every target frames them all into the `store-listing`
-  artifact. The script ran here on synthetic images of the real sizes;
-  the iPad job and the store job have not run in CI yet.
+  artifact. First run (2026-09-18, release content): nine jobs green,
+  the iPad simulator at 744x1133 dp (first launch 4829 ms), 49 framed
+  files. Looking at them found three things, fixed in the tree the same
+  day, second run pending: every picture showed the Support band, which
+  store builds compile out (App Review would rightly ask), so the
+  workflow gained a `distribution` input, the test skips the Support step
+  and proves the band absent on a store build (nine screenshots), and the
+  `store` job runs only from such a run; the macOS capture garbled the
+  glyphs of the app bar (title, band, the heart icon) while the body and
+  the same capture on Windows and Linux were clean, which points at the
+  offscreen `toImage` render of that layer under Impeller, so the macOS
+  checklist run switches the debug build under test to Skia with one
+  `plutil` line (the shipped app is untouched); and the 1x desktop
+  captures were upscaled 2.2x for the Mac's 2560x1600, so desktop
+  captures now render at 2x. A weekly or tag run stays a direct build;
+  the store listing is refreshed on demand.
 
 Order: S3 first (no cost, no gate), S1, S2, S4. Documented output: this
 file's tables kept current, and `docs/workflow.md` gains a "Releasing"
