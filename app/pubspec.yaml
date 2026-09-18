@@ -23,6 +23,20 @@ dev_dependencies:
     sdk: flutter
   integration_test:
     sdk: flutter
+  # Windows packaging (MIT): `dart run msix:create` in build.yml. The
+  # Store identity comes from secrets at build time (docs/workflow.md,
+  # "Signing"); this block is what every MSIX shares.
+  msix: ^3.18.0
+
+msix_config:
+  display_name: Seven Readings
+  publisher_display_name: Seven Readings
+  identity_name: SevenReadings.SevenReadings
+  logo_path: ../packaging/icon/org.sevenreadings.SevenReadings-512.png
+  capabilities: ""
+  build_windows: false
+  output_path: ../
+  output_name: sevenreadings-windows
 
 flutter:
   uses-material-design: true

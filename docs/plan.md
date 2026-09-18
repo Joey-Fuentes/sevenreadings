@@ -286,7 +286,23 @@ replace: a different design is a change to one function in that script.
   `plutil` line (the shipped app is untouched); and the 1x desktop
   captures were upscaled 2.2x for the Mac's 2560x1600, so desktop
   captures now render at 2x. A weekly or tag run stays a direct build;
-  the store listing is refreshed on demand.
+  the store listing is refreshed on demand. Second run (2026-09-18,
+  `distribution=appstore`, release content): nine jobs green, nine
+  screenshots each with the band proven absent on every target, the
+  macOS app bar clean (Skia confirmed as the fix; the garble was
+  Impeller's offscreen render of that layer), desktop captures at 2x.
+  **S4 done.** One thing the iPad picture shows, for the UI list, not for
+  the listing: at 744 dp the reader lays out all six columns, which is
+  cramped; a cap on columns for middling widths is a later change.
+- **Windows MSIX (2026-09-18): written, first run pending.** `msix`
+  (MIT) as a dev dependency with `msix_config` in `app/pubspec.yaml`; the
+  windows job builds a second time with `SR_DISTRIBUTION=msstore` and
+  packages it. Without the Partner Center secrets the MSIX carries a
+  placeholder identity and the package's test certificate (exists, is
+  inspected in the log, not a channel); with them it carries the Store
+  identity unsigned, version `a.b.c.0`. It joins the `windows-x64`
+  artifact and the release assets. The lockfile workflow will commit the
+  new dependency's resolution on the push.
 
 Order: S3 first (no cost, no gate), S1, S2, S4. Documented output: this
 file's tables kept current, and `docs/workflow.md` gains a "Releasing"

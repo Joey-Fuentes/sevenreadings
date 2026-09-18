@@ -274,6 +274,27 @@ certificate cannot be cloud-managed that way (Apple bug FB16835802),
 which is why macOS needs the `.p12` and iOS does not. Uploading the `.ipa`
 to TestFlight is S2, the next step in docs/plan.md.
 
+**Windows (Microsoft Store).** The windows job always builds
+`sevenreadings-windows.msix` (the `msix` package, MIT; `msix_config` in
+`app/pubspec.yaml`). With no secrets it carries a placeholder identity
+and the package's test certificate: it exists, its manifest is printed
+in the log, and it installs only on a PC that trusts that certificate,
+so the zip stays the direct channel. For the Store, open Partner Center
+(individual account, about $19 once), reserve the name "Seven Readings",
+and copy from Product identity: the Package/Identity/Name, the
+Package/Identity/Publisher (`CN=...`) and the Publisher display name:
+
+```
+gh secret set MSSTORE_IDENTITY_NAME             # e.g. 12345JoeyFuentes.SevenReadings
+gh secret set MSSTORE_PUBLISHER                 # CN=XXXXXXXX-XXXX-...
+gh secret set MSSTORE_PUBLISHER_DISPLAY_NAME    # as shown in Partner Center
+```
+
+The next build's MSIX then carries that identity and is left unsigned,
+which is what the Store wants (it signs on submission); its version is
+the pubspec version with revision 0, as the Store requires. Submitting it
+is S2 (the `msstore` CLI or the Partner Center upload page).
+
 None of the Apple steps has run yet: they are written from Apple's and
 Flutter's documentation and wait for the account (docs/plan.md, S1 state).
 The first signed run is the proof, and its log is the thing to send.

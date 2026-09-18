@@ -441,9 +441,9 @@ maintainer's direction: publish on every supported platform before any
 chat work. Plan item 4 (T3 on every target) is done with release-content
 numbers. Item 5 is in progress: S1 signing as code is written (Android
 proven for Android on 2026-09-17, the Apple half waits for the Developer
-Program), S4 listings as code is written (`store/`, first `store` and iPad
-runs pending), next Windows MSIX, D2-D3 in-app tips, then S2 uploads and
-the store submissions; the chat spikes come after. Content-side, below.
+Program), S4 listings as code is done (`store/`, framed from a store-build run),
+Windows MSIX is written (first run pending), next D2-D3 in-app tips,
+then S2 uploads and the store submissions; the chat spikes come after. Content-side, below.
 
 In rough order of value: extend the Qur'an pairings (the file is the whole
 of the Islamic reading's coverage); more ICC volumes (Plummer's Luke 1896,
