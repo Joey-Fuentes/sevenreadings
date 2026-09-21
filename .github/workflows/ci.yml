@@ -91,7 +91,7 @@ jobs:
       - name: Build linux
         working-directory: app
         run: flutter build linux --release --dart-define=SR_DISTRIBUTION=direct
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         with:
           path: app/build/web
